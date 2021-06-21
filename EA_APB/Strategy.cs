@@ -202,7 +202,6 @@ namespace EA
                     }
 
                     _currentOrder.PendingModify = false;
-
                     return true; // order modified
                 } 
             }
@@ -515,9 +514,11 @@ namespace EA
 
         public bool ErrorOccurred()
         {
-            if (GetLastError() > 1)
+            int errorCode = GetLastError();
+
+            if (errorCode > 1)
             {
-                NQLog.Error($"!!! Error code '{GetLastError()}' occurred. !!!");
+                NQLog.Error($"!!! Error code '{errorCode}' occurred. !!!");
 
                 ResetLastError();
                 return true;
