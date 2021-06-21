@@ -10,11 +10,10 @@ namespace EA
 {
     public class Strategy : MqlApi
     {
-        private Order _currentOrder;
-        private List<APBCandle> _apbCandles;
         private Settings _settings;
+        private List<APBCandle> _apbCandles;
+        private Order _currentOrder;
         private DateTime _lostOrderTime;
-        private bool _initialAPBCandlesCalculation;
         private bool _reversalAPBCandleDetected;
         private int _currentCandles;
         private int _placeOrderAttempts;
@@ -23,11 +22,10 @@ namespace EA
 
         public override int init()
         {
-            _currentOrder = null;
-            _apbCandles = new List<APBCandle>(20);
             _settings = new Settings();
-            _lostOrderTime = DateTime.Now.AddHours(1); // broker time
-            _initialAPBCandlesCalculation = false;
+            _apbCandles = new List<APBCandle>(20);
+            _currentOrder = null;
+            _lostOrderTime = TimeCurrent();
             _reversalAPBCandleDetected = false;
             _currentCandles = 0;
             _placeOrderAttempts = 20;
@@ -48,20 +46,8 @@ namespace EA
 
             if (newCandle)
             {
-                NQLog.Info($"New candle available.");
-
+                NQLog.Info($"New candle is available.");
                 CalculateAPBCandles();
-
-                if (_initialAPBCandlesCalculation)
-                {
-                    _reversalAPBCandleDetected = _apbCandles[0].Color != _apbCandles[1].Color;
-                    NQLog.Info($"Reversal APB candle detected: '{_reversalAPBCandleDetected}'.");
-                }
-                else
-                {
-                    NQLog.Info($"Initial APB candles calculation performed.");
-                    _initialAPBCandlesCalculation = true;
-                }
             }
 
             PlaceOrder();
@@ -77,18 +63,12 @@ namespace EA
         {
             try
             {
-                OrderOperation? orderOperation = null;
-
                 if (!BeginOrder()) return false;
 
-                if (OrderLossDetected(out Order order))
-                {
-                    NQLog.Info($"Order loss detected - open of reversal order needed. Lost order data '{JsonConvert.SerializeObject(order)}'.");
-                    orderOperation = order.Operation;
-                }
-
-                if (!CreateOrder(orderOperation, out order))
+                if (!CreateOrder(out Order order)) 
                     return false;
+
+                NQLog.Info($"Created order '{JsonConvert.SerializeObject(order)}'.");
 
                 // we're trying to trigger multiple order send commands until one gets activated by MT4 platform.
                 int attempts = 1;
@@ -102,7 +82,7 @@ namespace EA
                         _currentOrder = order;
                         _currentOrder.TicketId = ticketId;
 
-                        NQLog.Info($"Placed order '{JsonConvert.SerializeObject(_currentOrder)}'.");
+                        NQLog.Info($"Order successfully placed with ticket '{_currentOrder.TicketId}'.");
                         return true;
                     }
                     else if (attempts >= _placeOrderAttempts)
@@ -111,7 +91,7 @@ namespace EA
                         return false;
                     }
 
-                    NQLog.Warn($"Failed to send order. Trying to place order again...");
+                    NQLog.Warn($"Failed to place order. Trying again...");
                     attempts++;
                 }
             }
@@ -131,62 +111,59 @@ namespace EA
                 if (!IsOrderActive() || !OrderSelect(_currentOrder.TicketId, SELECT_BY_TICKET))
                     return false;
 
-                APBCandle firstAPBCandle = _apbCandles.First();
-                double firstAPBCandlePrice = 0.0;
-
                 // we need to perform order select MT4 command because this 4 values changes regulary and can't be stored internally in _currentOrder.
-                OrderOperation operation = (OrderOperation)OrderType();
+                OrderOperation orderOperation = (OrderOperation)OrderType();
                 double stopLoss = OrderStopLoss();
                 double takeProfit = OrderTakeProfit();
                 double price = OrderOpenPrice();
+                APBCandle firstAPBCandle = _apbCandles.First();
 
-                if (newCandle && operation >= OrderOperation.BUY_LIMIT && operation <= OrderOperation.SELL_STOP) // modify pending order only when new candle is available.
+                if (newCandle && orderOperation >= OrderOperation.BUY_LIMIT && orderOperation <= OrderOperation.SELL_STOP) // modify pending order only when new candle is available.
                 {
-                    if (operation == OrderOperation.BUY_STOP || operation == OrderOperation.BUY_LIMIT)
+                    if (orderOperation == OrderOperation.BUY_STOP || orderOperation == OrderOperation.BUY_LIMIT)
                     {
                         NQLog.Debug($"Pending BUY; Setting price ABOVE 1st APB candle.");
 
-                        price = firstAPBCandle.High + _settings.ExtremeDiff * Point;
+                        price = NormalizeDouble(firstAPBCandle.High + _settings.ExtremeDiff * Point, 5);
                         stopLoss = NormalizeDouble(price - _settings.StopLoss * Point, 5);
                         takeProfit = NormalizeDouble(price + _settings.TakeProfit * Point, 5);
                         _currentOrder.PendingModify = true;
                     }
-                    else if (operation == OrderOperation.SELL_STOP || operation == OrderOperation.SELL_LIMIT)
+                    else if (orderOperation == OrderOperation.SELL_STOP || orderOperation == OrderOperation.SELL_LIMIT)
                     {
                         NQLog.Debug($"Pending SELL; Setting price BELOW 1st APB candle.");
 
-                        price = firstAPBCandle.Low - _settings.ExtremeDiff * Point;
+                        price = NormalizeDouble(firstAPBCandle.Low - _settings.ExtremeDiff * Point, 5);
                         stopLoss = NormalizeDouble(price + _settings.StopLoss * Point, 5);
                         takeProfit = NormalizeDouble(price - _settings.TakeProfit * Point, 5);
                         _currentOrder.PendingModify = true;
                     }
                 }
-                else if (operation == OrderOperation.BUY) // try to modify BUY market order on every MT4 platform signal.
+                else if (orderOperation == OrderOperation.BUY) // try to modify BUY market order on every MT4 platform signal.
                 {
-                    if (!_currentOrder.BreakEvenReached && Bid > NormalizeDouble(price + _settings.BreakEven * Point, 5)) // 1. set BE point in case BE point not set yet.
+                    if (stopLoss < price && Bid > NormalizeDouble(price + _settings.BreakEven * Point, 5)) // 1. set BE point in case BE point not set yet.
                     {
                         NQLog.Debug($"BUY; BE point reached. Setting stoploss with price {price}.");
                         stopLoss = price;
 
                         _currentOrder.BreakEvenReached = true;
                         _currentOrder.PendingModify = true;
-                    }   
-                    
-                    if (_reversalAPBCandleDetected) // 2. wait for first reversal candle.
+                    }
+                    else if (_reversalAPBCandleDetected && firstAPBCandle.Color == CandleColor.SELL) // 2. wait for first reversal candle.
                     {
-                        firstAPBCandlePrice = NormalizeDouble(firstAPBCandle.Low - _settings.ExtremeDiff * Point, 5);
+                        double reversalLowPrice = NormalizeDouble(firstAPBCandle.Low - _settings.ExtremeDiff * Point, 5);
 
-                        if (firstAPBCandlePrice > stopLoss) // 3. check if first APB candle price (low with diff of reversal candle) is bigger than stoploss in that case move stoploss closer to takeprofit.
+                        if (reversalLowPrice > stopLoss) // 3. check if first APB candle price (low with diff of reversal candle) is bigger than stoploss in that case move stoploss closer to takeprofit.
                         {
-                            NQLog.Debug($"BUY; Setting stoploss with reversal APB candle LOW price {firstAPBCandlePrice}.");
-                            stopLoss = firstAPBCandlePrice;
+                            NQLog.Debug($"BUY; Setting stoploss with reversal LOW price {reversalLowPrice}.");
+                            stopLoss = reversalLowPrice;
                             _currentOrder.PendingModify = true;
                         }
                     }
                 }
-                else if (operation == OrderOperation.SELL) // try to modify SELL market order on every MT4 platform signal.
+                else if (orderOperation == OrderOperation.SELL) // try to modify SELL market order on every MT4 platform signal.
                 {
-                    if (!_currentOrder.BreakEvenReached && Ask < NormalizeDouble(price - _settings.BreakEven * Point, 5))
+                    if (stopLoss > price && Bid < NormalizeDouble(price - _settings.BreakEven * Point, 5))
                     {
                         NQLog.Debug($"SELL; BE point reached. Setting stoploss with price {price}.");
                         stopLoss = price;
@@ -194,15 +171,14 @@ namespace EA
                         _currentOrder.BreakEvenReached = true;
                         _currentOrder.PendingModify = true;
                     }
-
-                    if (_reversalAPBCandleDetected)
+                    else if (_reversalAPBCandleDetected && firstAPBCandle.Color == CandleColor.BUY)
                     {
-                        firstAPBCandlePrice = NormalizeDouble(firstAPBCandle.High + _settings.ExtremeDiff * Point, 5);
+                        double reversalHighPrice = NormalizeDouble(firstAPBCandle.High + _settings.ExtremeDiff * Point, 5);
 
-                        if (firstAPBCandlePrice < stopLoss)
+                        if (reversalHighPrice < stopLoss)
                         {
-                            NQLog.Debug($"SELL; Setting stoploss with reversal APB candle HIGH price {firstAPBCandlePrice}.");
-                            stopLoss = firstAPBCandlePrice;
+                            NQLog.Debug($"SELL; Setting stoploss with reversal HIGH price {reversalHighPrice}.");
+                            stopLoss = reversalHighPrice;
                             _currentOrder.PendingModify = true;
                         }
                     }
@@ -221,9 +197,11 @@ namespace EA
 
                     if (ErrorOccurred())
                     {
-                        NQLog.Warn($"Order ticket {_currentOrder.TicketId} failed to modify due to error '{ErrorDescription(GetLastError())}'.");
+                        NQLog.Warn($"Order ticket {_currentOrder.TicketId} failed to modify.");
                         return false;
                     }
+
+                    _currentOrder.PendingModify = false;
 
                     return true; // order modified
                 } 
@@ -286,6 +264,10 @@ namespace EA
                     _apbCandles.Insert(0, newAPBCandle);
                     previousAPBCandle = newAPBCandle;
                 }
+
+                _reversalAPBCandleDetected = _apbCandles[0].Color != _apbCandles[1].Color;
+
+                NQLog.Info($"Reversal APB candle detected: '{_reversalAPBCandleDetected}'. First closed APB candle color: {_apbCandles[0].Color}.");
             }
             catch (Exception ex)
             {
@@ -293,76 +275,71 @@ namespace EA
             }
         }
 
-        private bool CreateOrder(OrderOperation? orderOperation, out Order order)
+        private bool CreateOrder(out Order order)
         {
             order = null;
 
             try
             {
-                APBCandle firstCandle = _apbCandles.First();
-                double entryPrice;
+                OrderOperation orderOperation = GetOrderOperation();
 
-                if (orderOperation.HasValue) // create reversal order immediately
+                if (orderOperation >= OrderOperation.BUY_LIMIT && orderOperation <= OrderOperation.SELL_STOP)
                 {
-                    if (orderOperation == OrderOperation.BUY)
+                    if (orderOperation == OrderOperation.BUY_STOP)
                     {
-                        entryPrice = Ask;
+                        double buyPrice = NormalizeDouble(_apbCandles.First().High + _settings.ExtremeDiff * Point, 5);
 
                         order = new Order()
                         {
                             Symbol = Symbol(),
-                            Operation = OrderOperation.SELL,
+                            Operation = orderOperation,
                             Lots = _settings.LotSize,
-                            EntryPrice = entryPrice,
-                            StopLoss = NormalizeDouble(entryPrice + _settings.StopLoss * Point, 5),
-                            TakeProfit = NormalizeDouble(entryPrice - _settings.TakeProfit * Point, 5),
-                            Color = Color.Red
-                        };
-                    }
-                    else if (orderOperation == OrderOperation.SELL)
-                    {
-                        entryPrice = Bid;
-
-                        order = new Order()
-                        {
-                            Symbol = Symbol(),
-                            Operation = OrderOperation.BUY,
-                            Lots = _settings.LotSize,
-                            EntryPrice = entryPrice,
-                            StopLoss = NormalizeDouble(entryPrice - _settings.StopLoss * Point, 5),
-                            TakeProfit = NormalizeDouble(entryPrice + _settings.TakeProfit * Point, 5),
+                            EntryPrice = buyPrice,
+                            StopLoss = NormalizeDouble(buyPrice - _settings.StopLoss * Point, 5),
+                            TakeProfit = NormalizeDouble(buyPrice + _settings.TakeProfit * Point, 5),
                             Color = Color.Green
                         };
                     }
-                }
-                else if (firstCandle.Color == CandleColor.BUY)
-                {
-                    entryPrice = firstCandle.Low - _settings.ExtremeDiff * Point;
+                    else if (orderOperation == OrderOperation.SELL_STOP)
+                    {
+                        double sellPrice = NormalizeDouble(_apbCandles.First().Low - _settings.ExtremeDiff * Point, 5);
 
+                        order = new Order()
+                        {
+                            Symbol = Symbol(),
+                            Operation = orderOperation,
+                            Lots = _settings.LotSize,
+                            EntryPrice = sellPrice,
+                            StopLoss = NormalizeDouble(sellPrice + _settings.StopLoss * Point, 5),
+                            TakeProfit = NormalizeDouble(sellPrice - _settings.TakeProfit * Point, 5),
+                            Color = Color.Red
+                        };
+                    }
+                }
+                else if (orderOperation == OrderOperation.BUY)
+                {
                     order = new Order()
                     {
                         Symbol = Symbol(),
-                        Operation = OrderOperation.SELL_STOP,
+                        Operation = orderOperation,
                         Lots = _settings.LotSize,
-                        EntryPrice = entryPrice,
-                        StopLoss = NormalizeDouble(entryPrice + _settings.StopLoss * Point, 5),
-                        TakeProfit = NormalizeDouble(entryPrice - _settings.TakeProfit * Point, 5),
-                        Color = Color.Red
+                        EntryPrice = Ask,
+                        StopLoss = NormalizeDouble(Ask - _settings.StopLoss * Point, 5),
+                        TakeProfit = NormalizeDouble(Ask + _settings.TakeProfit * Point, 5),
+                        Color = Color.DarkGreen
                     };
                 }
-                else if (firstCandle.Color == CandleColor.SELL)
+                else if (orderOperation == OrderOperation.SELL)
                 {
-                    entryPrice = firstCandle.High + _settings.ExtremeDiff * Point;
-
                     order = new Order()
                     {
                         Symbol = Symbol(),
-                        Operation = OrderOperation.BUY_STOP,
+                        Operation = orderOperation,
                         Lots = _settings.LotSize,
-                        EntryPrice = entryPrice,
-                        StopLoss = NormalizeDouble(entryPrice - _settings.StopLoss * Point, 5),
-                        TakeProfit = NormalizeDouble(entryPrice + _settings.TakeProfit * Point, 5),
-                        Color = Color.Green
+                        EntryPrice = Bid,
+                        StopLoss = NormalizeDouble(Bid + _settings.StopLoss * Point, 5),
+                        TakeProfit = NormalizeDouble(Bid - _settings.TakeProfit * Point, 5),
+                        Color = Color.DarkRed
                     };
                 }
 
@@ -411,12 +388,19 @@ namespace EA
                 if (!OrderSelect(i, SELECT_BY_POS, MODE_HISTORY))
                     continue;
 
-                DateTime orderCloseTime = OrderCloseTime();
-
-                if (OrderProfit() < 0 && orderCloseTime > _lostOrderTime)
+                if (OrderProfit() < 0 && OrderCloseTime() > _lostOrderTime)
                 {
+                    _lostOrderTime = OrderCloseTime();
+
+                    if (OrderOpenPrice() == OrderStopLoss())
+                    {
+                        NQLog.Debug($"BE order with ticket '{OrderTicket()}' was closed in loss. Skipping it...");
+                        continue;
+                    }
+
                     order = new Order()
                     {
+                        TicketId = OrderTicket(),
                         Symbol = OrderSymbol(),
                         Operation = (OrderOperation)OrderType(),
                         Lots = OrderLots(),
@@ -426,12 +410,64 @@ namespace EA
                         Comment = OrderComment()
                     };
 
-                    _lostOrderTime = orderCloseTime;
                     return true;
                 }
             }
 
             return false;
+        }
+
+        private OrderOperation GetOrderOperation()
+        {
+            OrderOperation orderOperation = OrderOperation.NONE;
+
+            if (OrderLossDetected(out Order order)) // 1. check if order is lost and open reversal MARKET order immediately.
+            {
+                NQLog.Info($"Order loss detected - open of reversal market order needed. Lost order data '{JsonConvert.SerializeObject(order)}'.");
+
+                switch (order.Operation)
+                {
+                    case OrderOperation.BUY:
+                        orderOperation = OrderOperation.SELL; break;
+                    case OrderOperation.SELL:
+                        orderOperation = OrderOperation.BUY; break;
+
+                    default:
+                        NQLog.Warn($"Unknown order operation. Can't create reversal market order operation.");
+                        break;
+                }
+
+            }
+            else if (_reversalAPBCandleDetected) // 2. in case reversal candle detected, open MARKET order in that direction.
+            {
+                switch (_apbCandles.First().Color)
+                {
+                    case CandleColor.BUY:
+                        orderOperation = OrderOperation.BUY; break;
+                    case CandleColor.SELL:
+                        orderOperation = OrderOperation.SELL; break;
+
+                    default:
+                        NQLog.Warn($"Unknown candle color. Can't create market order operation.");
+                        break;
+                }
+            }
+            else // 3. otherwise look candle color to create PENDING market order
+            {
+                switch (_apbCandles.First().Color)
+                {
+                    case CandleColor.BUY:
+                        orderOperation = OrderOperation.SELL_STOP; break;
+                    case CandleColor.SELL:
+                        orderOperation = OrderOperation.BUY_STOP; break;
+
+                    default:
+                        NQLog.Warn($"Unknown candle color. Can't create pending order operation.");
+                        break;
+                }
+            }
+
+            return orderOperation;
         }
 
         private bool IsOrderActive()
@@ -467,9 +503,9 @@ namespace EA
 
         private bool ValidTradingTime()
         {
-            DateTime currentTime = TimeCurrent();
+            int currentHour = TimeCurrent().Hour;
 
-            return !(currentTime.Hour < _settings.OpenHour || currentTime.Hour >= _settings.CloseHour);
+            return !(currentHour < _settings.OpenHour || currentHour >= _settings.CloseHour);
         }
 
         private bool ValidLastCandle()
@@ -479,10 +515,10 @@ namespace EA
 
         public bool ErrorOccurred()
         {
-            int errorCode = GetLastError();
-
-            if (errorCode > 1)
+            if (GetLastError() > 1)
             {
+                NQLog.Error($"!!! Error code '{GetLastError()}' occurred. !!!");
+
                 ResetLastError();
                 return true;
             }
