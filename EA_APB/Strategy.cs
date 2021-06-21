@@ -391,7 +391,7 @@ namespace EA
                 {
                     _lostOrderTime = OrderCloseTime();
 
-                    if (OrderOpenPrice() == OrderStopLoss())
+                    if (OrderClosePrice() == OrderStopLoss())
                     {
                         NQLog.Debug($"BE order with ticket '{OrderTicket()}' was closed in loss. Skipping it...");
                         continue;
