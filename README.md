@@ -1,2 +1,2 @@
 # EAs
-Repo contains all sort of Expert Advisors for Forex trading.
+Repo contains all sort of Expert Advisors for Forex or crypto trading.
