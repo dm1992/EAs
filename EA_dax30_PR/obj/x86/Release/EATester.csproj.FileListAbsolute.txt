@@ -1,0 +1,4 @@
+c:\Users\Davor\Delo\Projekti\Lokalno\EA\obj\x86\Release\EATester.csprojAssemblyReference.cache
+c:\Users\Davor\Delo\Projekti\Lokalno\EA\obj\x86\Release\EATester.EAStrategyForm.resources
+c:\Users\Davor\Delo\Projekti\Lokalno\EA\obj\x86\Release\EATester.csproj.GenerateResource.cache
+c:\Users\Davor\Delo\Projekti\Lokalno\EA\obj\x86\Release\EATester.csproj.CoreCompileInputs.cache

@@ -1,0 +1,12 @@
+c:\Users\Davor\Delo\Projekti\Lokalno\EA\DebugHost\obj\x86\Release\DebugHost.csprojAssemblyReference.cache
+c:\Users\Davor\Delo\Projekti\Lokalno\EA\DebugHost\obj\x86\Release\DebugHost.csproj.CoreCompileInputs.cache
+C:\Users\Davor\AppData\Roaming\MetaQuotes\Terminal\DB0F64EEC7A2A5A4E798BF69494A9ACB\MQL4\Projects\nquotes\EA_dax30_PR\DebugHost\bin\x86\Release\App.config
+C:\Users\Davor\AppData\Roaming\MetaQuotes\Terminal\DB0F64EEC7A2A5A4E798BF69494A9ACB\MQL4\Projects\nquotes\EA_dax30_PR\DebugHost\bin\x86\Release\DebugHost.exe.config
+C:\Users\Davor\AppData\Roaming\MetaQuotes\Terminal\DB0F64EEC7A2A5A4E798BF69494A9ACB\MQL4\Projects\nquotes\EA_dax30_PR\DebugHost\bin\x86\Release\DebugHost.exe
+C:\Users\Davor\AppData\Roaming\MetaQuotes\Terminal\DB0F64EEC7A2A5A4E798BF69494A9ACB\MQL4\Projects\nquotes\EA_dax30_PR\DebugHost\bin\x86\Release\DebugHost.pdb
+C:\Users\Davor\AppData\Roaming\MetaQuotes\Terminal\DB0F64EEC7A2A5A4E798BF69494A9ACB\MQL4\Projects\nquotes\EA_dax30_PR\DebugHost\bin\x86\Release\nquotes.dll
+C:\Users\Davor\AppData\Roaming\MetaQuotes\Terminal\DB0F64EEC7A2A5A4E798BF69494A9ACB\MQL4\Projects\nquotes\EA_dax30_PR\DebugHost\bin\x86\Release\nquotes.xml
+C:\Users\Davor\AppData\Roaming\MetaQuotes\Terminal\DB0F64EEC7A2A5A4E798BF69494A9ACB\MQL4\Projects\nquotes\EA_dax30_PR\DebugHost\obj\x86\Release\DebugHost.csproj.CoreCompileInputs.cache
+C:\Users\Davor\AppData\Roaming\MetaQuotes\Terminal\DB0F64EEC7A2A5A4E798BF69494A9ACB\MQL4\Projects\nquotes\EA_dax30_PR\DebugHost\obj\x86\Release\DebugHost.csproj.CopyComplete
+C:\Users\Davor\AppData\Roaming\MetaQuotes\Terminal\DB0F64EEC7A2A5A4E798BF69494A9ACB\MQL4\Projects\nquotes\EA_dax30_PR\DebugHost\obj\x86\Release\DebugHost.exe
+C:\Users\Davor\AppData\Roaming\MetaQuotes\Terminal\DB0F64EEC7A2A5A4E798BF69494A9ACB\MQL4\Projects\nquotes\EA_dax30_PR\DebugHost\obj\x86\Release\DebugHost.pdb
