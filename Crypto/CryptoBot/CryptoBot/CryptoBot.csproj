@@ -105,7 +105,7 @@
     <Compile Include="Data\Candle.cs" />
     <Compile Include="Data\Config.cs" />
     <Compile Include="Data\Market.cs" />
-    <Compile Include="Data\PriceLevelClosure.cs" />
+    <Compile Include="Data\PriceClosure.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="EventArgs\ApplicationEventArgs.cs" />
     <Compile Include="EventArgs\TradingEventArgs.cs" />
