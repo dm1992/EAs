@@ -224,7 +224,7 @@ namespace CryptoBot.Managers.Miha
 
             try
             {
-                bool closePriceLevel = false;
+                bool closePrice = false;
 
                 var symbolTradePrices = new List<decimal>();
                 var symbolTrades = _tradeBuffer.Where(x => x.Topic == trade.Topic).OrderBy(x => x.Data.Timestamp); // ordered trades
@@ -238,24 +238,24 @@ namespace CryptoBot.Managers.Miha
 
                     if (symbolTradePrices.Count() >= _config.PriceLevelChanges)
                     {
-                        closePriceLevel = true;
+                        closePrice = true;
                         break;
                     }
                 }
 
-                if (closePriceLevel)
+                if (closePrice)
                 {
-                    decimal priceLevel = symbolTradePrices.First();
-                    decimal latestSymbolPrice = symbolTrades.Last().Data.Price;
-                    List<DataEvent<BybitSpotTradeUpdate>> priceLevelClosureTrades = symbolTrades.Where(x => x.Data.Price == priceLevel).ToList();
+                    decimal symbolLatestPrice = symbolTrades.Last().Data.Price;
+                    decimal symbolClosePrice = symbolTradePrices.First();
+                    List<DataEvent<BybitSpotTradeUpdate>> symbolClosePriceTrades = symbolTrades.Where(x => x.Data.Price == symbolClosePrice).ToList();
 
-                    PriceLevelClosure priceLevelClosure = new PriceLevelClosure(trade.Topic, priceLevelClosureTrades, latestSymbolPrice);
+                    PriceClosure priceClosure = new PriceClosure(trade.Topic, symbolLatestPrice, symbolClosePriceTrades);
 
                     ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                    message: $"{priceLevelClosure.Dump()}",
+                    message: $"{priceClosure.Dump()}",
                     messageScope: $"priceClosure_{trade.Topic}"));
 
-                    _tradeBuffer.RemoveAll(x => x.Topic == trade.Topic && x.Data.Price == priceLevel);
+                    _tradeBuffer.RemoveAll(x => x.Topic == trade.Topic && x.Data.Price == symbolClosePrice);
                 }
             }
             catch (Exception e)

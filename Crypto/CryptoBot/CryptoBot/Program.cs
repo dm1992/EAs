@@ -28,11 +28,11 @@ namespace CryptoBot
 
                 _config.Parse();
 
-                SaveData($"Started application version '{_config.ApplicationVersion}' with username '{_config.Username}'.\n");
+                SaveMessage($"Started application version '{_config.ApplicationVersion}' with username '{_config.Username}'.\n");
 
                 if (!Enum.TryParse(_config.Username, ignoreCase: true, out ManagerType managerType))
                 {
-                    SaveData($"!!!Manager type failed to parse from username '{_config.Username}'. Can't use application.");
+                    SaveMessage($"!!!Manager type failed to parse from username '{_config.Username}'. Can't use application.");
                     return;
                 }
 
@@ -42,7 +42,7 @@ namespace CryptoBot
             }
             catch (Exception e)
             {
-                SaveData($"!!!Error occurred!!! {e}");
+                SaveMessage($"!!!Error occurred!!! {e}");
             }
             finally
             {
@@ -72,7 +72,7 @@ namespace CryptoBot
 
         private static void EventHandler(object sender, ApplicationEventArgs args)
         {
-            bool shouldSaveData = true;
+            bool shouldSaveMessage = true;
             try
             {
                 if (args.Type == EventType.TerminateApplication)
@@ -81,30 +81,34 @@ namespace CryptoBot
                 }
                 else if (args.Type == EventType.Debug)
                 {
-                    shouldSaveData = _config.SaveDebugApplicationEvent;
+                    shouldSaveMessage = _config.SaveDebugApplicationEvent;
                 }
             }
             finally
             {
-                if (shouldSaveData)
+                if (shouldSaveMessage)
                 {
-                    SaveData(args.ToString(), args.MessageScope);
+                    SaveMessage(args.ToString(), args.MessageScope);
                 }
             }
         }
 
-        private static void SaveData(string data, string dataScope = null)
+        private static void SaveMessage(string message, string messageScope = null)
         {
-            if (String.IsNullOrEmpty(dataScope))
+            if (String.IsNullOrEmpty(message)) return;
+
+            if (String.IsNullOrEmpty(messageScope))
             {
                 // only general data is output to console
-                Console.Write(data);
+                Console.Write(message);
             }
 
-            bool saved = Helpers.SaveData(data, Path.Combine(_config.ApplicationLogPath, $"{dataScope ?? "general"}_applicationData_{DateTime.Now:ddMMyyyy}_{_config.ApplicationVersion}.txt"));
-            if (!saved)
+            string path = Path.Combine(_config.ApplicationLogPath, 
+                          $"{messageScope ?? "general"}_applicationData_{DateTime.Now:ddMMyyyy}_{_config.ApplicationVersion}.txt");
+
+            if (!Helpers.SaveData(message, path))
             {
-                Console.WriteLine($"!!!Failed to save application data '{data}'!!!");
+                Console.WriteLine($"!!!Failed to save application message '{message}'!!!");
             }
         }
     }

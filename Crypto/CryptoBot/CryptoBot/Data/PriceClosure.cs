@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Data
 {
-    public class PriceLevelClosure
+    public class PriceClosure
     {
-        public PriceLevelClosure (string symbol, List<DataEvent<BybitSpotTradeUpdate>> trades, decimal latestSymbolPrice)
+        public PriceClosure (string symbol, decimal latestPrice, List<DataEvent<BybitSpotTradeUpdate>> trades)
         {
             this.Id = Guid.NewGuid().ToString();
             this.Symbol = symbol;
             this.CreatedAt = DateTime.UtcNow;
             this.Trades = trades;
-            this.LatestSymbolPrice = latestSymbolPrice;
+            this.LatestPrice = latestPrice;
         }
 
         public string Id { get; set; }
@@ -24,7 +24,7 @@ namespace CryptoBot.Data
         public DateTime CreatedAt { get; private set; }
         public List<DataEvent<BybitSpotTradeUpdate>> Trades { get; set; }
 
-        public decimal PriceLevel 
+        public decimal ClosePrice 
         {
             get
             {
@@ -35,7 +35,7 @@ namespace CryptoBot.Data
             }
         }
 
-        public decimal LatestSymbolPrice { get; set; }
+        public decimal LatestPrice { get; set; }
 
         public decimal BuyerQuantity
         {
@@ -61,7 +61,7 @@ namespace CryptoBot.Data
 
         public string Dump()
         {
-            return $"{Symbol},{PriceLevel},{LatestSymbolPrice},{BuyerQuantity},{SellerQuantity},{this.Trades.Count()}";
+            return $"{this.Symbol},{this.ClosePrice},{this.LatestPrice},{this.BuyerQuantity},{this.SellerQuantity},{this.Trades.Count()}";
         }
     }
 }
