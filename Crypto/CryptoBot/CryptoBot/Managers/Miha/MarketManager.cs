@@ -65,6 +65,9 @@ namespace CryptoBot.Managers.Miha
 
             Task.Run(() => { MonitorCandleBatches(); });
 
+            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
+            $"Initialized market manager."));
+
             this.IsInitialized = true;
         }
 
@@ -85,9 +88,6 @@ namespace CryptoBot.Managers.Miha
 
         private void SetupCandleBatches()
         {
-            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            $"Setup candle batch(es) for {_availableMarketSymbols.Count} symbol(s) and tracking {_config.CandlesInBatch} candle(s) per batch within {_config.CandleMinuteTimeframe} minute candle timeframe."));
-
             lock (_candleBatches)
             {
                 _candleBatches.Clear();
@@ -129,19 +129,19 @@ namespace CryptoBot.Managers.Miha
                             {
                                 if ((DateTime.Now - activeCandle.CreatedAt).TotalMinutes >= _config.CandleMinuteTimeframe)
                                 {
-                                    ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                                    $"({activeCandle.Id}) {activeCandle.Symbol} candle completed. Total {activeCandle.TradeBuffer.Count} trades in candle.\n {activeCandle.Dump()}", activeCandle.Symbol));
-
-                                    // dump collected trades in candle to verbose
-                                    ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                                    $"{activeCandle.DumpTrades()}", activeCandle.Symbol, verbose: true));
+                                    ApplicationEvent?.Invoke(this, 
+                                    new ApplicationEventArgs(EventType.Information,
+                                    $"({activeCandle.Id}) {activeCandle.Symbol} candle completed with {activeCandle.Dump()}.\n\n{activeCandle.DumpTrades()}", 
+                                    messageScope: $"verbose_{activeCandle.Symbol}"));
 
                                     activeCandle.Completed = true;
                                 }
                             }
                         }
 
-                        if (_candleBatches.All(x => x.Completed && x.Candles.Count == _config.CandlesInBatch))
+                        bool candleBatchesCompleted = _candleBatches.All(x => x.Completed && x.Candles.Count == _config.CandlesInBatch);
+
+                        if (candleBatchesCompleted)
                         {
                             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
                             $"Completed all symbol candle batch(es). Will start over again..."));
@@ -167,7 +167,11 @@ namespace CryptoBot.Managers.Miha
             foreach (var candleBatch in _candleBatches)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                $"{candleBatch.Symbol} candle batch (completed: {candleBatch.Completed}). Total trades in candle batch: {candleBatch.Candles.Sum(x => x.TradeBuffer.Count)}.\n {candleBatch.Dump()}", candleBatch.Symbol));
+                $"({candleBatch.Id}) {candleBatch.Symbol} candle batch (completed: {candleBatch.Completed}). Total trades in candle batch: {candleBatch.Candles.Sum(x => x.TradeBuffer.Count)}."));
+
+                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
+                $"{candleBatch.Dump()}",
+                messageScope: $"candleBatch_{candleBatch.Symbol}"));
             }
         }
 
@@ -220,18 +224,19 @@ namespace CryptoBot.Managers.Miha
 
             try
             {
-                var symbolTrades = _tradeBuffer.Where(x => x.Topic == trade.Topic).OrderBy(x => x.Data.Timestamp); // ordered trades
-                var symbolPrices = new List<decimal>();
                 bool closePriceLevel = false;
 
+                var symbolTradePrices = new List<decimal>();
+                var symbolTrades = _tradeBuffer.Where(x => x.Topic == trade.Topic).OrderBy(x => x.Data.Timestamp); // ordered trades
+                
                 foreach (var symbolTrade in symbolTrades)
                 {
-                    if (!symbolPrices.Contains(symbolTrade.Data.Price))
+                    if (!symbolTradePrices.Contains(symbolTrade.Data.Price))
                     {
-                        symbolPrices.Add(symbolTrade.Data.Price);
+                        symbolTradePrices.Add(symbolTrade.Data.Price);
                     }
 
-                    if (symbolPrices.Count() >= _config.MaxPriceLevelChanges)
+                    if (symbolTradePrices.Count() >= _config.PriceLevelChanges)
                     {
                         closePriceLevel = true;
                         break;
@@ -240,12 +245,13 @@ namespace CryptoBot.Managers.Miha
 
                 if (closePriceLevel)
                 {
-                    decimal priceLevel = symbolPrices.First();
+                    decimal priceLevel = symbolTradePrices.First();
 
                     PriceLevelClosure priceLevelClosure = new PriceLevelClosure(trade.Topic, symbolTrades.Where(x => x.Data.Price == priceLevel).ToList(), symbolTrades.Last().Data.Price);
 
                     ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                    $"{priceLevelClosure.Dump()}", trade.Topic));
+                    $"{priceLevelClosure.Dump()}",
+                    messageScope: $"priceClosure_{trade.Topic}"));
 
                     _tradeBuffer.RemoveAll(x => x.Topic == trade.Topic && x.Data.Price == priceLevel);
                 }

@@ -10,26 +10,28 @@ namespace CryptoBot.Data
 {
     public class CandleBatch
     {
+        public string Id { get; private set; }
+        public string Symbol { get; set; }
+        public DateTime CreatedAt { get; private set; }
+        public bool Completed
+        {
+            get
+            {
+                if (this.Candles.IsNullOrEmpty())
+                    return false;
+
+                return this.Candles.All(x => x.Completed);
+            }
+        }
+        public List<Candle> Candles { get; set; }
+
         public CandleBatch(string symbol)
         {
+            this.Id = Guid.NewGuid().ToString();
             this.Symbol = symbol;
             this.CreatedAt = DateTime.Now;
             this.Candles = new List<Candle>();
         }
-
-        public string Symbol { get; set; }
-        public DateTime CreatedAt { get; private set; }
-        public bool Completed 
-        { 
-            get 
-            {
-                if (this.Candles.IsNullOrEmpty()) 
-                    return false;
-                
-                return this.Candles.All(x => x.Completed); 
-            } 
-        }
-        public List<Candle> Candles { get; set; }
 
         public decimal GetAverageVolume()
         {
@@ -49,12 +51,18 @@ namespace CryptoBot.Data
 
         public string Dump()
         {
-            return $"{this.Symbol} candle batch average data: AverageVolume: {this.GetAverageVolume()}, AveragePriceMovePercentage: {this.GetAveragePriceMovePercentage()} %.\n";
+            return $"{this.Id},{this.GetAverageVolume()},{this.GetAveragePriceMovePercentage()}";
         }
     }
 
     public class Candle
     {
+        public string Id { get; private set; }
+        public string Symbol { get; set; }
+        public DateTime CreatedAt { get; private set; }
+        public bool Completed { get; set; }
+        public List<DataEvent<BybitSpotTradeUpdate>> TradeBuffer { get; set; }
+
         public Candle(string symbol)
         {
             this.Id = Guid.NewGuid().ToString();
@@ -63,12 +71,6 @@ namespace CryptoBot.Data
             this.Completed = false;
             this.TradeBuffer = new List<DataEvent<BybitSpotTradeUpdate>>();          
         }
-        public string Id { get; private set; }
-
-        public string Symbol { get; set; }
-        public DateTime CreatedAt { get; private set; }
-        public bool Completed { get; set; }
-        public List<DataEvent<BybitSpotTradeUpdate>> TradeBuffer { get; set; }
 
         public decimal GetVolume()
         {
@@ -91,7 +93,7 @@ namespace CryptoBot.Data
 
         public string Dump()
         {
-            return $"{this.Symbol} candle data: Volume: {this.GetVolume()}, PriceMovePercentage: {this.GetPriceMovePercentage()} %.\n";
+            return $"volume: {this.GetVolume()} and price move percentage: {this.GetPriceMovePercentage()} %";
         }
 
         public string DumpTrades()
@@ -100,7 +102,7 @@ namespace CryptoBot.Data
 
             foreach (var trade in this.TradeBuffer)
             {
-                result += $"{trade.Data.Timestamp}, {(trade.Data.Buy ? "BUY" : "SELL")}, {trade.Data.Price} $, {trade.Data.Quantity}\n";
+                result += $"{trade.Data.Timestamp},{(trade.Data.Buy ? "BUY" : "SELL")},{trade.Data.Price},{trade.Data.Quantity}\n";
             }
 
             return result;

@@ -88,19 +88,20 @@ namespace CryptoBot
             {
                 if (saveData)
                 {
-                    SaveData(args.ToString(), args.CryptoCurrency, args.Verbose);
+                    SaveData(args.ToString(), args.MessageScope);
                 }
             }
         }
 
-        private static void SaveData(string data, string cryptoCurrency = null, bool verbose = false)
+        private static void SaveData(string data, string dataScope = null)
         {
-            if (String.IsNullOrEmpty(cryptoCurrency) && !verbose)
+            if (dataScope == null)
             {
+                // only general data is output to console
                 Console.Write(data);
             }
 
-            bool saved = Helpers.SaveData(data, Path.Combine(_config.ApplicationLogPath, $"{(verbose ? "verbose_":"")}{cryptoCurrency ?? "general"}_applicationData_{DateTime.Now:ddMMyyyy}_{_config.ApplicationVersion}.txt"));
+            bool saved = Helpers.SaveData(data, Path.Combine(_config.ApplicationLogPath, $"{dataScope ?? "general"}_applicationData_{DateTime.Now:ddMMyyyy}_{_config.ApplicationVersion}.txt"));
             if (!saved)
             {
                 Console.WriteLine($"!!!Failed to save application data '{data}'!!!");

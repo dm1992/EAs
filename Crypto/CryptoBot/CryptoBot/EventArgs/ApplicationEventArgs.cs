@@ -11,21 +11,24 @@ namespace CryptoBot.EventArgs
         public DateTime SendAt { get; set; }
         public EventType Type { get; set; }
         public string Message { get; set; }
-        public string CryptoCurrency { get; set; }
-        public bool Verbose { get; set; }
+        public string MessageScope { get; set; }
 
-        public ApplicationEventArgs(EventType type, string message, string cryptoCurrency = null, bool verbose = false)
+        public ApplicationEventArgs(EventType type, string message, string messageScope = null)
         {
             this.SendAt = DateTime.UtcNow;
             this.Type = type;
             this.Message = message;
-            this.CryptoCurrency = cryptoCurrency;
-            this.Verbose = verbose;
+            this.MessageScope = messageScope;
         }
 
         public override string ToString()
         {
-            return $"[{this.Type} ({this.SendAt})]: {this.Message}\n";
+            if (String.IsNullOrEmpty(this.MessageScope))
+            {
+                return $"[{this.Type} ({this.SendAt})]: {this.Message}\n";
+            }
+
+            return $"{this.Message}\n";
         }
     }
 }

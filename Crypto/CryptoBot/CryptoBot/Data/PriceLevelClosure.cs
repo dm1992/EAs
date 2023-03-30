@@ -61,7 +61,7 @@ namespace CryptoBot.Data
 
         public string Dump()
         {
-            return $"{Symbol} closure price level: {PriceLevel}, LatestSymbolPrice: {LatestSymbolPrice}, BuyerQuantity: {BuyerQuantity}, SellerQuantity: {SellerQuantity}, Trades: {this.Trades.Count()}.";
+            return $"{Symbol},{PriceLevel},{LatestSymbolPrice},{BuyerQuantity},{SellerQuantity},{this.Trades.Count()}";
         }
     }
 }

@@ -30,7 +30,7 @@ namespace CryptoBot.Data
 
         public int CandlesInBatch { get; set; }
         public int CandleMinuteTimeframe { get; set; }
-        public int MaxPriceLevelChanges { get; set; }
+        public int PriceLevelChanges { get; set; }
 
         public Dictionary<string, decimal> SymbolStopLossAmount { get; private set; }
 
@@ -61,7 +61,7 @@ namespace CryptoBot.Data
 
             this.CandlesInBatch = int.Parse(ConfigurationManager.AppSettings["candlesInBatch"]);
             this.CandleMinuteTimeframe = int.Parse(ConfigurationManager.AppSettings["candleMinuteTimeframe"]);
-            this.MaxPriceLevelChanges = int.Parse(ConfigurationManager.AppSettings["maxPriceLevelChanges"]);
+            this.PriceLevelChanges = int.Parse(ConfigurationManager.AppSettings["priceLevelChanges"]);
         }
     }
 }
