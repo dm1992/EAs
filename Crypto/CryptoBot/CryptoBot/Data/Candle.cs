@@ -93,7 +93,7 @@ namespace CryptoBot.Data
 
         public string Dump()
         {
-            return $"volume: {this.GetVolume()} and price move percentage: {this.GetPriceMovePercentage()} %";
+            return $"Volume: {this.GetVolume()}, PriceMovePercentage: {this.GetPriceMovePercentage()} %";
         }
 
         public string DumpTrades()

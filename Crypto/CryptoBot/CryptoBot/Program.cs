@@ -72,7 +72,7 @@ namespace CryptoBot
 
         private static void EventHandler(object sender, ApplicationEventArgs args)
         {
-            bool saveData = true;
+            bool shouldSaveData = true;
             try
             {
                 if (args.Type == EventType.TerminateApplication)
@@ -81,12 +81,12 @@ namespace CryptoBot
                 }
                 else if (args.Type == EventType.Debug)
                 {
-                    saveData = _config.SaveDebugApplicationEvent;
+                    shouldSaveData = _config.SaveDebugApplicationEvent;
                 }
             }
             finally
             {
-                if (saveData)
+                if (shouldSaveData)
                 {
                     SaveData(args.ToString(), args.MessageScope);
                 }
@@ -95,7 +95,7 @@ namespace CryptoBot
 
         private static void SaveData(string data, string dataScope = null)
         {
-            if (dataScope == null)
+            if (String.IsNullOrEmpty(dataScope))
             {
                 // only general data is output to console
                 Console.Write(data);

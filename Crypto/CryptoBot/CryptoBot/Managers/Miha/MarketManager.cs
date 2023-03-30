@@ -56,17 +56,17 @@ namespace CryptoBot.Managers.Miha
             if (_availableMarketSymbols == null)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Warning,
-                $"Failed to get available market symbols."));
+                message: $"Failed to get available market symbols."));
 
                 return;
             }
 
-            SetupCandleBatches();
+            SetCandleBatches();
 
             Task.Run(() => { MonitorCandleBatches(); });
 
             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            $"Initialized market manager."));
+            message: $"Initialized market manager."));
 
             this.IsInitialized = true;
         }
@@ -86,7 +86,7 @@ namespace CryptoBot.Managers.Miha
             return symbols.Select(x => x.Name).ToList();
         }
 
-        private void SetupCandleBatches()
+        private void SetCandleBatches()
         {
             lock (_candleBatches)
             {
@@ -106,7 +106,7 @@ namespace CryptoBot.Managers.Miha
             try
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                $"Monitoring candle batch(es) in progress..."));
+                message: $"Monitoring candle batch(es) in progress..."));
 
                 while (true)
                 {
@@ -118,7 +118,7 @@ namespace CryptoBot.Managers.Miha
                             if (candleBatch == null)
                             {
                                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                                $"!!!Unable to find candle batch for symbol {symbol}."));
+                                message: $"!!!Unable to find candle batch for symbol {symbol}."));
 
                                 continue;
                             }
@@ -131,7 +131,7 @@ namespace CryptoBot.Managers.Miha
                                 {
                                     ApplicationEvent?.Invoke(this, 
                                     new ApplicationEventArgs(EventType.Information,
-                                    $"({activeCandle.Id}) {activeCandle.Symbol} candle completed with {activeCandle.Dump()}.\n\n{activeCandle.DumpTrades()}", 
+                                    message: $"({activeCandle.Id}) {activeCandle.Symbol} candle completed - {activeCandle.Dump()}.\n\n{activeCandle.DumpTrades()}", 
                                     messageScope: $"verbose_{activeCandle.Symbol}"));
 
                                     activeCandle.Completed = true;
@@ -144,11 +144,11 @@ namespace CryptoBot.Managers.Miha
                         if (candleBatchesCompleted)
                         {
                             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                            $"Completed all symbol candle batch(es). Will start over again..."));
+                            message: $"Completed all symbol candle batch(es). Will start over again..."));
 
                             DumpCandleBatches();
 
-                            SetupCandleBatches(); // reset candle batches and start over again
+                            SetCandleBatches(); // reset candle batches and start over again
                         }
                     }
                 }
@@ -156,7 +156,7 @@ namespace CryptoBot.Managers.Miha
             catch (Exception e)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                $"!!!MonitorCandleBatches failed!!! {e}"));
+                message: $"!!!MonitorCandleBatches failed!!! {e}"));
 
                 DumpCandleBatches();
             }
@@ -167,10 +167,10 @@ namespace CryptoBot.Managers.Miha
             foreach (var candleBatch in _candleBatches)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                $"({candleBatch.Id}) {candleBatch.Symbol} candle batch (completed: {candleBatch.Completed}). Total trades in candle batch: {candleBatch.Candles.Sum(x => x.TradeBuffer.Count)}."));
+                message: $"({candleBatch.Id}) {candleBatch.Symbol} candle batch (completed: {candleBatch.Completed}). Total trades in candle batch: {candleBatch.Candles.Sum(x => x.TradeBuffer.Count)}."));
 
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                $"{candleBatch.Dump()}",
+                message: $"{candleBatch.Dump()}",
                 messageScope: $"candleBatch_{candleBatch.Symbol}"));
             }
         }
@@ -187,7 +187,7 @@ namespace CryptoBot.Managers.Miha
                     if (candleBatch == null)
                     {
                         ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                        $"!!!Unable to find candle batch for symbol {trade.Topic}."));
+                        message: $"!!!Unable to find candle batch for symbol {trade.Topic}."));
 
                         return;
                     }
@@ -214,7 +214,7 @@ namespace CryptoBot.Managers.Miha
             catch (Exception e)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                $"!!!AddTradeToCandleBatch failed!!! {e}"));
+                message: $"!!!AddTradeToCandleBatch failed!!! {e}"));
             }
         }
 
@@ -246,11 +246,13 @@ namespace CryptoBot.Managers.Miha
                 if (closePriceLevel)
                 {
                     decimal priceLevel = symbolTradePrices.First();
+                    decimal latestSymbolPrice = symbolTrades.Last().Data.Price;
+                    List<DataEvent<BybitSpotTradeUpdate>> priceLevelClosureTrades = symbolTrades.Where(x => x.Data.Price == priceLevel).ToList();
 
-                    PriceLevelClosure priceLevelClosure = new PriceLevelClosure(trade.Topic, symbolTrades.Where(x => x.Data.Price == priceLevel).ToList(), symbolTrades.Last().Data.Price);
+                    PriceLevelClosure priceLevelClosure = new PriceLevelClosure(trade.Topic, priceLevelClosureTrades, latestSymbolPrice);
 
                     ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                    $"{priceLevelClosure.Dump()}",
+                    message: $"{priceLevelClosure.Dump()}",
                     messageScope: $"priceClosure_{trade.Topic}"));
 
                     _tradeBuffer.RemoveAll(x => x.Topic == trade.Topic && x.Data.Price == priceLevel);
@@ -259,7 +261,7 @@ namespace CryptoBot.Managers.Miha
             catch (Exception e)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                $"!!!CheckTradeForPriceClosure failed!!! {e}"));
+                message: $"!!!CheckTradeForPriceClosure failed!!! {e}"));
             }
         }
 
@@ -271,7 +273,7 @@ namespace CryptoBot.Managers.Miha
         public void InvokeAPISubscription()
         {
             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            $"Invoked API subscription in market manager."));
+            message: $"Invoked API subscription in market manager."));
 
             BybitSocketClientOptions socketClientOptions = BybitSocketClientOptions.Default;
             socketClientOptions.SpotStreamsV3Options.OutputOriginalData = true;
@@ -305,19 +307,19 @@ namespace CryptoBot.Managers.Miha
         private void API_Subscription_ConnectionRestored(TimeSpan obj)
         {
             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            $"API subscription connection restored in market manager."));
+            message: $"API subscription connection restored in market manager."));
         }
 
         private void API_Subscription_ConnectionLost()
         {
             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            $"API subscription connection lost in market manager."));
+            message: $"API subscription connection lost in market manager."));
         }
 
         private void API_Subscription_ConnectionClosed()
         {
             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            $"API subscription connection closed in market manager."));
+            message: $"API subscription connection closed in market manager."));
         }
 
         private void HandleTrade(DataEvent<BybitSpotTradeUpdate> trade)
@@ -330,7 +332,7 @@ namespace CryptoBot.Managers.Miha
                 if (trade.Topic == null)
                 {
                     ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                    $"!!!Unable to parse symbol from original trade data."));
+                    message: $"!!!Unable to parse topic from original trade data."));
 
                     return;
                 }
@@ -344,7 +346,7 @@ namespace CryptoBot.Managers.Miha
             catch (Exception e)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                $"!!!HandleTrade failed!!! {e}"));
+                message: $"!!!HandleTrade failed!!! {e}"));
             }
             finally
             {
