@@ -36,10 +36,8 @@ namespace CryptoBot
                 Console.Write(data);
             }
 
-            if (ApplicationHandler._config == null) return;
-
-            string path = Path.Combine(ApplicationHandler._config.ApplicationLogPath,
-                          $"{dataScope ?? "general"}_data_{DateTime.Now:ddMMyyyy}_{ApplicationHandler._config.ApplicationVersion}.txt");
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoBotData",
+                          $"{dataScope ?? "general"}_data_{DateTime.Now:ddMMyyyy}.txt");
 
             if (!Helpers.SaveToFile(data, path))
             {

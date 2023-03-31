@@ -6,7 +6,6 @@ namespace CryptoBot.Data
     public class Config
     {
         public string ApplicationVersion { get; set; }
-        public string ApplicationLogPath { get; set; }
         public bool ApplicationTestMode { get; set; }
         public string Username { get; set; }
         public string ApiKey { get; set; }

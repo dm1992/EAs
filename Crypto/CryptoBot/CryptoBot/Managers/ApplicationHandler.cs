@@ -14,8 +14,7 @@ namespace CryptoBot.Managers
 {
     public static class ApplicationHandler
     {
-        public static Config _config = null;
-
+        private static Config _config = null;
         private static bool _isInitialized = false;
 
         public static bool Initialize()
@@ -55,7 +54,6 @@ namespace CryptoBot.Managers
                 _config = new Config();
 
                 _config.ApplicationVersion = ConfigurationManager.AppSettings["applicationVersion"];
-                _config.ApplicationLogPath = ConfigurationManager.AppSettings["applicationLogPath"];
                 _config.ApplicationTestMode = bool.Parse(ConfigurationManager.AppSettings["applicationTestMode"]);
                 _config.Username = ConfigurationManager.AppSettings["username"];
                 _config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
