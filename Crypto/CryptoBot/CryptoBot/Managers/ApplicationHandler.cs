@@ -126,16 +126,19 @@ namespace CryptoBot.Managers
             Program.OutputData(message, messageScope);
         }
 
+        private static void TerminateApplication()
+        {
+            Program.Terminate();
+        }
+
         private static void ApplicationEventHandler(object sender, ApplicationEventArgs args)
         {
             SaveApplicationMessage(args.ToString(), args.MessageScope);
 
             if (args.Type == EventType.TerminateApplication)
             {
-                Program.Terminate();
+                TerminateApplication();
             }
         }
-
-        
     }
 }
