@@ -14,16 +14,37 @@ namespace CryptoBot
 {
     public class Program
     {
-        private static ManualResetEvent _terminateApplication = new ManualResetEvent(initialState: false);
+        private static ManualResetEvent _terminate = new ManualResetEvent(initialState: false);
 
-        private static void WaitApplicationTermination()
+        private static void WaitTermination()
         {
-            _terminateApplication.WaitOne();
+            _terminate.WaitOne();
         }
 
-        public static void TerminateApplication()
+        public static void Terminate()
         {
-            _terminateApplication.Set();
+            _terminate.Set();
+        }
+
+        public static void OutputData(string data, string dataScope = null)
+        {
+            if (String.IsNullOrEmpty(data)) return;
+
+            if (String.IsNullOrEmpty(dataScope))
+            {
+                // only general message is output to console
+                Console.Write(data);
+            }
+
+            if (ApplicationHandler._config == null) return;
+
+            string path = Path.Combine(ApplicationHandler._config.ApplicationLogPath,
+                          $"{dataScope ?? "general"}_data_{DateTime.Now:ddMMyyyy}_{ApplicationHandler._config.ApplicationVersion}.txt");
+
+            if (!Helpers.SaveToFile(data, path))
+            {
+                Console.WriteLine($"!!!Failed to save application message '{data}'!!!");
+            }
         }
 
         public static void Main(string[] args)
@@ -33,12 +54,12 @@ namespace CryptoBot
                 if (!ApplicationHandler.Initialize())
                     return;
 
-                WaitApplicationTermination();
+                WaitTermination();
             }
             catch (Exception e)
             {
                 // all exceptions should be handled before, just in case
-                Console.WriteLine($"FATAL ERROR. Main program exception occurred: {e}.");
+                OutputData($"!!!FATAL ERROR!!! Main program exception occurred: {e}.");
             }
             finally
             {

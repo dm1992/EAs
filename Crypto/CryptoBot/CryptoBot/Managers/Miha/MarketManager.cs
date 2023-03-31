@@ -26,12 +26,11 @@ namespace CryptoBot.Managers.Miha
 
         private List<DataEvent<BybitSpotTradeUpdate>> _tradeBuffer;
         private List<CandleBatch> _candleBatches;
-        private List<string> _availableMarketSymbols;
+        private List<string> _marketSymbols;
         private List<UpdateSubscription> _subscriptions;
+        private bool _isInitialized;
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
-
-        public bool IsInitialized { get; private set; } = false;
 
         public MarketManager(Config config)
         {
@@ -41,6 +40,7 @@ namespace CryptoBot.Managers.Miha
             _tradeBuffer = new List<DataEvent<BybitSpotTradeUpdate>>();
             _candleBatches = new List<CandleBatch>();
             _subscriptions = new List<UpdateSubscription>();
+            _isInitialized = false;
 
             BybitClientOptions clientOptions = BybitClientOptions.Default;
             clientOptions.SpotApiOptions.AutoTimestamp = true;
@@ -48,30 +48,80 @@ namespace CryptoBot.Managers.Miha
             _bybitClient = new BybitClient(clientOptions);
         }
 
-        public void Initialize()
+        public bool Initialize()
         {
-            if (IsInitialized) return;
-
-            _availableMarketSymbols = GetAvailableMarketSymbols();
-            if (_availableMarketSymbols == null)
+            try
             {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Warning,
-                message: $"Failed to get available market symbols."));
+                if (_isInitialized) return true;
 
-                return;
+                _marketSymbols = PrepareMarketSymbols();
+                if (_marketSymbols == null)
+                {
+                    ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Warning,
+                    message: $"Failed to get market symbols."));
+
+                    return false;
+                }
+
+                SetCandleBatches();
+
+                Task.Run(() => { MonitorCandleBatches(); });
+
+                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
+                message: $"Initialized market manager."));
+
+                _isInitialized = true;
+                return true;
             }
+            catch (Exception e)
+            {
+                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
+                message: $"!!!Initialization of market manager failed!!! {e}"));
 
-            SetCandleBatches();
-
-            Task.Run(() => { MonitorCandleBatches(); });
-
-            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            message: $"Initialized market manager."));
-
-            this.IsInitialized = true;
+                return false;
+            }
         }
 
-        private List<string> GetAvailableMarketSymbols()
+        public bool GetCurrentMarket(string symbol, out IMarket market)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void InvokeAPISubscription()
+        {
+            if (!_isInitialized) return;
+
+            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
+            message: $"Invoked API subscription in market manager."));
+
+            BybitSocketClientOptions socketClientOptions = BybitSocketClientOptions.Default;
+            socketClientOptions.SpotStreamsV3Options.OutputOriginalData = true;
+            socketClientOptions.SpotStreamsV3Options.BaseAddress = _config.SpotStreamEndpoint;
+
+            BybitSocketClient socketClient = new BybitSocketClient(socketClientOptions);
+
+            foreach (var symbol in _marketSymbols)
+            {
+                _subscriptions.Add(socketClient.SpotStreamsV3.SubscribeToTradeUpdatesAsync(symbol, HandleTrade).GetAwaiter().GetResult().Data); // deadlock issue, async method in sync manner
+            }
+
+            foreach (var subscription in _subscriptions)
+            {
+                subscription.ConnectionRestored += API_Subscription_ConnectionRestored;
+                subscription.ConnectionLost += API_Subscription_ConnectionLost;
+                subscription.ConnectionClosed += API_Subscription_ConnectionClosed;
+            }
+        }
+
+        public async void CloseAPISubscription()
+        {
+            foreach (var subscription in _subscriptions)
+            {
+                await subscription.CloseAsync();
+            }
+        }
+
+        private List<string> PrepareMarketSymbols()
         {
             if (!_config.Symbols.IsNullOrEmpty())
                 return _config.Symbols.ToList();
@@ -92,7 +142,7 @@ namespace CryptoBot.Managers.Miha
             {
                 _candleBatches.Clear();
 
-                foreach (var symbol in _availableMarketSymbols)
+                foreach (var symbol in _marketSymbols)
                 {
                     CandleBatch candleBatch = new CandleBatch(symbol);
 
@@ -106,13 +156,13 @@ namespace CryptoBot.Managers.Miha
             try
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                message: $"Monitoring candle batch(es) in progress..."));
+                message: $"Started candle batch(es) monitor..."));
 
                 while (true)
                 {
                     lock (_candleBatches)
                     {
-                        foreach (var symbol in _availableMarketSymbols)
+                        foreach (var symbol in _marketSymbols)
                         {
                             CandleBatch candleBatch = _candleBatches.FirstOrDefault(x => x.Symbol == symbol);
                             if (candleBatch == null)
@@ -144,7 +194,7 @@ namespace CryptoBot.Managers.Miha
                         if (candleBatchesCompleted)
                         {
                             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                            message: $"Completed all symbol candle batch(es). Will start over again..."));
+                            message: $"Completed all symbol candle batch(es). Will start monitoring over again..."));
 
                             DumpCandleBatches();
 
@@ -262,43 +312,6 @@ namespace CryptoBot.Managers.Miha
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
                 message: $"!!!CheckTradeForPriceClosure failed!!! {e}"));
-            }
-        }
-
-        public bool GetCurrentMarket(string symbol, out IMarket market)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void InvokeAPISubscription()
-        {
-            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            message: $"Invoked API subscription in market manager."));
-
-            BybitSocketClientOptions socketClientOptions = BybitSocketClientOptions.Default;
-            socketClientOptions.SpotStreamsV3Options.OutputOriginalData = true;
-            socketClientOptions.SpotStreamsV3Options.BaseAddress = _config.SpotStreamEndpoint;
-
-            BybitSocketClient socketClient = new BybitSocketClient(socketClientOptions);
-
-            foreach (var symbol in _availableMarketSymbols)
-            {
-                _subscriptions.Add(socketClient.SpotStreamsV3.SubscribeToTradeUpdatesAsync(symbol, HandleTrade).GetAwaiter().GetResult().Data); // deadlock issue, async method in sync manner
-            }
-
-            foreach (var subscription in _subscriptions)
-            {
-                subscription.ConnectionRestored += API_Subscription_ConnectionRestored;
-                subscription.ConnectionLost += API_Subscription_ConnectionLost;
-                subscription.ConnectionClosed += API_Subscription_ConnectionClosed;
-            }
-        }
-
-        public async void CloseAPISubscription()
-        {
-            foreach (var subscription in _subscriptions)
-            {
-                await subscription.CloseAsync();
             }
         }
 

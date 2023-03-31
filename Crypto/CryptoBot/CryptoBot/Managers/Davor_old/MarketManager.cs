@@ -167,7 +167,7 @@ namespace CryptoBot.Managers.Davor_old
             throw new NotImplementedException();
         }
 
-        public void Initialize()
+        public bool Initialize()
         {
             throw new NotImplementedException();
         }

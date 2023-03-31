@@ -14,7 +14,8 @@ namespace CryptoBot.Managers
 {
     public static class ApplicationHandler
     {
-        private static Config _config = null;
+        public static Config _config = null;
+
         private static bool _isInitialized = false;
 
         public static bool Initialize()
@@ -41,7 +42,7 @@ namespace CryptoBot.Managers
             }
             catch (Exception e)
             {
-                SaveApplicationMessage($"!!!Failed to initialize application. {e}!!!");
+                SaveApplicationMessage($"!!!Failed to initialize application!!! {e}");
 
                 return false;
             }
@@ -56,7 +57,6 @@ namespace CryptoBot.Managers
                 _config.ApplicationVersion = ConfigurationManager.AppSettings["applicationVersion"];
                 _config.ApplicationLogPath = ConfigurationManager.AppSettings["applicationLogPath"];
                 _config.ApplicationTestMode = bool.Parse(ConfigurationManager.AppSettings["applicationTestMode"]);
-                _config.SaveDebugApplicationEvent = bool.Parse(ConfigurationManager.AppSettings["saveDebugApplicationEvent"]);
                 _config.Username = ConfigurationManager.AppSettings["username"];
                 _config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
                 _config.ApiSecret = ConfigurationManager.AppSettings["apiSecret"];
@@ -84,7 +84,7 @@ namespace CryptoBot.Managers
             }
             catch (Exception e)
             {
-                SaveApplicationMessage($"!!!Failed to setup application configuration. {e}!!!");
+                SaveApplicationMessage($"!!!Failed to setup application configuration!!! {e}");
 
                 return false;
             }
@@ -115,56 +115,27 @@ namespace CryptoBot.Managers
             }
             catch (Exception e)
             {
-                SaveApplicationMessage($"!!!Failed to setup application managers. {e}!!!");
+                SaveApplicationMessage($"!!!Failed to setup application managers!!! {e}");
 
                 return false;
             }
         }
 
-        private static void ApplicationEventHandler(object sender, ApplicationEventArgs args)
-        {
-            bool saveApplicationMessage = true;
-            try
-            {
-                if (args.Type == EventType.TerminateApplication)
-                {
-                    Program.TerminateApplication();
-                }
-                else if (args.Type == EventType.Debug)
-                {
-                    saveApplicationMessage = _config.SaveDebugApplicationEvent;
-                }
-            }
-            finally
-            {
-                if (saveApplicationMessage)
-                {
-                    SaveApplicationMessage(args.ToString(), args.MessageScope);
-                }
-            }
-        }
-
         private static void SaveApplicationMessage(string message, string messageScope = null)
         {
-            if (String.IsNullOrEmpty(message))
-            {
-                // nothing to save
-                return;
-            }
+            Program.OutputData(message, messageScope);
+        }
 
-            if (String.IsNullOrEmpty(messageScope))
-            {
-                // only general message is output to console
-                Console.Write(message);
-            }
+        private static void ApplicationEventHandler(object sender, ApplicationEventArgs args)
+        {
+            SaveApplicationMessage(args.ToString(), args.MessageScope);
 
-            string path = Path.Combine(_config.ApplicationLogPath,
-                          $"{messageScope ?? "general"}_applicationData_{DateTime.Now:ddMMyyyy}_{_config.ApplicationVersion}.txt");
-
-            if (!Helpers.SaveToFile(message, path))
+            if (args.Type == EventType.TerminateApplication)
             {
-                Console.WriteLine($"!!!Failed to save application message '{message}'!!!");
+                Program.Terminate();
             }
         }
+
+        
     }
 }
