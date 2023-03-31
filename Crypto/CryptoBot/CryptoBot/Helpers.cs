@@ -10,7 +10,7 @@ namespace CryptoBot
     {
         private static object _fileLocker = new object();
 
-        public static bool SaveData(string data, string path)
+        public static bool SaveToFile(string content, string path)
         {
             lock (_fileLocker)
             {
@@ -22,7 +22,16 @@ namespace CryptoBot
                         Directory.CreateDirectory(directoryPath);
                     }
 
-                    File.AppendAllText(path, data);
+                    if (File.Exists(path))
+                    {
+                        content += File.ReadAllText(path);
+                    }
+
+                    string tempPath = Path.Combine(Path.GetTempPath(), "TEMP_FILE");
+                    File.WriteAllText(tempPath, content);
+
+                    File.Delete(path);
+                    File.Move(tempPath, path);
                 }
                 catch (Exception)
                 {

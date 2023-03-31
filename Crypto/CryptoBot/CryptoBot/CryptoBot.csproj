@@ -117,6 +117,7 @@
     <Compile Include="Interfaces\IMarketManager.cs" />
     <Compile Include="Interfaces\IOrderManager.cs" />
     <Compile Include="Interfaces\ITradingManager.cs" />
+    <Compile Include="Managers\ApplicationManager.cs" />
     <Compile Include="Managers\Davor\MarketManager.cs" />
     <Compile Include="Managers\ManagerFactory.cs" />
     <Compile Include="Managers\Davor_old\MarketManager.cs" />

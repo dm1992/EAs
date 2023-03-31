@@ -129,12 +129,12 @@ namespace CryptoBot.Managers.Miha
                             {
                                 if ((DateTime.Now - activeCandle.CreatedAt).TotalMinutes >= _config.CandleMinuteTimeframe)
                                 {
+                                    activeCandle.Completed = true;
+
                                     ApplicationEvent?.Invoke(this, 
                                     new ApplicationEventArgs(EventType.Information,
-                                    message: $"({activeCandle.Id}) {activeCandle.Symbol} candle completed - {activeCandle.Dump()}.\n\n{activeCandle.DumpTrades()}", 
+                                    message: $"{activeCandle.Dump()}\n\n{activeCandle.DumpTrades()}", 
                                     messageScope: $"verbose_{activeCandle.Symbol}"));
-
-                                    activeCandle.Completed = true;
                                 }
                             }
                         }
@@ -167,10 +167,10 @@ namespace CryptoBot.Managers.Miha
             foreach (var candleBatch in _candleBatches)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                message: $"({candleBatch.Id}) {candleBatch.Symbol} candle batch (completed: {candleBatch.Completed}). Total trades in candle batch: {candleBatch.Candles.Sum(x => x.TradeBuffer.Count)}."));
+                message: $"{candleBatch.Dump()}"));
 
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                message: $"{candleBatch.Dump()}",
+                message: $"{candleBatch.Dump(generalInfo: false)}",
                 messageScope: $"candleBatch_{candleBatch.Symbol}"));
             }
         }

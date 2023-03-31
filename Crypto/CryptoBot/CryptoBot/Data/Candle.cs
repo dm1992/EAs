@@ -49,9 +49,14 @@ namespace CryptoBot.Data
             return this.Candles.Average(x => x.GetPriceMovePercentage());
         }
 
-        public string Dump()
+        public string Dump(bool generalInfo = true)
         {
-            return $"{this.Id},{this.GetAverageVolume()},{this.GetAveragePriceMovePercentage()}";
+            if (generalInfo)
+            {
+                return $"({this.Id}) {this.Symbol} candle batch (completed: {this.Completed}). Total trades in candle batch: {this.Candles.Sum(x => x.TradeBuffer.Count)}.";
+            }
+
+            return $"{this.CreatedAt},{this.Id},{this.GetAverageVolume()},{this.GetAveragePriceMovePercentage()}";
         }
     }
 
@@ -93,14 +98,14 @@ namespace CryptoBot.Data
 
         public string Dump()
         {
-            return $"Volume: {this.GetVolume()}, PriceMovePercentage: {this.GetPriceMovePercentage()} %";
+            return $"{this.CreatedAt}, {this.Id}, {this.Symbol} candle (completed: {this.Completed}) with volume: {this.GetVolume()} and price move percentage: {this.GetPriceMovePercentage()} %.";
         }
 
         public string DumpTrades()
         {
-            string result = $"Total {this.TradeBuffer.Count} trades in candle with Id ({this.Id}):\n";
+            string result = $"Total {this.TradeBuffer.Count} trades in candle with Id {this.Id}:\n";
 
-            foreach (var trade in this.TradeBuffer)
+            foreach (var trade in this.TradeBuffer.OrderByDescending(x => x.Data.Timestamp))
             {
                 result += $"{trade.Data.Timestamp},{(trade.Data.Buy ? "BUY" : "SELL")},{trade.Data.Price},{trade.Data.Quantity}\n";
             }

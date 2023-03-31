@@ -106,7 +106,7 @@ namespace CryptoBot
             string path = Path.Combine(_config.ApplicationLogPath, 
                           $"{messageScope ?? "general"}_applicationData_{DateTime.Now:ddMMyyyy}_{_config.ApplicationVersion}.txt");
 
-            if (!Helpers.SaveData(message, path))
+            if (!Helpers.SaveToFile(message, path))
             {
                 Console.WriteLine($"!!!Failed to save application message '{message}'!!!");
             }
