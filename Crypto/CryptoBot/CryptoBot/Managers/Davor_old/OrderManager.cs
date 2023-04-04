@@ -366,6 +366,11 @@ namespace CryptoBot.Managers.Davor_old
             }
         }
 
+        public bool Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
     }
 }

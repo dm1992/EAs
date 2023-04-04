@@ -3,6 +3,7 @@ using Bybit.Net.Objects;
 using Bybit.Net.Objects.Models;
 using Bybit.Net.Objects.Models.Socket.Spot;
 using CryptoBot.Data;
+using CryptoBot.Data.Davor;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces;
 using CryptoExchange.Net.Sockets;
@@ -12,7 +13,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static CryptoBot.Data.PassiveMarket;
 
 namespace CryptoBot.Managers.Davor_old
 {

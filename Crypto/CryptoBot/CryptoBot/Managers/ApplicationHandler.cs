@@ -92,9 +92,13 @@ namespace CryptoBot.Managers
         {
             try
             {
+
+                ITradingManager tradingManager = new TradingManager(_config);
+                tradingManager.ApplicationEvent += ApplicationEventHandler;
+
                 ManagerType managerType = (ManagerType)Enum.Parse(typeof(ManagerType), _config.Username);
 
-                IMarketManager marketManager = ManagerFactory.CreateMarketManager(managerType, _config, _config.ApplicationTestMode); //xxx for now only here
+                IMarketManager marketManager = ManagerFactory.CreateMarketManager(managerType, _config);
                 if (marketManager != null)
                 {
                     marketManager.ApplicationEvent += ApplicationEventHandler;
@@ -102,12 +106,13 @@ namespace CryptoBot.Managers
                     marketManager.InvokeAPISubscription();
                 }
 
-                //ITradingManager tradingManager = new TradingManager(_config);
-                //tradingManager.ApplicationEvent += ApplicationEventHandler;
-
-                //IOrderManager orderManager = new OrderManager(tradingManager, marketManager, _config);
-                //orderManager.ApplicationEvent += ApplicationEventHandler;
-                //orderManager.InvokeAPISubscription();
+                IOrderManager orderManager = ManagerFactory.CreateOrderManager(managerType, tradingManager, marketManager, _config);
+                if (orderManager != null)
+                {
+                    orderManager.ApplicationEvent += ApplicationEventHandler;
+                    orderManager.Initialize();
+                    orderManager.InvokeAPISubscription();
+                }
 
                 return true;
             }

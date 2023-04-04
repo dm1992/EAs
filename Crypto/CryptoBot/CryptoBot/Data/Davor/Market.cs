@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CryptoBot.Data
+namespace CryptoBot.Data.Davor
 {
     public class Market : IMarket
     {
