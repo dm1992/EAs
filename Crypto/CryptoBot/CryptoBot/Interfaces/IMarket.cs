@@ -12,21 +12,7 @@ namespace CryptoBot.Interfaces
         string Symbol { get; set; }
         DateTime CreatedAt { get; set; }
         MarketDirection GetMarketDirection();
-        decimal AverageMinuteBuyersVolume { get; }
-        decimal AverageMinuteSellersVolume { get; }
-        decimal AverageMinutePriceMovePercentage { get; }
+        MarketVolumeIntensity GetMarketVolumeIntensity();
         string Dump();
-    }
-
-    public interface IAggressiveMarket : IMarket
-    {
-        decimal BuyersVolume { get; }
-        decimal SellersVolume { get; }
-    }
-
-    public interface IPassiveMarket : IMarket
-    {
-        decimal BuyersVolume { get; }
-        decimal SellersVolume { get; }
     }
 }

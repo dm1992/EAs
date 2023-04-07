@@ -10,7 +10,7 @@ namespace CryptoBot.Data
 {
     public class PriceClosure
     {
-        public PriceClosure (string symbol, decimal latestPrice, List<DataEvent<BybitSpotTradeUpdate>> trades)
+        public PriceClosure(string symbol, decimal latestPrice, List<DataEvent<BybitSpotTradeUpdate>> trades)
         {
             this.Id = Guid.NewGuid().ToString();
             this.Symbol = symbol;
@@ -24,7 +24,7 @@ namespace CryptoBot.Data
         public DateTime CreatedAt { get; private set; }
         public List<DataEvent<BybitSpotTradeUpdate>> Trades { get; set; }
 
-        public decimal ClosePrice 
+        public decimal ClosePrice
         {
             get
             {
@@ -36,6 +36,8 @@ namespace CryptoBot.Data
         }
 
         public decimal LatestPrice { get; set; }
+
+        public decimal DeltaPrice { get { return this.LatestPrice - this.ClosePrice; } }
 
         public decimal BuyerQuantity
         {

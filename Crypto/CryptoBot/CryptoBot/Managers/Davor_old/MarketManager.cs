@@ -18,6 +18,7 @@ namespace CryptoBot.Managers.Davor_old
 {
     public class MarketManager : IMarketManager
     {
+        private readonly ITradingAPIManager _tradingAPIManager;
         private readonly Config _config;
         private readonly SemaphoreSlim _tradeSemaphore;
         private readonly SemaphoreSlim _orderBookSemaphore;
@@ -28,8 +29,9 @@ namespace CryptoBot.Managers.Davor_old
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
-        public MarketManager(Config config)
+        public MarketManager(ITradingAPIManager tradingAPIManager, Config config)
         {
+            _tradingAPIManager = tradingAPIManager;
             _config = config;
             _tradeSemaphore = new SemaphoreSlim(1, 1);
             _orderBookSemaphore = new SemaphoreSlim(1, 1);
@@ -71,23 +73,24 @@ namespace CryptoBot.Managers.Davor_old
             }
         }
 
-        public bool GetCurrentMarket(string symbol, out IMarket market)
+        public async Task<IMarket> GetCurrentMarket(string symbol)
         {
-            market = null;
+            decimal? symbolLatestPrice = await _tradingAPIManager.GetPriceAsync(symbol);
+            if (!symbolLatestPrice.HasValue)
+                return null;
 
             lock (_trades)
             {
                 var symbolTrades = _trades.Where(x => x.Topic == symbol);
                 if (symbolTrades.Count() < _config.TradeLimit)
-                    return false;
+                    return null;
 
                 lock (_passiveMarkets)
                 {
                     AggressiveMarket aggressiveMarket = new AggressiveMarket(symbol, symbolTrades.OrderByDescending(x => x.Data.Timestamp).Take(_config.TradeLimit).ToList(), _config.AggressiveVolumePercentage);
                     PassiveMarket passiveMarket = _passiveMarkets.Where(x => x.Symbol == symbol.ToLower()).OrderByDescending(x => x.CreatedAt).FirstOrDefault();
 
-                    market = new Market(symbol, aggressiveMarket, passiveMarket, _config.TotalVolumePercentage);
-                    return true;
+                    return new Market(symbol, aggressiveMarket, passiveMarket, symbolLatestPrice.Value, _config.TotalVolumePercentage);
                 }
             }
         }

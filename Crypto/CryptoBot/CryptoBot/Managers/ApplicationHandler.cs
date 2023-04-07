@@ -34,7 +34,7 @@ namespace CryptoBot.Managers
                 if (!SetupApplicationManagers())
                     return false;
 
-                SaveApplicationMessage($"Initialized application version '{_config.ApplicationVersion}' with username '{_config.Username}'.\n");
+                SaveApplicationMessage($"Running application with username '{_config.Username}'.\n");
 
                 _isInitialized = true;
                 return true;
@@ -53,30 +53,18 @@ namespace CryptoBot.Managers
             {
                 _config = new Config();
 
-                _config.ApplicationVersion = ConfigurationManager.AppSettings["applicationVersion"];
-                _config.ApplicationTestMode = bool.Parse(ConfigurationManager.AppSettings["applicationTestMode"]);
                 _config.Username = ConfigurationManager.AppSettings["username"];
                 _config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
                 _config.ApiSecret = ConfigurationManager.AppSettings["apiSecret"];
                 _config.ApiEndpoint = ConfigurationManager.AppSettings["apiEndpoint"];
                 _config.SpotStreamEndpoint = ConfigurationManager.AppSettings["spotStreamEndpoint"];
                 _config.Symbols = ConfigurationManager.AppSettings["symbols"].ParseCsv<string>();
-                _config.DelayedOrderInvoke = bool.Parse(ConfigurationManager.AppSettings["delayedOrderInvoke"]);
-                _config.DelayOrderInvokeInMinutes = int.Parse(ConfigurationManager.AppSettings["delayOrderInvokeInMinutes"]);
-                _config.BuyOpenQuantity = decimal.Parse(ConfigurationManager.AppSettings["buyOpenQuantity"]);
-                _config.SellOpenQuantity = decimal.Parse(ConfigurationManager.AppSettings["sellOpenQuantity"]);
                 _config.ActiveSymbolOrders = int.Parse(ConfigurationManager.AppSettings["activeSymbolOrders"]);
-                _config.TradeLimit = int.Parse(ConfigurationManager.AppSettings["tradeLimit"]);
-                _config.AggressiveVolumePercentage = int.Parse(ConfigurationManager.AppSettings["aggressiveVolumePercentage"]);
-                _config.PassiveVolumePercentage = int.Parse(ConfigurationManager.AppSettings["passiveVolumePercentage"]);
-                _config.TotalVolumePercentage = int.Parse(ConfigurationManager.AppSettings["totalVolumePercentage"]);
-
-                // for now
-                _config.SymbolStopLossAmount = new Dictionary<string, decimal>() { { "BTCUSDT", 40 }, { "SOLUSDT", 5 }, { "LTCUSDT", 2 }, { "ETHUSDT", 10 }, { "BNBUSDT", 10 } };
-
                 _config.CandlesInBatch = int.Parse(ConfigurationManager.AppSettings["candlesInBatch"]);
                 _config.CandleMinuteTimeframe = int.Parse(ConfigurationManager.AppSettings["candleMinuteTimeframe"]);
-                _config.PriceLevelChanges = int.Parse(ConfigurationManager.AppSettings["priceLevelChanges"]);
+                _config.CreatePriceLevelClosureAfterPriceChanges = int.Parse(ConfigurationManager.AppSettings["createPriceLevelClosureAfterPriceChanges"]);
+                _config.MonitorMarketPriceLevels = int.Parse(ConfigurationManager.AppSettings["monitorMarketPriceLevels"]);
+                _config.AverageVolumeWeightFactor = int.Parse(ConfigurationManager.AppSettings["averageVolumeWeightFactor"]);
 
                 return true;
             }
@@ -93,12 +81,12 @@ namespace CryptoBot.Managers
             try
             {
 
-                ITradingManager tradingManager = new TradingManager(_config);
+                ITradingAPIManager tradingManager = new TradingAPIManager(_config);
                 tradingManager.ApplicationEvent += ApplicationEventHandler;
 
                 ManagerType managerType = (ManagerType)Enum.Parse(typeof(ManagerType), _config.Username);
 
-                IMarketManager marketManager = ManagerFactory.CreateMarketManager(managerType, _config);
+                IMarketManager marketManager = ManagerFactory.CreateMarketManager(managerType, tradingManager, _config);
                 if (marketManager != null)
                 {
                     marketManager.ApplicationEvent += ApplicationEventHandler;

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Managers
 {
-    public class TradingManager : ITradingManager
+    public class TradingAPIManager : ITradingAPIManager
     {
         private const int API_REQUEST_TIMEOUT = 50000;
 
@@ -23,7 +23,7 @@ namespace CryptoBot.Managers
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
-        public TradingManager(Config config)
+        public TradingAPIManager(Config config)
         {
             _config = config;
 
@@ -63,6 +63,23 @@ namespace CryptoBot.Managers
             }
 
             return response.Data;
+        }
+
+        public async Task<List<string>> GetAvailableSymbols()
+        {
+            if (!_config.Symbols.IsNullOrEmpty())
+                return _config.Symbols.ToList();
+
+            var response = await _bybitClient.SpotApiV3.ExchangeData.GetSymbolsAsync();
+            if (!response.Success)
+            {
+                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
+                message: $"!!!Failed to get available symbols. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+
+                return new List<string>();
+            }
+
+            return response.Data.Select(x => x.Name).ToList();
         }
 
         public async Task<decimal?> GetPriceAsync(string symbol)
@@ -153,5 +170,7 @@ namespace CryptoBot.Managers
                 Task.Delay(30000).Wait();
             }
         }
+
+      
     }
 }

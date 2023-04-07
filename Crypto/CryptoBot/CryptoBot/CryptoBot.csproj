@@ -104,8 +104,7 @@
   <ItemGroup>
     <Compile Include="Data\Candle.cs" />
     <Compile Include="Data\Config.cs" />
-    <Compile Include="Data\Davor\Market.cs" />
-    <Compile Include="Data\Miha\Market.cs" />
+    <Compile Include="Data\Market.cs" />
     <Compile Include="Data\PriceClosure.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="EventArgs\ApplicationEventArgs.cs" />
@@ -119,13 +118,10 @@
     <Compile Include="Interfaces\IOrderManager.cs" />
     <Compile Include="Interfaces\ITradingManager.cs" />
     <Compile Include="Managers\ApplicationHandler.cs" />
-    <Compile Include="Managers\Davor\MarketManager.cs" />
     <Compile Include="Managers\ManagerFactory.cs" />
-    <Compile Include="Managers\Davor_old\MarketManager.cs" />
     <Compile Include="Managers\Miha\OrderManager.cs" />
     <Compile Include="Managers\TradingManagerSimulator.cs" />
-    <Compile Include="Managers\TradingManager.cs" />
-    <Compile Include="Managers\Davor_old\OrderManager.cs" />
+    <Compile Include="Managers\TradingAPIManager.cs" />
     <Compile Include="Managers\Miha\MarketManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

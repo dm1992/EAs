@@ -10,6 +10,6 @@ namespace CryptoBot.Interfaces
     public interface IMarketManager: IAPISubscription
     {
         bool Initialize();
-        bool GetCurrentMarket(string symbol, out IMarket market);
+        Task<IMarket> GetCurrentMarket(string symbol);
     }
 }

@@ -3,6 +3,7 @@ using Bybit.Net.Objects;
 using Bybit.Net.Objects.Models.Socket.Spot;
 using Bybit.Net.Objects.Models.Spot.v3;
 using CryptoBot.Data;
+using CryptoBot.Data.Miha;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces;
 using CryptoExchange.Net.Sockets;
@@ -20,32 +21,32 @@ namespace CryptoBot.Managers.Miha
 {
     public class MarketManager : IMarketManager
     {
+        private readonly ITradingAPIManager _tradingAPIManager;
         private readonly Config _config;
-        private readonly BybitClient _bybitClient;
         private readonly SemaphoreSlim _tradeSemaphore;
 
         private List<DataEvent<BybitSpotTradeUpdate>> _tradeBuffer;
-        private List<CandleBatch> _candleBatches;
-        private List<string> _marketSymbols;
+        private List<CandleBatch> _currentCandleBatches;
+        private List<CandleBatch> _latestCandleBatches;
+        private List<PriceClosure> _priceClosures;
+        private List<string> _availableSymbols;
         private List<UpdateSubscription> _subscriptions;
         private bool _isInitialized;
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
-        public MarketManager(Config config)
+        public MarketManager(ITradingAPIManager tradingAPIManager, Config config)
         {
+            _tradingAPIManager = tradingAPIManager;
             _config = config;
             _tradeSemaphore = new SemaphoreSlim(1, 1);
 
             _tradeBuffer = new List<DataEvent<BybitSpotTradeUpdate>>();
-            _candleBatches = new List<CandleBatch>();
+            _priceClosures = new List<PriceClosure>();
+            _currentCandleBatches = new List<CandleBatch>();
+            _latestCandleBatches = new List<CandleBatch>();
             _subscriptions = new List<UpdateSubscription>();
             _isInitialized = false;
-
-            BybitClientOptions clientOptions = BybitClientOptions.Default;
-            clientOptions.SpotApiOptions.AutoTimestamp = true;
-            clientOptions.SpotApiOptions.BaseAddress = _config.ApiEndpoint;
-            _bybitClient = new BybitClient(clientOptions);
         }
 
         public bool Initialize()
@@ -54,16 +55,20 @@ namespace CryptoBot.Managers.Miha
             {
                 if (_isInitialized) return true;
 
-                _marketSymbols = PrepareMarketSymbols();
-                if (_marketSymbols == null)
+                var response = _tradingAPIManager.GetAvailableSymbols();
+                response.Wait();
+
+                _availableSymbols = response.Result;
+
+                if (_availableSymbols.IsNullOrEmpty())
                 {
                     ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Warning,
-                    message: $"Failed to get market symbols."));
+                    message: $"Failed to initialize market manager. No available symbols."));
 
                     return false;
                 }
 
-                SetCandleBatches();
+                SetupCandleBatches();
 
                 Task.Run(() => { MonitorCandleBatches(); });
 
@@ -82,9 +87,27 @@ namespace CryptoBot.Managers.Miha
             }
         }
 
-        public bool GetCurrentMarket(string symbol, out IMarket market)
+        public async Task<IMarket> GetCurrentMarket(string symbol)
         {
-            throw new NotImplementedException();
+            decimal? symbolLatestPrice = await _tradingAPIManager.GetPriceAsync(symbol);
+            if (!symbolLatestPrice.HasValue)
+                return null;
+
+            lock (_priceClosures)
+            {
+                List<PriceClosure> symbolPriceClosures = _priceClosures.Where(x => x.Symbol == symbol).OrderBy(x => x.CreatedAt).ToList();
+                if (symbolPriceClosures.Count() < _config.MonitorMarketPriceLevels)
+                    return null;
+
+                lock (_latestCandleBatches)
+                {
+                    CandleBatch symbolLatestCandleBatch = _latestCandleBatches.FirstOrDefault(x => x.Symbol == symbol);
+                    if (symbolLatestCandleBatch == null)
+                        return null;
+
+                   return new Market(symbol, symbolPriceClosures, symbolLatestPrice.Value, symbolLatestCandleBatch.GetAverageVolume() * _config.AverageVolumeWeightFactor);
+                }
+            }
         }
 
         public void InvokeAPISubscription()
@@ -100,7 +123,7 @@ namespace CryptoBot.Managers.Miha
 
             BybitSocketClient socketClient = new BybitSocketClient(socketClientOptions);
 
-            foreach (var symbol in _marketSymbols)
+            foreach (var symbol in _availableSymbols)
             {
                 _subscriptions.Add(socketClient.SpotStreamsV3.SubscribeToTradeUpdatesAsync(symbol, HandleTrade).GetAwaiter().GetResult().Data); // deadlock issue, async method in sync manner
             }
@@ -121,32 +144,22 @@ namespace CryptoBot.Managers.Miha
             }
         }
 
-        private List<string> PrepareMarketSymbols()
+        private void SetupCandleBatches()
         {
-            if (!_config.Symbols.IsNullOrEmpty())
-                return _config.Symbols.ToList();
-
-            var response = _bybitClient.SpotApiV3.ExchangeData.GetSymbolsAsync();
-            response.Wait();
-
-            var symbols = response.Result?.Data;
-            if (symbols.IsNullOrEmpty())
-                return new List<string>();
-
-            return symbols.Select(x => x.Name).ToList();
-        }
-
-        private void SetCandleBatches()
-        {
-            lock (_candleBatches)
+            lock (_currentCandleBatches)
             {
-                _candleBatches.Clear();
+                if (!_currentCandleBatches.IsNullOrEmpty())
+                {
+                    // create a copy and setup again
+                    _latestCandleBatches = new List<CandleBatch>(_currentCandleBatches);
+                    _currentCandleBatches.Clear();
+                }
 
-                foreach (var symbol in _marketSymbols)
+                foreach (var symbol in _availableSymbols)
                 {
                     CandleBatch candleBatch = new CandleBatch(symbol);
 
-                    _candleBatches.Add(candleBatch);
+                    _currentCandleBatches.Add(candleBatch);
                 }
             }
         }
@@ -160,11 +173,11 @@ namespace CryptoBot.Managers.Miha
 
                 while (true)
                 {
-                    lock (_candleBatches)
+                    lock (_currentCandleBatches)
                     {
-                        foreach (var symbol in _marketSymbols)
+                        foreach (var symbol in _availableSymbols)
                         {
-                            CandleBatch candleBatch = _candleBatches.FirstOrDefault(x => x.Symbol == symbol);
+                            CandleBatch candleBatch = _currentCandleBatches.FirstOrDefault(x => x.Symbol == symbol);
                             if (candleBatch == null)
                             {
                                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
@@ -189,7 +202,7 @@ namespace CryptoBot.Managers.Miha
                             }
                         }
 
-                        bool candleBatchesCompleted = _candleBatches.All(x => x.Completed && x.Candles.Count == _config.CandlesInBatch);
+                        bool candleBatchesCompleted = _currentCandleBatches.All(x => x.Completed && x.Candles.Count == _config.CandlesInBatch);
 
                         if (candleBatchesCompleted)
                         {
@@ -198,7 +211,7 @@ namespace CryptoBot.Managers.Miha
 
                             DumpCandleBatches();
 
-                            SetCandleBatches(); // reset candle batches and start over again
+                            SetupCandleBatches(); // reset candle batches and start over again
                         }
                     }
                 }
@@ -214,7 +227,7 @@ namespace CryptoBot.Managers.Miha
 
         private void DumpCandleBatches()
         {
-            foreach (var candleBatch in _candleBatches)
+            foreach (var candleBatch in _currentCandleBatches)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
                 message: $"{candleBatch.Dump()}"));
@@ -231,9 +244,9 @@ namespace CryptoBot.Managers.Miha
 
             try
             {
-                lock (_candleBatches)
+                lock (_currentCandleBatches)
                 {
-                    CandleBatch candleBatch = _candleBatches.FirstOrDefault(x => x.Symbol == trade.Topic);
+                    CandleBatch candleBatch = _currentCandleBatches.FirstOrDefault(x => x.Symbol == trade.Topic);
                     if (candleBatch == null)
                     {
                         ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
@@ -286,7 +299,7 @@ namespace CryptoBot.Managers.Miha
                         symbolTradePrices.Add(symbolTrade.Data.Price);
                     }
 
-                    if (symbolTradePrices.Count() >= _config.PriceLevelChanges)
+                    if (symbolTradePrices.Count() >= _config.CreatePriceLevelClosureAfterPriceChanges)
                     {
                         closePrice = true;
                         break;
@@ -300,6 +313,7 @@ namespace CryptoBot.Managers.Miha
                     List<DataEvent<BybitSpotTradeUpdate>> symbolClosePriceTrades = symbolTrades.Where(x => x.Data.Price == symbolClosePrice).ToList();
 
                     PriceClosure priceClosure = new PriceClosure(trade.Topic, symbolLatestPrice, symbolClosePriceTrades);
+                    _priceClosures.Add(priceClosure);
 
                     ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
                     message: $"{priceClosure.Dump()}",

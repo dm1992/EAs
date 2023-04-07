@@ -19,7 +19,7 @@ namespace CryptoBot.Managers.Davor_old
 {
     public class OrderManager : IOrderManager
     {
-        private readonly ITradingManager _tradingManager;
+        private readonly ITradingAPIManager _tradingManager;
         private readonly IMarketManager _marketManager;
         private readonly Config _config;
         private readonly SemaphoreSlim _tickerSemaphore;
@@ -30,7 +30,7 @@ namespace CryptoBot.Managers.Davor_old
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
-        public OrderManager(ITradingManager tradingManager, IMarketManager marketManager, Config config)
+        public OrderManager(ITradingAPIManager tradingManager, IMarketManager marketManager, Config config)
         {
             _tradingManager = tradingManager;
             _marketManager = marketManager;
@@ -91,17 +91,18 @@ namespace CryptoBot.Managers.Davor_old
                 }
             }
 
-            if (!_marketManager.GetCurrentMarket(symbol, out IMarket market))
+            var market = await _marketManager.GetCurrentMarket(symbol);
+            if (market == null)
                 return false;
 
-            MarketDirection marketDirection = market.GetMarketDirection();
+            MarketDirection marketDirection = market.GetMarketDirectionInterpretation();
             if (marketDirection == MarketDirection.Unknown)
                 return false;
 
             BybitSpotOrderV1 placedOrder = new BybitSpotOrderV1();
             placedOrder.Symbol = symbol;
-            placedOrder.Side = marketDirection == MarketDirection.Buy ? OrderSide.Buy : OrderSide.Sell;
-            placedOrder.Quantity = marketDirection == MarketDirection.Buy ? _config.BuyOpenQuantity : _config.SellOpenQuantity;
+            placedOrder.Side = marketDirection == MarketDirection.Up ? OrderSide.Buy : OrderSide.Sell;
+            placedOrder.Quantity = marketDirection == MarketDirection.Up ? _config.BuyOpenQuantity : _config.SellOpenQuantity;
 
             if (!await _tradingManager.PlaceOrderAsync(placedOrder))
                 return false;
@@ -228,31 +229,31 @@ namespace CryptoBot.Managers.Davor_old
             }
         }
 
-        private bool ContinueOrder(BybitSpotOrderV1 order)
-        {
-            if (order == null) return false;
+        //private bool ContinueOrder(BybitSpotOrderV1 order)
+        //{
+        //    if (order == null) return false;
 
-            // refresh market information
-            if (!_marketManager.GetCurrentMarket(order.Symbol, out IMarket market))
-                return false;
+        //    // refresh market information
+        //    if (!_marketManager.GetCurrentMarket(order.Symbol, out IMarket market))
+        //        return false;
 
-            if (order.Side == OrderSide.Buy)
-            {
-                if (market.GetMarketDirection() == MarketDirection.Buy)
-                {
-                    return true;
-                }
-            }
-            else if (order.Side == OrderSide.Sell)
-            {
-                if (market.GetMarketDirection() == MarketDirection.Sell)
-                {
-                    return true;
-                }
-            }
+        //    if (order.Side == OrderSide.Buy)
+        //    {
+        //        if (market.GetMarketDirectionInterpretation() == MarketDirection.Up)
+        //        {
+        //            return true;
+        //        }
+        //    }
+        //    else if (order.Side == OrderSide.Sell)
+        //    {
+        //        if (market.GetMarketDirectionInterpretation() == MarketDirection.Down)
+        //        {
+        //            return true;
+        //        }
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         private void DumpOrder(BybitSpotOrderV1 order, string comment = "N/A")
         {

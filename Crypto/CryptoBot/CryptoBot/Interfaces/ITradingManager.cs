@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Interfaces
 {
-    public interface ITradingManager : IApplicationEvent
+    public interface ITradingAPIManager : IApplicationEvent
     {
         Task<bool> TradingServerAvailable();
         Task<IEnumerable<BybitSpotBalance>> GetBalancesAsync();
+        Task<List<string>> GetAvailableSymbols();
         Task<decimal?> GetPriceAsync(string symbol);
         Task<BybitSpotOrderV1> GetOrderAsync(string clientOrderId);
         Task<bool> CancelOrderAsync(string clientOrderId);

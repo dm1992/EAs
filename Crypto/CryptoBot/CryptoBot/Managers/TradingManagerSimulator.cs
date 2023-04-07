@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Managers
 {
-    public class TradingManagerSimulator : ITradingManager
+    public class TradingManagerSimulator : ITradingAPIManager
     {
         private const int DELAY = 500;
 
@@ -109,6 +109,11 @@ namespace CryptoBot.Managers
 
             await Task.Delay(DELAY);
             return true;
+        }
+
+        public Task<List<string>> GetAvailableSymbols()
+        {
+            throw new NotImplementedException();
         }
     }
 }

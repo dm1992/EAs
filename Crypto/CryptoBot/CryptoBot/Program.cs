@@ -8,7 +8,6 @@ using CryptoBot.Data;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces;
 using CryptoBot.Managers;
-using CryptoBot.Managers.Davor;
 
 namespace CryptoBot
 {
