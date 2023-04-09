@@ -2,6 +2,7 @@
 using Bybit.Net.Objects;
 using Bybit.Net.Objects.Models.Spot;
 using Bybit.Net.Objects.Models.Spot.v1;
+using Bybit.Net.Objects.Models.Spot.v3;
 using CryptoBot.Data;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces;
@@ -38,7 +39,7 @@ namespace CryptoBot.Managers
 
         public async Task<bool> TradingServerAvailable()
         {
-            var response = await _bybitClient.SpotApiV1.ExchangeData.GetServerTimeAsync();
+            var response = await _bybitClient.SpotApiV3.ExchangeData.GetServerTimeAsync();
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
@@ -69,7 +70,7 @@ namespace CryptoBot.Managers
 
         public async Task<decimal?> GetPriceAsync(string symbol)
         {
-            var response = await _bybitClient.SpotApiV1.ExchangeData.GetPriceAsync(symbol);
+            var response = await _bybitClient.SpotApiV3.ExchangeData.GetPriceAsync(symbol);
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
@@ -81,11 +82,11 @@ namespace CryptoBot.Managers
             return response.Data.Price;
         }
 
-        public async Task<BybitSpotOrderV1> GetOrderAsync(string clientOrderId)
+        public async Task<BybitSpotOrderV3> GetOrderAsync(string clientOrderId)
         {
             await Task.Delay(DELAY);
 
-            BybitSpotOrderV1 order = new BybitSpotOrderV1();
+            BybitSpotOrderV3 order = new BybitSpotOrderV3();
             order.Id = _currentOrderId;
             order.ClientOrderId = _currentClientOrderId;
             order.IsWorking = true;
@@ -99,7 +100,7 @@ namespace CryptoBot.Managers
             return true;
         }
 
-        public async Task<bool> PlaceOrderAsync(BybitSpotOrderV1 order)
+        public async Task<bool> PlaceOrderAsync(BybitSpotOrderV3 order)
         {
             order.Id = "test";
             order.ClientOrderId = Guid.NewGuid().ToString();

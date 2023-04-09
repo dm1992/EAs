@@ -53,12 +53,15 @@ namespace CryptoBot.Managers
             {
                 _config = new Config();
 
+                _config.TestMode = bool.Parse(ConfigurationManager.AppSettings["testMode"]);
                 _config.Username = ConfigurationManager.AppSettings["username"];
                 _config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
                 _config.ApiSecret = ConfigurationManager.AppSettings["apiSecret"];
                 _config.ApiEndpoint = ConfigurationManager.AppSettings["apiEndpoint"];
                 _config.SpotStreamEndpoint = ConfigurationManager.AppSettings["spotStreamEndpoint"];
                 _config.Symbols = ConfigurationManager.AppSettings["symbols"].ParseCsv<string>();
+                _config.BuyOpenQuantity = decimal.Parse(ConfigurationManager.AppSettings["buyOpenQuantity"]);
+                _config.SellOpenQuantity = decimal.Parse(ConfigurationManager.AppSettings["sellOpenQuantity"]);
                 _config.ActiveSymbolOrders = int.Parse(ConfigurationManager.AppSettings["activeSymbolOrders"]);
                 _config.CandlesInBatch = int.Parse(ConfigurationManager.AppSettings["candlesInBatch"]);
                 _config.CandleMinuteTimeframe = int.Parse(ConfigurationManager.AppSettings["candleMinuteTimeframe"]);

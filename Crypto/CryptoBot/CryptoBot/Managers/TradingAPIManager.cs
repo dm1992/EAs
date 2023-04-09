@@ -2,7 +2,7 @@
 using Bybit.Net.Enums;
 using Bybit.Net.Objects;
 using Bybit.Net.Objects.Models.Spot;
-using Bybit.Net.Objects.Models.Spot.v1;
+using Bybit.Net.Objects.Models.Spot.v3;
 using CryptoBot.Data;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces;
@@ -39,7 +39,7 @@ namespace CryptoBot.Managers
 
         public async Task<bool> TradingServerAvailable()
         {
-            var response = await _bybitClient.SpotApiV1.ExchangeData.GetServerTimeAsync();
+            var response = await _bybitClient.SpotApiV3.ExchangeData.GetServerTimeAsync();
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
@@ -53,7 +53,7 @@ namespace CryptoBot.Managers
 
         public async Task<IEnumerable<BybitSpotBalance>> GetBalancesAsync()
         {
-            var response = await _bybitClient.SpotApiV1.Account.GetBalancesAsync(API_REQUEST_TIMEOUT);                              
+            var response = await _bybitClient.SpotApiV3.Account.GetBalancesAsync(API_REQUEST_TIMEOUT);                              
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
@@ -84,7 +84,7 @@ namespace CryptoBot.Managers
 
         public async Task<decimal?> GetPriceAsync(string symbol)
         {
-            var response = await _bybitClient.SpotApiV1.ExchangeData.GetPriceAsync(symbol);
+            var response = await _bybitClient.SpotApiV3.ExchangeData.GetPriceAsync(symbol);
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
@@ -96,9 +96,9 @@ namespace CryptoBot.Managers
             return response.Data.Price;
         }
 
-        public async Task<BybitSpotOrderV1> GetOrderAsync(string clientOrderId)
+        public async Task<BybitSpotOrderV3> GetOrderAsync(string clientOrderId)
         {
-            var response = await _bybitClient.SpotApiV1.Trading.GetOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
+            var response = await _bybitClient.SpotApiV3.Trading.GetOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
@@ -112,7 +112,7 @@ namespace CryptoBot.Managers
 
         public async Task<bool> CancelOrderAsync(string clientOrderId)
         {
-            var response = await _bybitClient.SpotApiV1.Trading.CancelOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
+            var response = await _bybitClient.SpotApiV3.Trading.CancelOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
@@ -124,11 +124,11 @@ namespace CryptoBot.Managers
             return true;
         }
 
-        public async Task<bool> PlaceOrderAsync(BybitSpotOrderV1 order)
+        public async Task<bool> PlaceOrderAsync(BybitSpotOrderV3 order)
         {
             if (order == null) return false;
 
-            var response = await _bybitClient.SpotApiV1.Trading.PlaceOrderAsync(order.Symbol, order.Side, OrderType.Market, order.Quantity, null, null, null, API_REQUEST_TIMEOUT);
+            var response = await _bybitClient.SpotApiV3.Trading.PlaceOrderAsync(order.Symbol, order.Side, order.Type, order.Quantity, null, null, null, API_REQUEST_TIMEOUT);
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,

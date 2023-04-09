@@ -95,8 +95,8 @@ namespace CryptoBot.Managers.Miha
 
             lock (_priceClosures)
             {
-                List<PriceClosure> symbolPriceClosures = _priceClosures.Where(x => x.Symbol == symbol).OrderBy(x => x.CreatedAt).ToList();
-                if (symbolPriceClosures.Count() < _config.MonitorMarketPriceLevels)
+                List<PriceClosure> symbolPriceClosures = _priceClosures.Where(x => x.Symbol == symbol).OrderByDescending(x => x.CreatedAt).Take(_config.MonitorMarketPriceLevels).ToList();
+                if (symbolPriceClosures.IsNullOrEmpty())
                     return null;
 
                 lock (_latestCandleBatches)
@@ -105,7 +105,9 @@ namespace CryptoBot.Managers.Miha
                     if (symbolLatestCandleBatch == null)
                         return null;
 
-                   return new Market(symbol, symbolPriceClosures, symbolLatestPrice.Value, symbolLatestCandleBatch.GetAverageVolume() * _config.AverageVolumeWeightFactor);
+
+
+                    return new Market(symbol, symbolPriceClosures, symbolLatestPrice.Value, symbolLatestCandleBatch.GetAverageVolume() * _config.AverageVolumeWeightFactor);
                 }
             }
         }

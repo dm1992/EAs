@@ -14,7 +14,7 @@ namespace CryptoBot.Data.Miha
         public DateTime CreatedAt { get; set; }
         public decimal SymbolLatestPrice { get; set; }
         public List<PriceClosure> SymbolPriceClosures { get; set; }
-        public decimal? AveragePriceClosureDelta 
+        public decimal? AveragePriceClosureDeltaPrice 
         { 
             get
             {
@@ -41,53 +41,64 @@ namespace CryptoBot.Data.Miha
             if (this.SymbolPriceClosures.IsNullOrEmpty())
                 return MarketDirection.Unknown;
 
-            decimal? price = null;
-            decimal? deltaPrice = null;
+            bool startPriceCompare = false;
             int priceMoveUps = 0;
             int priceMoveDowns = 0;
+            decimal previousPrice = 0;
+            decimal previousDeltaPrice = 0;
+            decimal averageDeltaPrice = this.AveragePriceClosureDeltaPrice.Value;
 
             foreach (var symbolPriceClosure in this.SymbolPriceClosures)
             {
                 try
                 {
-                    if (!price.HasValue && !deltaPrice.HasValue)
+                    if (!startPriceCompare)
                     {
-                        continue;
+                        startPriceCompare = true;
+                        break;
                     }
-                    else if (price.Value > symbolPriceClosure.LatestPrice && deltaPrice.Value > this.AveragePriceClosureDelta)
+
+                    if (previousPrice > symbolPriceClosure.LatestPrice)
                     {
-                        priceMoveUps++;
+                        if (previousDeltaPrice > averageDeltaPrice)
+                        {
+                            priceMoveUps++;
+                        }
                     }
-                    else if (price.Value < symbolPriceClosure.LatestPrice && deltaPrice.Value < this.AveragePriceClosureDelta)
+                    else if (previousPrice < symbolPriceClosure.LatestPrice)
                     {
-                        priceMoveDowns++;
+                        if (previousDeltaPrice < averageDeltaPrice)
+                        {
+                            priceMoveDowns++;
+                        }
                     }
                 }
                 finally
                 {
-                    price = symbolPriceClosure.LatestPrice;
-                    deltaPrice = symbolPriceClosure.DeltaPrice;
+                    previousPrice = symbolPriceClosure.LatestPrice;
+                    previousDeltaPrice = symbolPriceClosure.DeltaPrice;
                 }
             }
 
-            MarketDirection marketDirection = MarketDirection.Unknown;
             decimal percentageMoveUps = (priceMoveUps / this.SymbolPriceClosures.Count()) * 100.0m;
             decimal percentageMoveDowns = (priceMoveDowns / this.SymbolPriceClosures.Count()) * 100.0m;
             decimal percentageMoveNeutrals = 100 - percentageMoveUps - percentageMoveDowns;
+
+            MarketDirection marketDirection = MarketDirection.Neutral;
 
             if (percentageMoveUps > percentageMoveNeutrals && percentageMoveDowns > percentageMoveNeutrals)
             {
                 if (percentageMoveUps > percentageMoveDowns)
                 {
-                    marketDirection = this.SymbolLatestPrice > price ? MarketDirection.StrongUp : MarketDirection.WeakUp;
+                    marketDirection = this.SymbolLatestPrice > previousPrice ? 
+                                      MarketDirection.Up : 
+                                      MarketDirection.Neutral;
                 }
                 else if (percentageMoveDowns > percentageMoveUps)
                 {
-                    marketDirection = this.SymbolLatestPrice < price ? MarketDirection.StrongDown : MarketDirection.WeakDown;
-                }
-                else
-                {
-                    marketDirection = MarketDirection.Neutral;
+                    marketDirection = this.SymbolLatestPrice < previousPrice ? 
+                                      MarketDirection.Down : 
+                                      MarketDirection.Neutral;
                 }
             }
 
