@@ -39,7 +39,7 @@ namespace CryptoBot.Data
         public decimal GetTotalVolume()
         {
             if (this.TradeBuffer.IsNullOrEmpty())
-                return -1;
+                return 0;
 
             return this.TradeBuffer.Sum(x => x.Data.Quantity);
         }
@@ -47,7 +47,7 @@ namespace CryptoBot.Data
         public decimal GetPriceMovePercentage()
         {
             if (this.TradeBuffer.IsNullOrEmpty())
-                return -1;
+                return 0;
 
             var highPrice = this.TradeBuffer.Max(x => x.Data.Price);
             var lowPrice = this.TradeBuffer.Min(x => x.Data.Price);
@@ -86,26 +86,35 @@ namespace CryptoBot.Data
         public decimal GetPriceMove()
         {
             if (this.PriceClosures.IsNullOrEmpty())
-                return -1;
+                return 0;
 
-            var orderedPriceClosures = this.PriceClosures.OrderBy(x => x.CreatedAt);
+            var orderedPriceClosures = this.PriceClosures.OrderByDescending(x => x.CreatedAt);
+
             return orderedPriceClosures.First().ClosePrice - orderedPriceClosures.Last().ClosePrice;
         }
 
         public decimal GetAverageBuyerVolume()
         {
             if (this.PriceClosures.IsNullOrEmpty())
-                return -1;
+                return 0;
 
-            return this.PriceClosures.Where(x => x.BuyerVolume > 0).Average(x => x.BuyerVolume);
+            var buyerPriceClosures = this.PriceClosures.Where(x => x.BuyerVolume > 0);
+            if (buyerPriceClosures.IsNullOrEmpty())
+                return 0;
+
+            return buyerPriceClosures.Average(x => x.BuyerVolume);
         }
 
         public decimal GetAverageSellerVolume()
         {
             if (this.PriceClosures.IsNullOrEmpty())
-                return -1;
+                return 0;
 
-            return this.PriceClosures.Where(x => x.SellerVolume > 0).Average(x => x.SellerVolume);
+            var sellerPriceClosures = this.PriceClosures.Where(x => x.SellerVolume > 0);
+            if (sellerPriceClosures.IsNullOrEmpty())
+                return 0;
+
+            return sellerPriceClosures.Average(x => x.SellerVolume);
         }
 
         public override string Dump()

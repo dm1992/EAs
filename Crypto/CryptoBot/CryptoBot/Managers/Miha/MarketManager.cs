@@ -1,4 +1,5 @@
 ﻿using Bybit.Net.Clients;
+using Bybit.Net.Enums;
 using Bybit.Net.Objects;
 using Bybit.Net.Objects.Models.Socket.Spot;
 using CryptoBot.Data;
@@ -402,14 +403,14 @@ namespace CryptoBot.Managers.Miha
                 }
             }
 
-            decimal massiveVolumeBuyersPercent = (massiveVolumeBuyers / symbolLatestPriceClosures.Count()) * 100.0M;
+            decimal massiveVolumeBuyersPercent = (massiveVolumeBuyers / (decimal)symbolLatestPriceClosures.Count()) * 100.0M;
             if (massiveVolumeBuyersPercent < _config.MassiveBuyersPercentLimit)
             {
                 // limit not reached, set to 0
                 massiveVolumeBuyersPercent = 0;
             }
 
-            decimal massiveVolumeSellersPercent = (massiveVolumeSellers / symbolLatestPriceClosures.Count()) * 100.0M;
+            decimal massiveVolumeSellersPercent = (massiveVolumeSellers / (decimal)symbolLatestPriceClosures.Count()) * 100.0M;
             if (massiveVolumeSellersPercent < _config.MassiveSellersPercentLimit)
             {
                 // limit not reached, set to 0
@@ -429,8 +430,8 @@ namespace CryptoBot.Managers.Miha
                 return false;
 
             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            message: $"{symbol} massive market volume entity {marketEntity} in {symbolLatestPriceClosures.Count()} latest price closures. " +
-            $"Massive volume buyers %: {Math.Round(massiveVolumeBuyersPercent, 3)}. Massive volume sellers %: {Math.Round(massiveVolumeSellersPercent, 3)}.",
+            message: $"{DateTime.Now},{symbol} massive market volume entity {marketEntity}." +
+            $"MassiveVolumeBuyersPercent: {Math.Round(massiveVolumeBuyersPercent, 3)}. MassiveVolumeSellersPercent: {Math.Round(massiveVolumeSellersPercent, 3)}.",
             messageScope: $"marketMetric_{symbol}"));
 
             return true;
@@ -472,9 +473,9 @@ namespace CryptoBot.Managers.Miha
                 return false;
 
             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            message: $"{symbol} market direction {marketDirection}. " +
-            $"Latest price closure price move: {symbolLatestPriceClosurePriceMove}. " +
-            $"Weighted positive price move: {symbolWeightedPositiveAveragePriceMove}. Weighted negative price move: {symbolWeightedNegativeAveragePriceMove}.",
+            message: $"{DateTime.Now},{symbol} market direction {marketDirection}. " +
+            $"LatestPriceClosurePriceMove: {symbolLatestPriceClosurePriceMove}. " +
+            $"WeightedPositiveAveragePriceMove: {symbolWeightedPositiveAveragePriceMove}. WeightedNegativeAveragePriceMove: {symbolWeightedNegativeAveragePriceMove}.",
             messageScope: $"marketMetric_{symbol}"));
 
             return true;
@@ -496,7 +497,9 @@ namespace CryptoBot.Managers.Miha
             if (!GetMassiveVolumeMarketEntity(symbol, out _)) //xxx for now we don't care about massive volume market entity
                 return false;
 
-            return await _orderManager.InvokeOrder(symbol, marketDirection);
+            OrderSide marketOrderSide = marketDirection == MarketDirection.Uptrend ? OrderSide.Sell : OrderSide.Buy;
+
+            return await _orderManager.InvokeOrder(symbol, marketOrderSide);
         }
 
 

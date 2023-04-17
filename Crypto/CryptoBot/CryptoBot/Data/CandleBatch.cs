@@ -48,7 +48,7 @@ namespace CryptoBot.Data
         public decimal GetAverageVolume()
         {
             if (this.TradeCandles.IsNullOrEmpty())
-                return -1;
+                return 0;
 
             return this.TradeCandles.Average(x => x.GetTotalVolume());
         }
@@ -56,7 +56,7 @@ namespace CryptoBot.Data
         public decimal GetAveragePriceMovePercentage()
         {
             if (this.TradeCandles.IsNullOrEmpty())
-                return -1;
+                return 0;
 
             return this.TradeCandles.Average(x => x.GetPriceMovePercentage());
         }
@@ -81,7 +81,7 @@ namespace CryptoBot.Data
         public decimal GetLatestPriceClosurePriceMove()
         {
             if (this.PriceClosureCandles.IsNullOrEmpty())
-                return -1;
+                return 0;
 
             return this.PriceClosureCandles.OrderByDescending(x => x.CreatedAt).First().GetPriceMove();
         }
@@ -89,33 +89,49 @@ namespace CryptoBot.Data
         public decimal GetPositiveAveragePriceMove()
         {
             if (this.PriceClosureCandles.IsNullOrEmpty())
-                return -1;
+                return 0;
 
-            return this.PriceClosureCandles.Where(x => x.GetPriceMove() > 0).Average(x => x.GetPriceMove());
+            var positivePriceMoves = this.PriceClosureCandles.Where(x => x.GetPriceMove() > 0);
+            if (positivePriceMoves.IsNullOrEmpty())
+                return 0;
+
+            return positivePriceMoves.Average(x => x.GetPriceMove());
         }
 
         public decimal GetNegativeAveragePriceMove()
         {
             if (this.PriceClosureCandles.IsNullOrEmpty())
-                return -1;
+                return 0;
 
-            return this.PriceClosureCandles.Where(x => x.GetPriceMove() < 0).Average(x => x.GetPriceMove());
+            var negativePriceMoves = this.PriceClosureCandles.Where(x => x.GetPriceMove() < 0);
+            if (negativePriceMoves.IsNullOrEmpty())
+                return 0;
+
+            return negativePriceMoves.Average(x => x.GetPriceMove());
         }
 
         public decimal GetTotalAverageBuyerVolume()
         {
             if (this.PriceClosureCandles.IsNullOrEmpty())
-                return -1;
+                return 0;
 
-            return this.PriceClosureCandles.Average(x => x.GetAverageBuyerVolume());
+            var averageBuyerVolumes = this.PriceClosureCandles.Where(x => x.GetAverageBuyerVolume() > 0);
+            if (averageBuyerVolumes.IsNullOrEmpty())
+                return 0;
+
+            return averageBuyerVolumes.Average(x => x.GetAverageBuyerVolume());
         }
 
         public decimal GetTotalAverageSellerVolume()
         {
             if (this.PriceClosureCandles.IsNullOrEmpty())
-                return -1;
+                return 0;
 
-            return this.PriceClosureCandles.Average(x => x.GetAverageSellerVolume());
+            var averageSellersVolumes = this.PriceClosureCandles.Where(x => x.GetAverageSellerVolume() > 0);
+            if (averageSellersVolumes.IsNullOrEmpty())
+                return 0;
+
+            return averageSellersVolumes.Average(x => x.GetAverageSellerVolume());
         }
 
         public List<PriceClosure> GetTotalPriceClosures()
@@ -123,13 +139,13 @@ namespace CryptoBot.Data
             if (this.PriceClosureCandles.IsNullOrEmpty())
                 return null;
 
-            List<PriceClosure> priceClosures = new List<PriceClosure>();
+            IEnumerable<PriceClosure> priceClosures = new List<PriceClosure>();
             foreach (var priceClosureCandle in this.PriceClosureCandles)
             {
-                priceClosures.Concat(priceClosureCandle.PriceClosures);
+                priceClosures = priceClosures.Concat(priceClosureCandle.PriceClosures);
             }
 
-            return priceClosures;
+            return priceClosures.ToList();
         }
 
         public override string Dump()

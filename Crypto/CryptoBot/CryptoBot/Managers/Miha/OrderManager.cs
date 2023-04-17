@@ -19,7 +19,6 @@ namespace CryptoBot.Managers.Miha
     {
         private readonly ITradingManager _tradingAPIManager;
         private readonly Config _config;
-        private readonly SemaphoreSlim _tickerSemaphore;
         private readonly CancellationTokenSource _monitorOrderStatsCts;
 
         private List<BybitSpotOrderV3> _orders;
@@ -32,7 +31,6 @@ namespace CryptoBot.Managers.Miha
             _tradingAPIManager = tradingAPIManager;
             _config = config;
 
-            _tickerSemaphore = new SemaphoreSlim(1, 1);
             _monitorOrderStatsCts = new CancellationTokenSource();
             _orders = new List<BybitSpotOrderV3>();
             _isInitialized = false;
@@ -44,7 +42,7 @@ namespace CryptoBot.Managers.Miha
             {
                 if (_isInitialized) return true;
 
-                Task.Run(() => MonitorOrderStatsThread(_monitorOrderStatsCts.Token));
+                //Task.Run(() => MonitorOrderStatsThread(_monitorOrderStatsCts.Token));
 
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
                 message: $"Initialized order manager."));
@@ -61,7 +59,7 @@ namespace CryptoBot.Managers.Miha
             }
         }
 
-        public async Task<bool> InvokeOrder(string symbol, MarketDirection marketDirection)
+        public async Task<bool> InvokeOrder(string symbol, OrderSide orderSide)
         {
             if (_orders.Where(x => x.Symbol == symbol && x.IsWorking == true).Count() >= _config.ActiveSymbolOrders)
             {
@@ -72,8 +70,8 @@ namespace CryptoBot.Managers.Miha
             BybitSpotOrderV3 placedOrder = new BybitSpotOrderV3();
             placedOrder.Symbol = symbol;
             placedOrder.Type = OrderType.Market; //xxx
-            placedOrder.Side = marketDirection == MarketDirection.Uptrend ? OrderSide.Buy : OrderSide.Sell;
-            placedOrder.Quantity = marketDirection == MarketDirection.Uptrend ? _config.BuyOrderVolume : _config.SellOrderVolume;
+            placedOrder.Side = orderSide;
+            placedOrder.Quantity = orderSide == OrderSide.Buy ? _config.BuyOrderVolume : _config.SellOrderVolume;
 
             if (!await _tradingAPIManager.PlaceOrder(placedOrder))
                 return false;

@@ -24,8 +24,10 @@ namespace CryptoBot.Managers
                 customCulture.NumberFormat.NumberDecimalSeparator = ".";
                 Thread.CurrentThread.CurrentCulture = customCulture;
 
-                if (!Helpers.DeleteDirectoryFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Program.BASE_APPLICATION_DIRECTORY)))
-                    throw new Exception($"Failed to delete base application directory (../{Program.BASE_APPLICATION_DIRECTORY}).");
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Program.BASE_APPLICATION_DIRECTORY);
+
+                if (!Helpers.DeleteDirectoryFiles(path))
+                    throw new Exception($"Failed to delete application directory {path}.");
 
                 if (!SetupApplicationConfiguration())
                     return false;
@@ -33,7 +35,7 @@ namespace CryptoBot.Managers
                 if (!SetupApplicationManagers())
                     return false;
 
-                SaveApplicationMessage($"Running application with username '{_config.Username}'.\n");
+                SaveApplicationMessage($"Running application with username '{_config.Username}'.\nSaving results to application directory '{path}'.");
 
                 _isInitialized = true;
                 return true;
@@ -69,8 +71,8 @@ namespace CryptoBot.Managers
                 _config.MarketPriceClosureCandlesOnMarketDirectionDetection = int.Parse(ConfigurationManager.AppSettings["marketPriceClosureCandlesOnMarketDirectionDetection"]);
                 _config.MassiveBuyersPercentLimit = decimal.Parse(ConfigurationManager.AppSettings["massiveBuyersPercentLimit"]);
                 _config.MassiveSellersPercentLimit = decimal.Parse(ConfigurationManager.AppSettings["massiveSellersPercentLimit"]);
-                _config.AverageVolumeWeightFactor = int.Parse(ConfigurationManager.AppSettings["averageVolumeWeightFactor"]);
-                _config.AveragePriceMoveWeightFactor = int.Parse(ConfigurationManager.AppSettings["averagePriceMoveWeightFactor"]);
+                _config.AverageVolumeWeightFactor = decimal.Parse(ConfigurationManager.AppSettings["averageVolumeWeightFactor"]);
+                _config.AveragePriceMoveWeightFactor = decimal.Parse(ConfigurationManager.AppSettings["averagePriceMoveWeightFactor"]);
 
                 return true;
             }

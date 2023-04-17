@@ -23,7 +23,7 @@ namespace CryptoBot.Data
         public int MarketPriceClosureCandlesOnMarketDirectionDetection{ get; set; }
         public decimal MassiveBuyersPercentLimit { get; set; }
         public decimal MassiveSellersPercentLimit { get; set; }
-        public int AverageVolumeWeightFactor { get; set; }
-        public int AveragePriceMoveWeightFactor { get; set; }
+        public decimal AverageVolumeWeightFactor { get; set; }
+        public decimal AveragePriceMoveWeightFactor { get; set; }
     }
 }

@@ -43,7 +43,7 @@ namespace CryptoBot.Managers.Miha
             {
                 if (_isInitialized) return true;
 
-                Task.Run(() => MonitorTradingBalance());
+                //Task.Run(() => MonitorTradingBalance());
 
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
                 message: $"Initialized trading manager."));
@@ -151,11 +151,16 @@ namespace CryptoBot.Managers.Miha
         {
             if (order == null) return false;
 
+            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Debug,
+            $"Placing {order.Side} {order.Type} order symbol {order.Symbol} with quantity {order.Quantity}.",
+            messageScope: $"trading"));
+
             var response = await _bybitClient.SpotApiV3.Trading.PlaceOrderAsync(order.Symbol, order.Side, order.Type, order.Quantity, null, null, null, API_REQUEST_TIMEOUT);
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                $"!!!Failed to place order '{order.Id}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+                $"!!!Failed to place order '{order.Id}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!",
+                messageScope: $"trading"));
 
                 return false;
             }
