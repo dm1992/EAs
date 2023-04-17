@@ -78,7 +78,7 @@ namespace CryptoBot.Data
             this.PriceClosureCandles = new List<PriceClosureCandle>();
         }
 
-        public decimal GetLatestPriceMove()
+        public decimal GetLatestPriceClosurePriceMove()
         {
             if (this.PriceClosureCandles.IsNullOrEmpty())
                 return -1;

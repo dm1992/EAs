@@ -66,8 +66,8 @@ namespace CryptoBot.Managers.Miha
                     return false;
                 }
 
-                SetupPriceClosureCandleBatches();
                 SetupTradeCandleBatches();
+                SetupPriceClosureCandleBatches();
 
                 Task.Run(() => { MonitorTradeCandleBatches(); });
 
@@ -192,7 +192,6 @@ namespace CryptoBot.Managers.Miha
                             message: $"Completed all symbol trade candle batches. Will start monitoring over again..."));
 
                             DumpTradeCandleBatches();
-
                             SetupTradeCandleBatches(); // reset trade candle batches and start over again
                         }
                     }
@@ -213,10 +212,6 @@ namespace CryptoBot.Managers.Miha
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
                 message: $"{tradeCandleBatch.Dump()}"));
-
-                //ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                //message: $"{candleBatch.Dump(generalInfo: false)}",
-                //messageScope: $"candleBatch_{candleBatch.Symbol}"));
             }
         }
 
@@ -252,15 +247,13 @@ namespace CryptoBot.Managers.Miha
                     }
 
                     TradeCandle activeTradeCandle = tradeCandleBatch.TradeCandles.FirstOrDefault(x => !x.Completed);
-                    if (activeTradeCandle != null)
+                    if (activeTradeCandle == null)
                     {
-                        activeTradeCandle.TradeBuffer.Add(trade);
-                    }
-                    else
-                    {
-                        tradeCandleBatch.TradeCandles.Add(new TradeCandle(trade.Topic));
+                        activeTradeCandle = new TradeCandle(trade.Topic);
+                        tradeCandleBatch.TradeCandles.Add(activeTradeCandle);
                     }
 
+                    activeTradeCandle.TradeBuffer.Add(trade);
                     return true;
                 }
             }
@@ -281,49 +274,6 @@ namespace CryptoBot.Managers.Miha
             return AddPriceClosureToCandle(priceClosure);
         }
 
-        private bool AddPriceClosureToCandle(PriceClosure priceClosure)
-        {
-            if (priceClosure == null) return false;
-
-            try
-            {
-                PriceClosureCandleBatch priceClosureCandleBatch = _priceClosureCandleBatches.FirstOrDefault(x => x.Symbol == priceClosure.Symbol);
-                if (priceClosureCandleBatch == null)
-                {
-                    ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                    message: $"!!!Unable to find price closure candle batch for symbol {priceClosure.Symbol}."));
-
-                    return false;
-                }
-
-                PriceClosureCandle activePriceClosureCandle = priceClosureCandleBatch.PriceClosureCandles.FirstOrDefault(x => !x.Completed);
-                if (activePriceClosureCandle != null)
-                {
-                    activePriceClosureCandle.PriceClosures.Add(priceClosure);
-
-                    if (activePriceClosureCandle.PriceClosures.Count() >= _config.PriceClosureCandleSize)
-                    {
-                        activePriceClosureCandle.Completed = true;
-                    }         
-                }
-                else
-                {
-                    PriceClosureCandle priceClosureCandle = new PriceClosureCandle(priceClosure.Symbol);
-                    priceClosureCandle.PriceClosures.Add(priceClosure);
-                    priceClosureCandleBatch.PriceClosureCandles.Add(priceClosureCandle);
-                }
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                message: $"!!!AddPriceClosureToCandle failed!!! {e}"));
-
-                return false;
-            }
-        }
-
         private bool CreatePriceClosure(DataEvent<BybitSpotTradeUpdate> trade, out PriceClosure priceClosure)
         {
             priceClosure = null;
@@ -333,10 +283,9 @@ namespace CryptoBot.Managers.Miha
                 if (trade == null) return false;
 
                 bool closePrice = false;
-
                 var symbolTradePrices = new List<decimal>();
                 var symbolTrades = _tradeBuffer.Where(x => x.Topic == trade.Topic).OrderBy(x => x.Data.Timestamp); // ordered trades
-                
+
                 foreach (var symbolTrade in symbolTrades)
                 {
                     if (!symbolTradePrices.Contains(symbolTrade.Data.Price))
@@ -371,6 +320,46 @@ namespace CryptoBot.Managers.Miha
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
                 message: $"!!!CreatePriceClosure failed!!! {e}"));
+
+                return false;
+            }
+        }
+
+        private bool AddPriceClosureToCandle(PriceClosure priceClosure)
+        {
+            if (priceClosure == null) return false;
+
+            try
+            {
+                PriceClosureCandleBatch priceClosureCandleBatch = _priceClosureCandleBatches.FirstOrDefault(x => x.Symbol == priceClosure.Symbol);
+                if (priceClosureCandleBatch == null)
+                {
+                    ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
+                    message: $"!!!Unable to find price closure candle batch for symbol {priceClosure.Symbol}."));
+
+                    return false;
+                }
+
+                PriceClosureCandle activePriceClosureCandle = priceClosureCandleBatch.PriceClosureCandles.FirstOrDefault(x => !x.Completed);
+                if (activePriceClosureCandle == null)
+                {
+                    activePriceClosureCandle = new PriceClosureCandle(priceClosure.Symbol);
+                    priceClosureCandleBatch.PriceClosureCandles.Add(activePriceClosureCandle);
+                }
+
+                activePriceClosureCandle.PriceClosures.Add(priceClosure);
+
+                if (activePriceClosureCandle.PriceClosures.Count() >= _config.PriceClosureCandleSize)
+                {
+                    activePriceClosureCandle.Completed = true;
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
+                message: $"!!!AddPriceClosureToCandle failed!!! {e}"));
 
                 return false;
             }
@@ -441,7 +430,8 @@ namespace CryptoBot.Managers.Miha
 
             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
             message: $"{symbol} massive market volume entity {marketEntity} in {symbolLatestPriceClosures.Count()} latest price closures. " +
-            $"Massive volume buyers %: {Math.Round(massiveVolumeBuyersPercent, 3)}. Massive volume sellers %: {Math.Round(massiveVolumeSellersPercent, 3)}."));
+            $"Massive volume buyers %: {Math.Round(massiveVolumeBuyersPercent, 3)}. Massive volume sellers %: {Math.Round(massiveVolumeSellersPercent, 3)}.",
+            messageScope: $"marketMetric_{symbol}"));
 
             return true;
         }
@@ -465,15 +455,15 @@ namespace CryptoBot.Managers.Miha
                 return false;
             }
 
-            var symbolLatestPriceClosureCandlePriceMove = symbolPriceClosureCandleBatch.GetLatestPriceMove();
+            var symbolLatestPriceClosurePriceMove = symbolPriceClosureCandleBatch.GetLatestPriceClosurePriceMove();
             decimal symbolWeightedPositiveAveragePriceMove = symbolPriceClosureCandleBatch.GetPositiveAveragePriceMove() * _config.AveragePriceMoveWeightFactor;
             decimal symbolWeightedNegativeAveragePriceMove = symbolPriceClosureCandleBatch.GetNegativeAveragePriceMove() * _config.AveragePriceMoveWeightFactor;
 
-            if (symbolLatestPriceClosureCandlePriceMove > symbolWeightedPositiveAveragePriceMove)
+            if (symbolLatestPriceClosurePriceMove > symbolWeightedPositiveAveragePriceMove)
             {
                 marketDirection = MarketDirection.Uptrend;
             }
-            else if (symbolLatestPriceClosureCandlePriceMove < symbolWeightedNegativeAveragePriceMove)
+            else if (symbolLatestPriceClosurePriceMove < symbolWeightedNegativeAveragePriceMove)
             {
                 marketDirection = MarketDirection.Downtrend;
             }
@@ -483,8 +473,9 @@ namespace CryptoBot.Managers.Miha
 
             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
             message: $"{symbol} market direction {marketDirection}. " +
-            $"Latest price closure candle price move: {symbolLatestPriceClosureCandlePriceMove}. " +
-            $"Weighted positive price move: {symbolWeightedPositiveAveragePriceMove}. Weighted negative price move: {symbolWeightedNegativeAveragePriceMove}."));
+            $"Latest price closure price move: {symbolLatestPriceClosurePriceMove}. " +
+            $"Weighted positive price move: {symbolWeightedPositiveAveragePriceMove}. Weighted negative price move: {symbolWeightedNegativeAveragePriceMove}.",
+            messageScope: $"marketMetric_{symbol}"));
 
             return true;
         }
@@ -494,7 +485,7 @@ namespace CryptoBot.Managers.Miha
             if (String.IsNullOrEmpty(symbol))
             {
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                message: $"!!!Unknown symbol. Unable to invoke market order."));
+                message: $"!!!Unable to invoke market order of unknown symbol."));
 
                 return false;
             }

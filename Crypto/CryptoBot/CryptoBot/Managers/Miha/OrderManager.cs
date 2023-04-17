@@ -73,7 +73,7 @@ namespace CryptoBot.Managers.Miha
             placedOrder.Symbol = symbol;
             placedOrder.Type = OrderType.Market; //xxx
             placedOrder.Side = marketDirection == MarketDirection.Uptrend ? OrderSide.Buy : OrderSide.Sell;
-            //placedOrder.Quantity = marketDirection == MarketDirection.Up ? _config.BuyOpenQuantity : _config.SellOpenQuantity;
+            placedOrder.Quantity = marketDirection == MarketDirection.Uptrend ? _config.BuyOrderVolume : _config.SellOrderVolume;
 
             if (!await _tradingAPIManager.PlaceOrder(placedOrder))
                 return false;
