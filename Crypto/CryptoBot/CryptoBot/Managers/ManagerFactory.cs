@@ -1,5 +1,5 @@
 ﻿using CryptoBot.Data;
-using CryptoBot.Interfaces;
+using CryptoBot.Interfaces.Managers;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -11,28 +11,39 @@ namespace CryptoBot.Managers
 {
     public class ManagerFactory
     {
-        public static IMarketManager CreateMarketManager(ManagerType type, ITradingAPIManager tradingManager, Config config)
+        public static IMarketManager CreateMarketManager(ManagerType type, ITradingManager tradingManager, IOrderManager orderManager, Config config)
         {
             switch (type)
             {
-                //case ManagerType.Davor:
-                //    return new Davor_old.MarketManager(tradingManager, config);
+                //xxx add other manager types
                 case ManagerType.Miha:
-                    return new Miha.MarketManager(tradingManager, config);
+                    return new Miha.MarketManager(tradingManager, orderManager, config);
 
                 default:
                     return null;
             }
         }
 
-        public static IOrderManager CreateOrderManager(ManagerType type, ITradingAPIManager tradingManager, IMarketManager marketManager, Config config)
+        public static IOrderManager CreateOrderManager(ManagerType type, ITradingManager tradingManager, Config config)
         {
             switch (type)
             {
-                //case ManagerType.Davor:
-                //    return new Davor_old.OrderManager(tradingManager, marketManager, config);
+                //xxx add other manager types
                 case ManagerType.Miha:
-                    return new Miha.OrderManager(tradingManager, marketManager, config);
+                    return new Miha.OrderManager(tradingManager, config);
+
+                default:
+                    return null;
+            }
+        }
+
+        public static ITradingManager CreateTradingManager(ManagerType type, Config config)
+        {
+            switch (type)
+            {
+                //xxx add other manager types
+                case ManagerType.Miha:
+                    return new Miha.TradingManager(config);
 
                 default:
                     return null;

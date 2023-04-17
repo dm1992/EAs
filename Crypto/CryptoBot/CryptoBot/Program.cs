@@ -13,16 +13,18 @@ namespace CryptoBot
 {
     public class Program
     {
-        private static ManualResetEvent _terminate = new ManualResetEvent(initialState: false);
+        public const string BASE_APPLICATION_DIRECTORY = "CryptoBotData";
 
-        private static void WaitTermination()
+        private static ManualResetEvent _terminateApplication = new ManualResetEvent(initialState: false);
+
+        private static void WaitApplicationTermination()
         {
-            _terminate.WaitOne();
+            _terminateApplication.WaitOne();
         }
 
-        public static void Terminate()
+        public static void TerminateApplication()
         {
-            _terminate.Set();
+            _terminateApplication.Set();
         }
 
         public static void OutputData(string data, string dataScope = null)
@@ -35,7 +37,7 @@ namespace CryptoBot
                 Console.Write(data);
             }
 
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CryptoBotData",
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, BASE_APPLICATION_DIRECTORY,
                           $"{dataScope ?? "general"}_data_{DateTime.Now:ddMMyyyy}.txt");
 
             if (!Helpers.SaveToFile(data, path))
@@ -51,7 +53,7 @@ namespace CryptoBot
                 if (!ApplicationHandler.Initialize())
                     return;
 
-                WaitTermination();
+                WaitApplicationTermination();
             }
             catch (Exception e)
             {

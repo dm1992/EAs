@@ -103,25 +103,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Candle.cs" />
+    <Compile Include="Data\CandleBatch.cs" />
     <Compile Include="Data\Config.cs" />
     <Compile Include="Data\Market.cs" />
     <Compile Include="Data\PriceClosure.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="EventArgs\ApplicationEventArgs.cs" />
-    <Compile Include="EventArgs\TradingEventArgs.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Helpers.cs" />
-    <Compile Include="Interfaces\IAPISubscription.cs" />
-    <Compile Include="Interfaces\IApplicationEvent.cs" />
-    <Compile Include="Interfaces\IMarket.cs" />
-    <Compile Include="Interfaces\IMarketManager.cs" />
-    <Compile Include="Interfaces\IOrderManager.cs" />
-    <Compile Include="Interfaces\ITradingManager.cs" />
+    <Compile Include="Interfaces\Managers\IManager.cs" />
+    <Compile Include="Interfaces\Events\IWebSocketEvent.cs" />
+    <Compile Include="Interfaces\Events\IApplicationEvent.cs" />
+    <Compile Include="Interfaces\Managers\IMarketManager.cs" />
+    <Compile Include="Interfaces\Managers\IOrderManager.cs" />
+    <Compile Include="Interfaces\Managers\ITradingManager.cs" />
     <Compile Include="Managers\ApplicationHandler.cs" />
     <Compile Include="Managers\ManagerFactory.cs" />
     <Compile Include="Managers\Miha\OrderManager.cs" />
-    <Compile Include="Managers\TradingManagerSimulator.cs" />
-    <Compile Include="Managers\TradingAPIManager.cs" />
+    <Compile Include="Managers\Miha\TradingManager.cs" />
     <Compile Include="Managers\Miha\MarketManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

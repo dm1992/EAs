@@ -5,13 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using CryptoBot.EventArgs;
 
-namespace CryptoBot.Interfaces
+namespace CryptoBot.Interfaces.Events
 {
     public interface IApplicationEvent
     {
-        /// <summary>
-        /// General application event.
-        /// </summary>
         event EventHandler<ApplicationEventArgs> ApplicationEvent;
     }
 }

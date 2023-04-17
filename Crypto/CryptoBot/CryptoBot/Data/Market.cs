@@ -1,132 +1,53 @@
-﻿using CryptoBot.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CryptoBot.Data.Miha
+namespace CryptoBot.Data
 {
-    public class Market : IMarket
+    public class Market
     {
-        public string Id { get; private set; }
+        public string Id { get; set; }
         public string Symbol { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public decimal SymbolLatestPrice { get; set; }
-        public List<PriceClosure> SymbolPriceClosures { get; set; }
-        public decimal? AveragePriceClosureDeltaPrice 
-        { 
+        public DateTime CreatedAt { get; private set; }
+        public int TotalPriceLevels { get; set; }
+        public int StrongBuyerVolumePriceLevels { get; set; }
+        public int StrongSellerVolumePriceLevels { get; set; }
+        public MarketDirection MarketDirection { get; set; }
+        public decimal StrongBuyerVolumePriceLevelsPercentage
+        {
             get
             {
-                if (this.SymbolPriceClosures.IsNullOrEmpty())
-                    return null;
+                if (this.TotalPriceLevels == 0)
+                    return 0;
 
-                return this.SymbolPriceClosures.Average(x => x.DeltaPrice);
+                return Math.Round(this.StrongBuyerVolumePriceLevels / this.TotalPriceLevels * 100.0M, 3);
             }
         }
-        public decimal SymbolAverageVolume { get; set; }
-
-        public Market(string symbol, List<PriceClosure> symbolPriceClosures, decimal symbolLatestPrice, decimal symbolAverageVolume)
+        public decimal StrongSellerVolumePriceLevelsPercentage
         {
-            this.Symbol = symbol;
+            get
+            {
+                if (this.TotalPriceLevels == 0)
+                    return 0;
+
+                return Math.Round(this.StrongSellerVolumePriceLevels / this.TotalPriceLevels * 100.0M, 3);
+            }
+        }
+
+        public Market(string symbol)
+        {
             this.Id = Guid.NewGuid().ToString();
-            this.CreatedAt = DateTime.Now;
-            this.SymbolPriceClosures = symbolPriceClosures;
-            this.SymbolLatestPrice = symbolLatestPrice;
-            this.SymbolAverageVolume = symbolAverageVolume;
-        }
-
-        public MarketDirection GetMarketDirection()
-        {
-            if (this.SymbolPriceClosures.IsNullOrEmpty())
-                return MarketDirection.Unknown;
-
-            bool startPriceCompare = false;
-            int priceMoveUps = 0;
-            int priceMoveDowns = 0;
-            decimal previousPrice = 0;
-            decimal previousDeltaPrice = 0;
-            decimal averageDeltaPrice = this.AveragePriceClosureDeltaPrice.Value;
-
-            foreach (var symbolPriceClosure in this.SymbolPriceClosures)
-            {
-                try
-                {
-                    if (!startPriceCompare)
-                    {
-                        startPriceCompare = true;
-                        break;
-                    }
-
-                    if (previousPrice > symbolPriceClosure.LatestPrice)
-                    {
-                        if (previousDeltaPrice > averageDeltaPrice)
-                        {
-                            priceMoveUps++;
-                        }
-                    }
-                    else if (previousPrice < symbolPriceClosure.LatestPrice)
-                    {
-                        if (previousDeltaPrice < averageDeltaPrice)
-                        {
-                            priceMoveDowns++;
-                        }
-                    }
-                }
-                finally
-                {
-                    previousPrice = symbolPriceClosure.LatestPrice;
-                    previousDeltaPrice = symbolPriceClosure.DeltaPrice;
-                }
-            }
-
-            decimal percentageMoveUps = (priceMoveUps / this.SymbolPriceClosures.Count()) * 100.0m;
-            decimal percentageMoveDowns = (priceMoveDowns / this.SymbolPriceClosures.Count()) * 100.0m;
-            decimal percentageMoveNeutrals = 100 - percentageMoveUps - percentageMoveDowns;
-
-            MarketDirection marketDirection = MarketDirection.Neutral;
-
-            if (percentageMoveUps > percentageMoveNeutrals && percentageMoveDowns > percentageMoveNeutrals)
-            {
-                if (percentageMoveUps > percentageMoveDowns)
-                {
-                    marketDirection = this.SymbolLatestPrice > previousPrice ? 
-                                      MarketDirection.Up : 
-                                      MarketDirection.Neutral;
-                }
-                else if (percentageMoveDowns > percentageMoveUps)
-                {
-                    marketDirection = this.SymbolLatestPrice < previousPrice ? 
-                                      MarketDirection.Down : 
-                                      MarketDirection.Neutral;
-                }
-            }
-
-            return marketDirection;
-        }
-
-        public MarketVolumeIntensity GetMarketVolumeIntensity()
-        {
-            if (this.SymbolPriceClosures.IsNullOrEmpty())
-                return MarketVolumeIntensity.Unknown;
-
-            decimal volume = this.SymbolPriceClosures.Sum(x => x.BuyerQuantity + x.SellerQuantity);
-
-            if (volume > this.SymbolAverageVolume)
-            {
-                return MarketVolumeIntensity.Big;
-            }
-            else if (volume < this.SymbolAverageVolume)
-            {
-                return MarketVolumeIntensity.Low;
-            }
-
-            return MarketVolumeIntensity.Average;
+            this.Symbol = symbol;
+            this.CreatedAt = DateTime.UtcNow;
         }
 
         public string Dump()
         {
-            return $"{this.Symbol} market - market direction: {this.GetMarketDirection()}, market volume intensity: {this.GetMarketVolumeIntensity()}.";
+            return $"From total {this.TotalPriceLevels} price levels there are {this.StrongBuyerVolumePriceLevels} strong buyer volume ({this.StrongBuyerVolumePriceLevelsPercentage} %) " +
+                   $"and {this.StrongSellerVolumePriceLevels} strong seller volume ({this.StrongSellerVolumePriceLevelsPercentage} %) price levels.\n" +
+                   $"Current market direction is {this.MarketDirection}.";
         }
     }
 }

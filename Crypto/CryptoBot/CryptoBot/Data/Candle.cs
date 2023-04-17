@@ -8,65 +8,12 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Data
 {
-    public class CandleBatch
-    {
-        public string Id { get; private set; }
-        public string Symbol { get; set; }
-        public DateTime CreatedAt { get; private set; }
-        public bool Completed
-        {
-            get
-            {
-                if (this.Candles.IsNullOrEmpty())
-                    return false;
-
-                return this.Candles.All(x => x.Completed);
-            }
-        }
-        public List<Candle> Candles { get; set; }
-
-        public CandleBatch(string symbol)
-        {
-            this.Id = Guid.NewGuid().ToString();
-            this.Symbol = symbol;
-            this.CreatedAt = DateTime.Now;
-            this.Candles = new List<Candle>();
-        }
-
-        public decimal GetAverageVolume()
-        {
-            if (this.Candles.IsNullOrEmpty())
-                return -1;
-
-            return this.Candles.Average(x => x.GetVolume());
-        }
-
-        public decimal GetAveragePriceMovePercentage()
-        {
-            if (this.Candles.IsNullOrEmpty())
-                return -1;
-
-            return this.Candles.Average(x => x.GetPriceMovePercentage());
-        }
-
-        public string Dump(bool generalInfo = true)
-        {
-            if (generalInfo)
-            {
-                return $"({this.Id}) {this.Symbol} candle batch (completed: {this.Completed}). Total trades in candle batch: {this.Candles.Sum(x => x.TradeBuffer.Count)}.";
-            }
-
-            return $"{this.CreatedAt},{this.Id},{this.GetAverageVolume()},{this.GetAveragePriceMovePercentage()}";
-        }
-    }
-
-    public class Candle
+    public abstract class Candle
     {
         public string Id { get; private set; }
         public string Symbol { get; set; }
         public DateTime CreatedAt { get; private set; }
         public bool Completed { get; set; }
-        public List<DataEvent<BybitSpotTradeUpdate>> TradeBuffer { get; set; }
 
         public Candle(string symbol)
         {
@@ -74,10 +21,22 @@ namespace CryptoBot.Data
             this.Symbol = symbol;
             this.CreatedAt = DateTime.Now;
             this.Completed = false;
-            this.TradeBuffer = new List<DataEvent<BybitSpotTradeUpdate>>();          
         }
 
-        public decimal GetVolume()
+        public abstract string Dump();
+    }
+
+    public class TradeCandle : Candle
+    {
+        public List<DataEvent<BybitSpotTradeUpdate>> TradeBuffer { get; set; }
+
+        public TradeCandle(string symbol) : base(symbol)
+        {
+            this.Symbol = symbol;
+            this.TradeBuffer = new List<DataEvent<BybitSpotTradeUpdate>>();
+        }
+
+        public decimal GetTotalVolume()
         {
             if (this.TradeBuffer.IsNullOrEmpty())
                 return -1;
@@ -96,11 +55,6 @@ namespace CryptoBot.Data
             return ((highPrice - lowPrice) / lowPrice) * 100;
         }
 
-        public string Dump()
-        {
-            return $"{this.CreatedAt}, {this.Id}, {this.Symbol} candle (completed: {this.Completed}) with volume: {this.GetVolume()} and price move percentage: {this.GetPriceMovePercentage()} %.";
-        }
-
         public string DumpTrades()
         {
             string result = $"Total {this.TradeBuffer.Count} trades in candle with Id {this.Id}:\n";
@@ -112,5 +66,51 @@ namespace CryptoBot.Data
 
             return result;
         }
-    } 
+
+        public override string Dump()
+        {
+            return $"{this.CreatedAt}, {this.Symbol} candle (completed: {this.Completed}) with volume: {this.GetTotalVolume()} and price move percentage: {this.GetPriceMovePercentage()} %.";
+        }
+    }
+
+    public class PriceClosureCandle : Candle
+    {
+        public List<PriceClosure> PriceClosures { get; set; }
+
+        public PriceClosureCandle(string symbol) : base(symbol)
+        {
+            this.Symbol = symbol;
+            this.PriceClosures = new List<PriceClosure>();
+        }
+
+        public decimal GetPriceMove()
+        {
+            if (this.PriceClosures.IsNullOrEmpty())
+                return -1;
+
+            var orderedPriceClosures = this.PriceClosures.OrderBy(x => x.CreatedAt);
+            return orderedPriceClosures.First().ClosePrice - orderedPriceClosures.Last().ClosePrice;
+        }
+
+        public decimal GetAverageBuyerVolume()
+        {
+            if (this.PriceClosures.IsNullOrEmpty())
+                return -1;
+
+            return this.PriceClosures.Where(x => x.BuyerVolume > 0).Average(x => x.BuyerVolume);
+        }
+
+        public decimal GetAverageSellerVolume()
+        {
+            if (this.PriceClosures.IsNullOrEmpty())
+                return -1;
+
+            return this.PriceClosures.Where(x => x.SellerVolume > 0).Average(x => x.SellerVolume);
+        }
+
+        public override string Dump()
+        {
+            return $"{this.Symbol},{this.CreatedAt},{this.GetPriceMove()},{this.GetAverageBuyerVolume()},{this.GetAverageSellerVolume()}";
+        }
+    }
 }

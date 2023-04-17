@@ -18,17 +18,16 @@ namespace CryptoBot
     public enum MarketDirection
     {
         Unknown = 0,
-        Up = 1,
-        Down = 2,
+        Uptrend = 1,
+        Downtrend = 2,
         Neutral = 3
     }
 
-    public enum MarketVolumeIntensity
+    public enum MarketEntity
     {
         Unknown = 0,
-        Big = 1,
-        Low = 2,
-        Average = 3
+        Buyer = 1,
+        Seller = 2
     }
 
     public enum ManagerType

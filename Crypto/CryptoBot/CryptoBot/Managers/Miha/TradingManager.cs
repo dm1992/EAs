@@ -1,29 +1,30 @@
 ﻿using Bybit.Net.Clients;
-using Bybit.Net.Enums;
 using Bybit.Net.Objects;
 using Bybit.Net.Objects.Models.Spot;
 using Bybit.Net.Objects.Models.Spot.v3;
 using CryptoBot.Data;
 using CryptoBot.EventArgs;
-using CryptoBot.Interfaces;
+using CryptoBot.Interfaces.Managers;
 using CryptoExchange.Net.Authentication;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CryptoBot.Managers
+namespace CryptoBot.Managers.Miha
 {
-    public class TradingAPIManager : ITradingAPIManager
+    public class TradingManager : ITradingManager
     {
         private const int API_REQUEST_TIMEOUT = 50000;
 
         private readonly Config _config;
         private readonly BybitClient _bybitClient;
 
+        private bool _isInitialized;
+
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
-        public TradingAPIManager(Config config)
+        public TradingManager(Config config)
         {
             _config = config;
 
@@ -33,8 +34,30 @@ namespace CryptoBot.Managers
             clientOptions.SpotApiOptions.BaseAddress = _config.ApiEndpoint;
 
             _bybitClient = new BybitClient(clientOptions);
+            _isInitialized = false;
+        }
 
-            Task.Run(() => MonitorTradingBalance());
+        public bool Initialize()
+        {
+            try
+            {
+                if (_isInitialized) return true;
+
+                Task.Run(() => MonitorTradingBalance());
+
+                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
+                message: $"Initialized trading manager."));
+
+                _isInitialized = true;
+                return true;
+            }
+            catch (Exception e)
+            {
+                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
+                message: $"!!!Initialization of trading manager failed!!! {e}"));
+
+                return false;
+            }
         }
 
         public async Task<bool> TradingServerAvailable()
@@ -51,7 +74,7 @@ namespace CryptoBot.Managers
             return true;
         }
 
-        public async Task<IEnumerable<BybitSpotBalance>> GetBalancesAsync()
+        public async Task<IEnumerable<BybitSpotBalance>> GetBalances()
         {
             var response = await _bybitClient.SpotApiV3.Account.GetBalancesAsync(API_REQUEST_TIMEOUT);                              
             if (!response.Success)
@@ -82,7 +105,7 @@ namespace CryptoBot.Managers
             return response.Data.Select(x => x.Name).ToList();
         }
 
-        public async Task<decimal?> GetPriceAsync(string symbol)
+        public async Task<decimal?> GetPrice(string symbol)
         {
             var response = await _bybitClient.SpotApiV3.ExchangeData.GetPriceAsync(symbol);
             if (!response.Success)
@@ -96,7 +119,7 @@ namespace CryptoBot.Managers
             return response.Data.Price;
         }
 
-        public async Task<BybitSpotOrderV3> GetOrderAsync(string clientOrderId)
+        public async Task<BybitSpotOrderV3> GetOrder(string clientOrderId)
         {
             var response = await _bybitClient.SpotApiV3.Trading.GetOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
             if (!response.Success)
@@ -110,7 +133,7 @@ namespace CryptoBot.Managers
             return response.Data;
         }
 
-        public async Task<bool> CancelOrderAsync(string clientOrderId)
+        public async Task<bool> CancelOrder(string clientOrderId)
         {
             var response = await _bybitClient.SpotApiV3.Trading.CancelOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
             if (!response.Success)
@@ -124,7 +147,7 @@ namespace CryptoBot.Managers
             return true;
         }
 
-        public async Task<bool> PlaceOrderAsync(BybitSpotOrderV3 order)
+        public async Task<bool> PlaceOrder(BybitSpotOrderV3 order)
         {
             if (order == null) return false;
 
@@ -149,7 +172,7 @@ namespace CryptoBot.Managers
             {
                 try
                 {
-                    IEnumerable<BybitSpotBalance> balance = await GetBalancesAsync();
+                    IEnumerable<BybitSpotBalance> balance = await GetBalances();
                     if (balance.IsNullOrEmpty())
                     {
                         ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,

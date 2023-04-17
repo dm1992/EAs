@@ -5,8 +5,7 @@ using Bybit.Net.Objects.Models.Socket.Spot;
 using Bybit.Net.Objects.Models.Spot.v3;
 using CryptoBot.Data;
 using CryptoBot.EventArgs;
-using CryptoBot.Interfaces;
-using CryptoExchange.Net.Sockets;
+using CryptoBot.Interfaces.Managers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,32 +17,25 @@ namespace CryptoBot.Managers.Miha
 {
     public class OrderManager : IOrderManager
     {
-        private readonly ITradingAPIManager _tradingAPIManager;
-        private readonly IMarketManager _marketManager;
+        private readonly ITradingManager _tradingAPIManager;
         private readonly Config _config;
         private readonly SemaphoreSlim _tickerSemaphore;
         private readonly CancellationTokenSource _monitorOrderStatsCts;
 
-        private List<UpdateSubscription> _subscriptions;
         private List<BybitSpotOrderV3> _orders;
-        private List<string> _availableSymbols;
         private bool _isInitialized;
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
-        public OrderManager(ITradingAPIManager tradingAPIManager, IMarketManager marketManager, Config config)
+        public OrderManager(ITradingManager tradingAPIManager, Config config)
         {
             _tradingAPIManager = tradingAPIManager;
-            _marketManager = marketManager;
             _config = config;
 
             _tickerSemaphore = new SemaphoreSlim(1, 1);
             _monitorOrderStatsCts = new CancellationTokenSource();
             _orders = new List<BybitSpotOrderV3>();
-            _subscriptions = new List<UpdateSubscription>();
             _isInitialized = false;
-
-            Task.Run(() => MonitorOrderStatsThread(_monitorOrderStatsCts.Token));
         }
 
         public bool Initialize()
@@ -52,18 +44,7 @@ namespace CryptoBot.Managers.Miha
             {
                 if (_isInitialized) return true;
 
-                var response = _tradingAPIManager.GetAvailableSymbols();
-                response.Wait();
-
-                _availableSymbols = response.Result;
-
-                if (_availableSymbols.IsNullOrEmpty())
-                {
-                    ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Warning,
-                    message: $"Failed to initialize order manager. No available symbols."));
-
-                    return false;
-                }
+                Task.Run(() => MonitorOrderStatsThread(_monitorOrderStatsCts.Token));
 
                 ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
                 message: $"Initialized order manager."));
@@ -80,38 +61,7 @@ namespace CryptoBot.Managers.Miha
             }
         }
 
-        public void InvokeAPISubscription()
-        {
-            if (!_isInitialized) return;
-
-            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            $"Invoked API subscription in order manager."));
-
-            BybitSocketClientOptions socketClientOptions = BybitSocketClientOptions.Default;
-            socketClientOptions.SpotStreamsV1Options.BaseAddress = _config.SpotStreamEndpoint;
-
-            BybitSocketClient socketClient = new BybitSocketClient(socketClientOptions);
-
-            foreach (var symbol in _availableSymbols)
-            {
-                UpdateSubscription subscription = socketClient.SpotStreamsV1.SubscribeToTickerUpdatesAsync(symbol, HandleTicker).GetAwaiter().GetResult().Data;
-                subscription.ConnectionRestored += API_Subscription_ConnectionRestored;
-                subscription.ConnectionLost += API_Subscription_ConnectionLost;
-                subscription.ConnectionClosed += API_Subscription_ConnectionClosed;
-
-                _subscriptions.Add(subscription);
-            }
-        }
-
-        public async void CloseAPISubscription()
-        {
-            foreach (var subscription in _subscriptions)
-            {
-                await subscription.CloseAsync();
-            }
-        }
-
-        public async Task<bool> InvokeOrderAsync(string symbol)
+        public async Task<bool> InvokeOrder(string symbol, MarketDirection marketDirection)
         {
             if (_orders.Where(x => x.Symbol == symbol && x.IsWorking == true).Count() >= _config.ActiveSymbolOrders)
             {
@@ -119,41 +69,18 @@ namespace CryptoBot.Managers.Miha
                 return false;
             }
 
-            var market = await _marketManager.GetCurrentMarket(symbol);
-            if (market == null) return false;
-
-            MarketVolumeIntensity marketVolumeIntensity = market.GetMarketVolumeIntensity();
-
-            if (marketVolumeIntensity != MarketVolumeIntensity.Big)
-            {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Warning,
-                message: $"Not proper volume to invoke order. Current market volume intensity: {marketVolumeIntensity}."));
-
-                return false;
-            }
-
-            MarketDirection marketDirection = market.GetMarketDirection();
-
-            if (marketDirection == MarketDirection.Unknown || marketDirection == MarketDirection.Neutral)
-            {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Warning,
-                message: $"Not proper market direction to invoke order. Current market direction: {marketDirection}."));
-
-                return false;
-            }
-
             BybitSpotOrderV3 placedOrder = new BybitSpotOrderV3();
             placedOrder.Symbol = symbol;
             placedOrder.Type = OrderType.Market; //xxx
-            placedOrder.Side = marketDirection == MarketDirection.Up ? OrderSide.Buy : OrderSide.Sell;
-            placedOrder.Quantity = marketDirection == MarketDirection.Up ? _config.BuyOpenQuantity : _config.SellOpenQuantity;
+            placedOrder.Side = marketDirection == MarketDirection.Uptrend ? OrderSide.Buy : OrderSide.Sell;
+            //placedOrder.Quantity = marketDirection == MarketDirection.Up ? _config.BuyOpenQuantity : _config.SellOpenQuantity;
 
-            if (!await _tradingAPIManager.PlaceOrderAsync(placedOrder))
+            if (!await _tradingAPIManager.PlaceOrder(placedOrder))
                 return false;
 
             if (!_config.TestMode)
             {
-                BybitSpotOrderV3 order = await _tradingAPIManager.GetOrderAsync(placedOrder.ClientOrderId);
+                BybitSpotOrderV3 order = await _tradingAPIManager.GetOrder(placedOrder.ClientOrderId);
                 if (order == null)
                 {
                     ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
@@ -169,7 +96,7 @@ namespace CryptoBot.Managers.Miha
             else
             {
                 // modify price due to incorrect test environment price
-                decimal? lastPrice = await _tradingAPIManager.GetPriceAsync(symbol);
+                decimal? lastPrice = await _tradingAPIManager.GetPrice(symbol);
                 if (!lastPrice.HasValue)
                 {
                     ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Warning,
@@ -189,11 +116,11 @@ namespace CryptoBot.Managers.Miha
             return true;
         }
 
-        public async Task FinishOrderAsync(string symbol)
+        public async Task FinishOrder(string symbol)
         {
             foreach (var order in _orders.Where(x => x.Symbol == symbol && x.IsWorking == true))
             {
-                decimal? lastPrice = await _tradingAPIManager.GetPriceAsync(symbol);
+                decimal? lastPrice = await _tradingAPIManager.GetPrice(symbol);
                 if (!lastPrice.HasValue || lastPrice.Value == order.Price)
                 {
                     // nothing to do
@@ -212,7 +139,7 @@ namespace CryptoBot.Managers.Miha
                         placedCounterOrder.Side = order.Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
                         placedCounterOrder.Quantity = order.Side == OrderSide.Buy ? order.QuantityFilled : order.QuoteQuantity;
 
-                        if (!await _tradingAPIManager.PlaceOrderAsync(placedCounterOrder))
+                        if (!await _tradingAPIManager.PlaceOrder(placedCounterOrder))
                         {
                             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Warning,
                             $"Failed to place counter order '{placedCounterOrder.Id}'. Will try to finish order '{order.Id}' later."));
@@ -220,7 +147,7 @@ namespace CryptoBot.Managers.Miha
                             continue;
                         }
 
-                        BybitSpotOrderV3 counterOrder = await _tradingAPIManager.GetOrderAsync(placedCounterOrder.ClientOrderId);
+                        BybitSpotOrderV3 counterOrder = await _tradingAPIManager.GetOrder(placedCounterOrder.ClientOrderId);
                         if (counterOrder == null)
                         {
                             ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
@@ -316,50 +243,5 @@ namespace CryptoBot.Managers.Miha
                 Task.Delay(30000).Wait();
             }
         }
-
-
-        #region Event handlers
-
-        private void API_Subscription_ConnectionRestored(TimeSpan obj)
-        {
-            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            message: $"API subscription connection restored in order manager."));
-        }
-
-        private void API_Subscription_ConnectionLost()
-        {
-            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            message: $"API subscription connection lost in order manager."));
-        }
-
-        private void API_Subscription_ConnectionClosed()
-        {
-            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-            message: $"API subscription connection closed in order manager."));
-        }
-
-        private async void HandleTicker(DataEvent<BybitSpotTickerUpdate> ticker)
-        {
-            try
-            {
-                await _tickerSemaphore.WaitAsync();
-
-                await FinishOrderAsync(ticker.Data.Symbol);
-
-                await InvokeOrderAsync(ticker.Data.Symbol);
-            }
-            catch (Exception e)
-            {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                message: $"!!!HandleTicker failed!!! {e}"));
-            }
-            finally
-            {
-                _tickerSemaphore.Release();
-            }
-        }
-
-
-        #endregion
     }
 }

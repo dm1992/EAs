@@ -10,6 +10,30 @@ namespace CryptoBot
     {
         private static object _fileLocker = new object();
 
+        public static bool DeleteDirectoryFiles(string path)
+        {
+            try
+            {
+                string directoryPath = Path.GetDirectoryName(path);
+                if (!Directory.Exists(directoryPath))
+                {
+                    return false;
+                }
+
+                DirectoryInfo directoryInfo = new DirectoryInfo(path);
+                foreach (FileInfo file in directoryInfo.GetFiles())
+                {
+                    file.Delete();
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public static bool SaveToFile(string content, string path)
         {
             lock (_fileLocker)
