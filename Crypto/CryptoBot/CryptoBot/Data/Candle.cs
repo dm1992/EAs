@@ -57,7 +57,7 @@ namespace CryptoBot.Data
 
         public string DumpTrades()
         {
-            string result = $"Total {this.TradeBuffer.Count} trades in candle with Id {this.Id}:\n";
+            string result = $"Total {this.TradeBuffer.Count} trades in trade candle Id {this.Id}:\n";
 
             foreach (var trade in this.TradeBuffer.OrderByDescending(x => x.Data.Timestamp))
             {
@@ -69,7 +69,7 @@ namespace CryptoBot.Data
 
         public override string Dump()
         {
-            return $"{this.CreatedAt}, {this.Symbol} candle (completed: {this.Completed}) with volume: {this.GetTotalVolume()} and price move percentage: {this.GetPriceMovePercentage()} %.";
+            return $"Trade candle {this.Id},{this.Symbol},{this.GetTotalVolume()},{this.GetPriceMovePercentage()}";
         }
     }
 
@@ -117,9 +117,21 @@ namespace CryptoBot.Data
             return sellerPriceClosures.Average(x => x.SellerVolume);
         }
 
+        public string DumpPriceClosures()
+        {
+            string result = $"Total {this.PriceClosures.Count} price closures in price closure candle Id {this.Id}:\n";
+
+            foreach (var trade in this.PriceClosures.OrderByDescending(x => x.CreatedAt))
+            {
+                result += $"{trade.Dump()}\n";
+            }
+
+            return result;
+        }
+
         public override string Dump()
         {
-            return $"{this.Symbol},{this.CreatedAt},{this.GetPriceMove()},{this.GetAverageBuyerVolume()},{this.GetAverageSellerVolume()}";
+            return $"Price closure candle {this.Id},{this.Symbol},{this.GetPriceMove()},{this.GetAverageBuyerVolume()},{this.GetAverageSellerVolume()}";
         }
     }
 }

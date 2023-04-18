@@ -35,7 +35,7 @@ namespace CryptoBot.Managers
                 if (!SetupApplicationManagers())
                     return false;
 
-                SaveApplicationMessage($"Running application with username '{_config.Username}'.\nSaving results to application directory '{path}'.");
+                SaveApplicationMessage($"Running application with username '{_config.Username}'.\nSaving results to application directory '{path}'.\n");
 
                 _isInitialized = true;
                 return true;
@@ -137,9 +137,9 @@ namespace CryptoBot.Managers
 
         private static void ApplicationEventHandler(object sender, ApplicationEventArgs args)
         {
-            SaveApplicationMessage(args.ToString(), args.MessageScope);
+            SaveApplicationMessage(args.Dump(), $"{args.EventTag}_{(args.Verbose ? "verbose" : "general")}");
 
-            if (args.Type == EventType.TerminateApplication)
+            if (args.EventType == EventType.TerminateApplication)
             {
                 TerminateApplication();
             }

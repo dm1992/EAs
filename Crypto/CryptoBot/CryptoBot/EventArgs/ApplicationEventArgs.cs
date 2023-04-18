@@ -6,29 +6,67 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.EventArgs
 {
-    public class ApplicationEventArgs : System.EventArgs
+    public abstract class ApplicationEventArgs : System.EventArgs
     {
         public DateTime SendAt { get; set; }
-        public EventType Type { get; set; }
+        public abstract string EventTag { get; }
+        public EventType EventType { get; set; }
         public string Message { get; set; }
-        public string MessageScope { get; set; }
+        public bool Verbose { get; set; }
 
-        public ApplicationEventArgs(EventType type, string message, string messageScope = null)
+        public ApplicationEventArgs(EventType eventType, string message, bool verbose = false)
         {
             this.SendAt = DateTime.UtcNow;
-            this.Type = type;
+            this.EventType = eventType;
             this.Message = message;
-            this.MessageScope = messageScope;
+            this.Verbose = verbose;
         }
 
-        public override string ToString()
-        {
-            if (String.IsNullOrEmpty(this.MessageScope))
-            {
-                return $"[{this.Type} ({this.SendAt})]: {this.Message}\n";
-            }
+        public abstract string Dump();
+    }
 
-            return $"{this.Message}\n";
+    public class MarketManagerEventArgs : ApplicationEventArgs
+    {
+        public override string EventTag => "MarketManager";
+
+        public MarketManagerEventArgs(EventType eventType, string message, bool verbose = false) : base (eventType, message, verbose)
+        {
+
+        }
+
+        public override string Dump()
+        {
+            return $"[{this.EventType} ({this.SendAt})]: {this.Message}\n";
+        }
+    }
+
+    public class OrderManagerEventArgs : ApplicationEventArgs
+    {
+        public override string EventTag => "OrderManager";
+
+        public OrderManagerEventArgs(EventType eventType, string message, bool verbose = false) : base(eventType, message, verbose)
+        {
+            // for now only default params
+        }
+
+        public override string Dump()
+        {
+            return $"[{this.EventType} ({this.SendAt})]: {this.Message}\n";
+        }
+    }
+
+    public class TradingManagerEventArgs : ApplicationEventArgs
+    {
+        public override string EventTag => "TradingManager";
+
+        public TradingManagerEventArgs(EventType eventType, string message, bool verbose = false) : base(eventType, message, verbose)
+        {
+            // for now only default params
+        }
+
+        public override string Dump()
+        {
+            return $"[{this.EventType} ({this.SendAt})]: {this.Message}\n";
         }
     }
 }

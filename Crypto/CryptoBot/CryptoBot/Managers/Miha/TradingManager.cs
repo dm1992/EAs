@@ -45,17 +45,14 @@ namespace CryptoBot.Managers.Miha
 
                 //Task.Run(() => MonitorTradingBalance());
 
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                message: $"Initialized trading manager."));
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Information, "Initialized."));
 
                 _isInitialized = true;
                 return true;
             }
             catch (Exception e)
             {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                message: $"!!!Initialization of trading manager failed!!! {e}"));
-
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Initialization failed!!! {e}"));
                 return false;
             }
         }
@@ -65,9 +62,7 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.ExchangeData.GetServerTimeAsync();
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                $"!!!Trading server unavailable. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
-
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Trading server unavailable. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
                 return false;
             }
 
@@ -79,16 +74,14 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.Account.GetBalancesAsync(API_REQUEST_TIMEOUT);                              
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                $"!!!Failed to get balances. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
-
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to get balances. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
                 return null;
             }
 
             return response.Data;
         }
 
-        public async Task<List<string>> GetAvailableSymbols()
+        public async Task<IEnumerable<string>> GetAvailableSymbols()
         {
             if (!_config.Symbols.IsNullOrEmpty())
                 return _config.Symbols.ToList();
@@ -96,13 +89,11 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.ExchangeData.GetSymbolsAsync();
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                message: $"!!!Failed to get available symbols. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
-
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to get available symbols. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
                 return new List<string>();
             }
 
-            return response.Data.Select(x => x.Name).ToList();
+            return response.Data.Select(x => x.Name);
         }
 
         public async Task<decimal?> GetPrice(string symbol)
@@ -110,9 +101,7 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.ExchangeData.GetPriceAsync(symbol);
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                $"!!!Failed to get '{symbol}' price. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
-
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to get '{symbol}' price. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
                 return null;
             }
 
@@ -124,9 +113,7 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.Trading.GetOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                $"!!!Failed to get order for client order id '{clientOrderId}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
-
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to get order for client order id '{clientOrderId}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
                 return null;
             }
 
@@ -138,9 +125,7 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.Trading.CancelOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                $"!!!Failed to cancel order for client order id '{clientOrderId}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
-
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to cancel order for client order id '{clientOrderId}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
                 return false;
             }
 
@@ -151,17 +136,12 @@ namespace CryptoBot.Managers.Miha
         {
             if (order == null) return false;
 
-            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Debug,
-            $"Placing {order.Side} {order.Type} order symbol {order.Symbol} with quantity {order.Quantity}.",
-            messageScope: $"trading"));
+            ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Debug, $"Placing {order.Symbol} {order.Type} {order.Side} order with quantity {order.Quantity}."));
 
             var response = await _bybitClient.SpotApiV3.Trading.PlaceOrderAsync(order.Symbol, order.Side, order.Type, order.Quantity, null, null, null, API_REQUEST_TIMEOUT);
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                $"!!!Failed to place order '{order.Id}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!",
-                messageScope: $"trading"));
-
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to place order '{order.Id}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
                 return false;
             }
 
@@ -178,27 +158,24 @@ namespace CryptoBot.Managers.Miha
                 try
                 {
                     IEnumerable<BybitSpotBalance> balance = await GetBalances();
+
                     if (balance.IsNullOrEmpty())
                     {
-                        ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                        "!!!Failed to obtain trading balance!!!"));
+                        ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, "!!!Failed to obtain trading balance!!!"));
                     }
                     else
                     {
-                        ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
+                        ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Information,
                         $"Trading balance:\n{String.Join("\n", balance.Select(x => $"Asset: '{x.Asset}', Available: '{x.Available}', Locked: '{x.Locked}', Total: '{x.Total}'"))}"));
                     }
                 }
                 catch (Exception e)
                 {
-                    ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                    $"!!!MonitorTradingBalance failed!!! {e}"));
+                    ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!MonitorTradingBalance failed!!! {e}"));
                 }
 
                 Task.Delay(30000).Wait();
             }
         }
-
-      
     }
 }

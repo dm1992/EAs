@@ -10,7 +10,7 @@ namespace CryptoBot.Interfaces.Managers
     {
         Task<bool> TradingServerAvailable();
         Task<IEnumerable<BybitSpotBalance>> GetBalances();
-        Task<List<string>> GetAvailableSymbols();
+        Task<IEnumerable<string>> GetAvailableSymbols();
         Task<decimal?> GetPrice(string symbol);
         Task<BybitSpotOrderV3> GetOrder(string clientOrderId);
         Task<bool> CancelOrder(string clientOrderId);

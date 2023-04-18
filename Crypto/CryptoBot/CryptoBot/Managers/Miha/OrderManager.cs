@@ -44,17 +44,14 @@ namespace CryptoBot.Managers.Miha
 
                 //Task.Run(() => MonitorOrderStatsThread(_monitorOrderStatsCts.Token));
 
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
-                message: $"Initialized order manager."));
+                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Initialized."));
 
                 _isInitialized = true;
                 return true;
             }
             catch (Exception e)
             {
-                ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                message: $"!!!Initialization of order manager failed!!! {e}"));
-
+                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Initialization failed!!! {e}"));
                 return false;
             }
         }
@@ -81,9 +78,7 @@ namespace CryptoBot.Managers.Miha
                 BybitSpotOrderV3 order = await _tradingAPIManager.GetOrder(placedOrder.ClientOrderId);
                 if (order == null)
                 {
-                    ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                    $"!!!Unable to get order '{order.Id}' despite order was placed. Must delete placed order. Very strange!!!"));
-
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Unable to get order '{order.Id}' despite order was placed. Must delete placed order. Very strange!!!"));
                     return false;
                 }
 
@@ -97,9 +92,7 @@ namespace CryptoBot.Managers.Miha
                 decimal? lastPrice = await _tradingAPIManager.GetPrice(symbol);
                 if (!lastPrice.HasValue)
                 {
-                    ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Warning,
-                    $"Failed to get last price for symbol '{symbol}'. Must delete placed order. Very strange."));
-
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, $"Failed to get last price for symbol '{symbol}'. Must delete placed order. Very strange."));
                     return false;
                 }
 
@@ -139,17 +132,14 @@ namespace CryptoBot.Managers.Miha
 
                         if (!await _tradingAPIManager.PlaceOrder(placedCounterOrder))
                         {
-                            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Warning,
-                            $"Failed to place counter order '{placedCounterOrder.Id}'. Will try to finish order '{order.Id}' later."));
-
+                            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, $"Failed to place counter order '{placedCounterOrder.Id}'. Will try to finish order '{order.Id}' later."));
                             continue;
                         }
 
                         BybitSpotOrderV3 counterOrder = await _tradingAPIManager.GetOrder(placedCounterOrder.ClientOrderId);
                         if (counterOrder == null)
                         {
-                            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                            $"!!!Unable to get counter order '{placedCounterOrder.Id}' despite counter order was placed. Very strange!!!"));
+                            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Unable to get counter order '{placedCounterOrder.Id}' despite counter order was placed. Very strange!!!"));
                         }
 
                         order.StopPrice = counterOrder?.AveragePrice;
@@ -176,7 +166,7 @@ namespace CryptoBot.Managers.Miha
         {
             if (order == null) return;
 
-            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
+            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information,
             $"[{(comment)}] '{order.Id}' ('{order.ClientOrderId}'), '{order.Symbol}', '{order.Price}', '{order.Quantity}', " +
             $"'{order.Type}', '{order.Side}', '{order.Status}', '{order.TimeInForce}', " +
             $"'{order.QuantityFilled}', '{order.QuoteQuantity}', '{order.AveragePrice}', '{order.StopPrice}', " +
@@ -214,7 +204,7 @@ namespace CryptoBot.Managers.Miha
                     {
                         foreach (var symbol in _config.Symbols)
                         {
-                            ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
+                            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information,
                             $"\n------------------------\n" +
                             $"SYMBOL: '{symbol}'\n" +
                             $"------------------------\n" +
@@ -226,7 +216,7 @@ namespace CryptoBot.Managers.Miha
                             $"------------------------\n"));
                         }
 
-                        ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Information,
+                        ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information,
                         $"\n------------------------\n" +
                         $"TOTAL BALANCE: '{_orders.Sum(x => x.StopPrice ?? 0)}'\n" +
                         $"------------------------\n"));
@@ -234,8 +224,7 @@ namespace CryptoBot.Managers.Miha
                 }
                 catch (Exception e)
                 {
-                    ApplicationEvent?.Invoke(this, new ApplicationEventArgs(EventType.Error,
-                    $"!!!MonitorOrderStatsThread failed!!! {e}"));
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!MonitorOrderStatsThread failed!!! {e}"));
                 }
 
                 Task.Delay(30000).Wait();
