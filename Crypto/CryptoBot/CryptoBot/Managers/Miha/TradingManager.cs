@@ -108,7 +108,7 @@ namespace CryptoBot.Managers.Miha
             return response.Data.Price;
         }
 
-        public async Task<BybitSpotOrderV3> GetOrder(string clientOrderId)
+        public async Task<Order> GetOrder(string clientOrderId)
         {
             var response = await _bybitClient.SpotApiV3.Trading.GetOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
             if (!response.Success)
@@ -117,7 +117,7 @@ namespace CryptoBot.Managers.Miha
                 return null;
             }
 
-            return response.Data;
+            return (Order)response.Data;
         }
 
         public async Task<bool> CancelOrder(string clientOrderId)
@@ -132,7 +132,7 @@ namespace CryptoBot.Managers.Miha
             return true;
         }
 
-        public async Task<bool> PlaceOrder(BybitSpotOrderV3 order)
+        public async Task<bool> PlaceOrder(Order order)
         {
             if (order == null) return false;
 

@@ -483,11 +483,11 @@ namespace CryptoBot.Managers.Miha
             ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Web socket subscription connection closed."));
         }
 
-        private void HandleTrade(DataEvent<BybitSpotTradeUpdate> trade)
+        private async void HandleTrade(DataEvent<BybitSpotTradeUpdate> trade)
         {
             try
             {
-                _tradeSemaphore.WaitAsync();
+                await _tradeSemaphore.WaitAsync();
 
                 trade.Topic = (string)Extensions.ParseObject(trade.OriginalData, "topic");
                 if (trade.Topic == null)
@@ -503,7 +503,7 @@ namespace CryptoBot.Managers.Miha
                 if (HandlePriceClosureCandle(trade))
                 {
                     // price closure handled. Check for potential market order invocation.
-                    InvokeMarketOrder(trade.Topic).GetAwaiter().GetResult();
+                    await InvokeMarketOrder(trade.Topic);
                 }
             }
             catch (Exception e)

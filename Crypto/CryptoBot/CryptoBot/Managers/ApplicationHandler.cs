@@ -61,6 +61,8 @@ namespace CryptoBot.Managers
                 _config.ApiEndpoint = ConfigurationManager.AppSettings["apiEndpoint"];
                 _config.SpotStreamEndpoint = ConfigurationManager.AppSettings["spotStreamEndpoint"];
                 _config.ActiveSymbolOrders = int.Parse(ConfigurationManager.AppSettings["activeSymbolOrders"]);
+                _config.OrderTakeProfitPercent = decimal.Parse(ConfigurationManager.AppSettings["orderTakeProfitPercent"]);
+                _config.OrderStopLossPercent = decimal.Parse(ConfigurationManager.AppSettings["orderStopLossPercent"]);
                 _config.BuyOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["buyOrderVolume"]);
                 _config.SellOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["sellOrderVolume"]);
                 _config.CandlesInTradeBatch = int.Parse(ConfigurationManager.AppSettings["candlesInTradeBatch"]);
@@ -120,6 +122,7 @@ namespace CryptoBot.Managers
                 marketManager.Initialize();
 
                 marketManager.InvokeWebSocketEventSubscription();
+                orderManager.InvokeWebSocketEventSubscription();
 
                 return true;
             }

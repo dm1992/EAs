@@ -106,6 +106,7 @@
     <Compile Include="Data\CandleBatch.cs" />
     <Compile Include="Data\Config.cs" />
     <Compile Include="Data\Market.cs" />
+    <Compile Include="Data\Order.cs" />
     <Compile Include="Data\PriceClosure.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="EventArgs\ApplicationEventArgs.cs" />
