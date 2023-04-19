@@ -14,13 +14,14 @@ namespace CryptoBot.Data
     {
         public decimal TakeProfitPrice { get; set; }
         public decimal StopLossPrice { get; set; }
+        public bool IsActive { get; set; }
 
         public string Dump()
         {
             return $"'{this.Id}' ('{this.ClientOrderId}'), '{this.Symbol}', '{this.Price}', '{this.Quantity}', " +
             $"'{this.Type}', '{this.Side}', '{this.Status}', '{this.TimeInForce}', " +
             $"'{this.QuantityFilled}', '{this.QuoteQuantity}', '{this.AveragePrice}', '{this.StopPrice}', " +
-            $"'{this.IcebergQuantity}', '{this.CreateTime}', '{this.UpdateTime}', '{this.IsWorking}', '{this.TakeProfitPrice}', '{this.StopLossPrice}'";
+            $"'{this.IcebergQuantity}', '{this.CreateTime}', '{this.UpdateTime}', '{this.IsActive}', '{this.TakeProfitPrice}', '{this.StopLossPrice}'";
         }
     }
 }

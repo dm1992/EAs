@@ -136,8 +136,6 @@ namespace CryptoBot.Managers.Miha
         {
             if (order == null) return false;
 
-            ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Debug, $"Placing {order.Symbol} {order.Type} {order.Side} order with quantity {order.Quantity}."));
-
             var response = await _bybitClient.SpotApiV3.Trading.PlaceOrderAsync(order.Symbol, order.Side, order.Type, order.Quantity, null, null, null, API_REQUEST_TIMEOUT);
             if (!response.Success)
             {

@@ -111,7 +111,7 @@ namespace CryptoBot.Managers.Miha
         {
             try
             {
-                if (_orderBuffer.Where(x => x.Symbol == symbol && x.IsWorking == true).Count() >= _config.ActiveSymbolOrders)
+                if (_orderBuffer.Where(x => x.Symbol == symbol && x.IsActive).Count() >= _config.ActiveSymbolOrders)
                 {
                     // wait for order(s) to finish
                     return false;
@@ -155,14 +155,14 @@ namespace CryptoBot.Managers.Miha
                         return false;
                     }
 
+                    placedOrder.Price = lastPrice.Value;
+                    placedOrder.IsActive = true;
+
                     if (!SetOrderExitPrice(placedOrder))
                     {
                         ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Unable to set order '{placedOrder.Id}' exit price. Must delete placed order."));
                         return false;
                     }
-
-                    placedOrder.Price = lastPrice.Value;
-                    placedOrder.IsWorking = true;
 
                     _orderBuffer.Add(placedOrder);
 
@@ -182,7 +182,7 @@ namespace CryptoBot.Managers.Miha
         {
             try
             {
-                foreach (var order in _orderBuffer.Where(x => x.Symbol == symbol && x.IsWorking == true))
+                foreach (var order in _orderBuffer.Where(x => x.Symbol == symbol && x.IsActive))
                 {
                     decimal? lastPrice = await _tradingManager.GetPrice(symbol);
                     if (!lastPrice.HasValue || lastPrice.Value == order.Price)
@@ -233,7 +233,7 @@ namespace CryptoBot.Managers.Miha
                         }
 
                         order.UpdateTime = DateTime.Now;
-                        order.IsWorking = false;
+                        order.IsActive = false;
 
                         HandleFinishedOrder(order);
 
@@ -306,10 +306,10 @@ namespace CryptoBot.Managers.Miha
                             $"\n------------------------\n" +
                             $"SYMBOL: '{symbol}'\n" +
                             $"------------------------\n" +
-                            $"ACTIVE orders: '{_orderBuffer.Where(x => x.Symbol == symbol && x.IsWorking == true).Count()}',\n" +
-                            $"PROFIT orders: '{_orderBuffer.Where(x => x.Symbol == symbol && x.IsWorking != true && x.StopPrice > 0).Count()}',\n" +
-                            $"LOSS orders: '{_orderBuffer.Where(x => x.Symbol == symbol && x.IsWorking != true && x.StopPrice < 0).Count()}'\n" +
-                            $"NEUTRAL orders: '{_orderBuffer.Where(x => x.Symbol == symbol && x.IsWorking != true && x.StopPrice == 0).Count()}'\n" +
+                            $"ACTIVE orders: '{_orderBuffer.Where(x => x.Symbol == symbol && x.IsActive).Count()}',\n" +
+                            $"PROFIT orders: '{_orderBuffer.Where(x => x.Symbol == symbol && !x.IsActive && x.StopPrice > 0).Count()}',\n" +
+                            $"LOSS orders: '{_orderBuffer.Where(x => x.Symbol == symbol && !x.IsActive && x.StopPrice < 0).Count()}'\n" +
+                            $"NEUTRAL orders: '{_orderBuffer.Where(x => x.Symbol == symbol && !x.IsActive && x.StopPrice == 0).Count()}'\n" +
                             $"SYMBOL BALANCE: '{_orderBuffer.Where(x => x.Symbol == symbol).Sum(x => x.StopPrice ?? 0)}'\n" +
                             $"------------------------\n",
                             messageSubTag: "orderStats"));

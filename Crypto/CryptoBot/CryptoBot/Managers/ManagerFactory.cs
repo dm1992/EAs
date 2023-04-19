@@ -43,8 +43,14 @@ namespace CryptoBot.Managers
             {
                 //xxx add other manager types
                 case ManagerType.Miha:
-                    return new Miha.TradingManager(config);
+                {
+                    if (config.TestMode)
+                    {
+                        return new Test.TradingManager(config);
+                    }
 
+                    return new Miha.TradingManager(config);
+                }
                 default:
                     return null;
             }
