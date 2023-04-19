@@ -43,7 +43,7 @@ namespace CryptoBot.Managers.Miha
             {
                 if (_isInitialized) return true;
 
-                //Task.Run(() => MonitorTradingBalance());
+                Task.Run(() => MonitorTradingBalance());
 
                 ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Information, "Initialized."));
 
@@ -161,17 +161,18 @@ namespace CryptoBot.Managers.Miha
 
                     if (balance.IsNullOrEmpty())
                     {
-                        ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, "!!!Failed to obtain trading balance!!!"));
+                        ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, "!!!Failed to obtain trading balance!!!", messageSubTag: "tradingBalance"));
                     }
                     else
                     {
                         ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Information,
-                        $"Trading balance:\n{String.Join("\n", balance.Select(x => $"Asset: '{x.Asset}', Available: '{x.Available}', Locked: '{x.Locked}', Total: '{x.Total}'"))}"));
+                        $"Trading balance:\n{String.Join("\n", balance.Select(x => $"Asset: '{x.Asset}', Available: '{x.Available}', Locked: '{x.Locked}', Total: '{x.Total}'"))}",
+                        messageSubTag: "tradingBalance"));
                     }
                 }
                 catch (Exception e)
                 {
-                    ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!MonitorTradingBalance failed!!! {e}"));
+                    ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!MonitorTradingBalance failed!!! {e}", messageSubTag: "tradingBalance"));
                 }
 
                 Task.Delay(30000).Wait();
