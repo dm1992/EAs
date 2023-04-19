@@ -63,7 +63,7 @@ namespace CryptoBot.Data
 
         public override string Dump()
         {
-            return $"{this.Symbol},{this.GetAverageVolume()},{this.GetAveragePriceMovePercentage()}";
+            return $"{this.Id},{this.Symbol},{this.GetAverageVolume()},{this.GetAveragePriceMovePercentage()}";
         }
     }
 
@@ -150,7 +150,7 @@ namespace CryptoBot.Data
 
         public override string Dump()
         {
-            return $"{this.Symbol},{this.GetPositiveAveragePriceMove()},{this.GetNegativeAveragePriceMove()},{this.GetTotalAverageBuyerVolume()},{this.GetTotalAverageSellerVolume()}";
+            return $"{this.Id},{this.Symbol},{this.GetLatestPriceClosurePriceMove()},{this.GetPositiveAveragePriceMove()},{this.GetNegativeAveragePriceMove()},{this.GetTotalAverageBuyerVolume()},{this.GetTotalAverageSellerVolume()}";
         }
     }
 }

@@ -137,7 +137,13 @@ namespace CryptoBot.Managers
 
         private static void ApplicationEventHandler(object sender, ApplicationEventArgs args)
         {
-            SaveApplicationMessage(args.Dump(), $"{args.EventTag}_{(args.Verbose ? "verbose" : "general")}");
+            string messageScope = null;
+            if (!args.MessageSubTag.IsNullOrEmpty())
+            {
+                messageScope = $"{args.MessageTag}_{args.MessageSubTag}";
+            }
+
+            SaveApplicationMessage(args.Dump(), messageScope);
 
             if (args.EventType == EventType.TerminateApplication)
             {

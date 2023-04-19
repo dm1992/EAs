@@ -151,29 +151,29 @@ namespace CryptoBot.Managers.Miha
                     {
                         foreach (var symbol in _availableSymbols)
                         {
-                            TradeCandleBatch tradeCandleBatch = _tradeCandleBatches.FirstOrDefault(x => x.Symbol == symbol);
-                            if (tradeCandleBatch == null)
+                            TradeCandleBatch batch = _tradeCandleBatches.FirstOrDefault(x => x.Symbol == symbol);
+                            if (batch == null)
                             {
                                 ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"!!!Unable to find candle batch for symbol {symbol}."));
                                 continue;
                             }
 
                             // find first active candle inside active candle batch and check it
-                            TradeCandle activeTradeCandle = tradeCandleBatch.TradeCandles.FirstOrDefault(x => !x.Completed);
-                            if (activeTradeCandle != null)
+                            TradeCandle candle = batch.TradeCandles.FirstOrDefault(x => !x.Completed);
+                            if (candle != null)
                             {
-                                if ((DateTime.Now - activeTradeCandle.CreatedAt).TotalMinutes >= _config.TradeCandleMinuteTimeframe)
+                                if ((DateTime.Now - candle.CreatedAt).TotalMinutes >= _config.TradeCandleMinuteTimeframe)
                                 {
-                                    activeTradeCandle.Completed = true;
+                                    candle.Completed = true;
 
-                                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{activeTradeCandle.Dump()}\n\n{activeTradeCandle.DumpTrades()}", verbose: true));
+                                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{candle.Dump()}\n\n{candle.DumpTrades()}", messageSubTag: "tradeCandle"));
                                 }
                             }
                         }
 
-                        bool tradeCandleBatchesCompleted = _tradeCandleBatches.All(x => x.Completed && x.TradeCandles.Count == _config.CandlesInTradeBatch);
+                        bool allBatchesCompleted = _tradeCandleBatches.All(x => x.Completed && x.TradeCandles.Count == _config.CandlesInTradeBatch);
 
-                        if (tradeCandleBatchesCompleted)
+                        if (allBatchesCompleted)
                         {
                             ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Completed all symbol trade candle batches. Will start monitoring over again."));
 
@@ -193,7 +193,7 @@ namespace CryptoBot.Managers.Miha
 
         private void DumpTradeCandleBatches()
         {
-            foreach (var tradeCandleBatch in _tradeCandleBatches)
+            foreach (TradeCandleBatch tradeCandleBatch in _tradeCandleBatches)
             {
                 ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{tradeCandleBatch.Dump()}"));
             }
@@ -212,31 +212,31 @@ namespace CryptoBot.Managers.Miha
             {
                 lock (_tradeCandleBatches)
                 {
-                    TradeCandleBatch tradeCandleBatch = _tradeCandleBatches.FirstOrDefault(x => x.Symbol == trade.Topic);
-                    if (tradeCandleBatch == null)
+                    TradeCandleBatch batch = _tradeCandleBatches.FirstOrDefault(x => x.Symbol == trade.Topic);
+                    if (batch == null)
                     {
                         ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"!!!Unable to find trade candle batch for symbol {trade.Topic}."));
 
                         return false;
                     }
 
-                    if (tradeCandleBatch.TradeCandles.Count == _config.CandlesInTradeBatch)
+                    if (batch.TradeCandles.Count == _config.CandlesInTradeBatch)
                     {
-                        if (tradeCandleBatch.Completed)
+                        if (batch.Completed)
                         {
                             // trade candle batch for this symbol is completed, exit
                             return false;
                         }
                     }
 
-                    TradeCandle activeTradeCandle = tradeCandleBatch.TradeCandles.FirstOrDefault(x => !x.Completed);
-                    if (activeTradeCandle == null)
+                    TradeCandle candle = batch.TradeCandles.FirstOrDefault(x => !x.Completed);
+                    if (candle == null)
                     {
-                        activeTradeCandle = new TradeCandle(trade.Topic);
-                        tradeCandleBatch.TradeCandles.Add(activeTradeCandle);
+                        candle = new TradeCandle(trade.Topic);
+                        batch.TradeCandles.Add(candle);
                     }
 
-                    activeTradeCandle.TradeBuffer.Add(trade);
+                    candle.TradeBuffer.Add(trade);
                     return true;
                 }
             }
@@ -263,40 +263,39 @@ namespace CryptoBot.Managers.Miha
             {
                 if (trade == null) return false;
 
-                bool closePrice = false;
-                var symbolTradePrices = new List<decimal>();
-                var symbolTrades = _tradeBuffer.Where(x => x.Topic == trade.Topic).OrderBy(x => x.Data.Timestamp); // ordered trades
+                bool createPriceClosure = false;
 
-                foreach (var symbolTrade in symbolTrades)
+                var tradePrices = new List<decimal>();
+                var tradeBuffer = _tradeBuffer.Where(x => x.Topic == trade.Topic).OrderBy(x => x.Data.Timestamp); // ordered trades
+
+                foreach (var tb in tradeBuffer)
                 {
-                    if (!symbolTradePrices.Contains(symbolTrade.Data.Price))
+                    if (!tradePrices.Contains(tb.Data.Price))
                     {
-                        symbolTradePrices.Add(symbolTrade.Data.Price);
+                        tradePrices.Add(tb.Data.Price);
                     }
 
-                    if (symbolTradePrices.Count() >= _config.CreatePriceLevelClosureAfterPriceChanges)
+                    if (tradePrices.Count() >= _config.CreatePriceLevelClosureAfterPriceChanges)
                     {
-                        closePrice = true;
+                        createPriceClosure = true;
                         break;
                     }
                 }
 
-                if (!closePrice) return false;
+                if (!createPriceClosure) return false;
 
-                decimal symbolLatestPrice = symbolTrades.Last().Data.Price;
-                decimal symbolClosePrice = symbolTradePrices.First();
-                List<DataEvent<BybitSpotTradeUpdate>> symbolClosePriceTrades = symbolTrades.Where(x => x.Data.Price == symbolClosePrice).ToList();
+                decimal latestPrice = tradeBuffer.Last().Data.Price;
+                decimal closePrice = tradePrices.First();
+                List<DataEvent<BybitSpotTradeUpdate>> closePriceTrades = tradeBuffer.Where(x => x.Data.Price == closePrice).ToList();
 
-                priceClosure = new PriceClosure(trade.Topic, symbolLatestPrice, symbolClosePriceTrades);
+                priceClosure = new PriceClosure(trade.Topic, latestPrice, closePriceTrades);
 
-                _tradeBuffer.RemoveAll(x => x.Topic == trade.Topic && x.Data.Price == symbolClosePrice);
-
+                _tradeBuffer.RemoveAll(x => x.Topic == trade.Topic && x.Data.Price == closePrice);
                 return true;
             }
             catch (Exception e)
             {
                 ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"!!!CreatePriceClosure failed!!! {e}"));
-
                 return false;
             }
         }
@@ -307,27 +306,27 @@ namespace CryptoBot.Managers.Miha
 
             try
             {
-                PriceClosureCandleBatch priceClosureCandleBatch = _priceClosureCandleBatches.FirstOrDefault(x => x.Symbol == priceClosure.Symbol);
-                if (priceClosureCandleBatch == null)
+                PriceClosureCandleBatch batch = _priceClosureCandleBatches.FirstOrDefault(x => x.Symbol == priceClosure.Symbol);
+                if (batch == null)
                 {
                     ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"!!!Unable to find price closure candle batch for symbol {priceClosure.Symbol}."));
                     return false;
                 }
 
-                PriceClosureCandle activePriceClosureCandle = priceClosureCandleBatch.PriceClosureCandles.FirstOrDefault(x => !x.Completed);
-                if (activePriceClosureCandle == null)
+                PriceClosureCandle candle = batch.PriceClosureCandles.FirstOrDefault(x => !x.Completed);
+                if (candle == null)
                 {
-                    activePriceClosureCandle = new PriceClosureCandle(priceClosure.Symbol);
-                    priceClosureCandleBatch.PriceClosureCandles.Add(activePriceClosureCandle);
+                    candle = new PriceClosureCandle(priceClosure.Symbol);
+                    batch.PriceClosureCandles.Add(candle);
                 }
 
-                activePriceClosureCandle.PriceClosures.Add(priceClosure);
+                candle.PriceClosures.Add(priceClosure);
 
-                if (activePriceClosureCandle.PriceClosures.Count() >= _config.PriceClosureCandleSize)
+                if (candle.PriceClosures.Count() >= _config.PriceClosureCandleSize)
                 {
-                    activePriceClosureCandle.Completed = true;
+                    candle.Completed = true;
 
-                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{activePriceClosureCandle.Dump()}\n\n{activePriceClosureCandle.DumpPriceClosures()}", verbose: true));
+                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{candle.Dump()}\n\n{candle.DumpPriceClosures()}", messageSubTag: "priceClosureCandle"));
                 }
 
                 return true;
@@ -343,45 +342,45 @@ namespace CryptoBot.Managers.Miha
         {
             marketEntity = MarketEntity.Unknown;
 
-            PriceClosureCandleBatch symbolPriceClosureCandleBatch = _priceClosureCandleBatches.FirstOrDefault(x => x.Symbol == symbol);
-            if (symbolPriceClosureCandleBatch == null)
+            PriceClosureCandleBatch batch = _priceClosureCandleBatches.FirstOrDefault(x => x.Symbol == symbol);
+            if (batch == null)
             {
                 ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"!!!Unable to detect massive volume market entity for symbol {symbol}."));
                 return false;
             }
 
-            var symbolLatestPriceClosures = symbolPriceClosureCandleBatch.GetTotalPriceClosures().Take(_config.MarketPriceClosuresOnMassiveVolumeDetection);
-            if (symbolLatestPriceClosures.IsNullOrEmpty())
+            var latestPriceClosures = batch.GetTotalPriceClosures().Take(_config.MarketPriceClosuresOnMassiveVolumeDetection);
+            if (latestPriceClosures.IsNullOrEmpty())
             {
                 // nothing to do yet
                 return false;
             }
 
-            decimal symbolWeightedTotalAverageBuyerVolume = symbolPriceClosureCandleBatch.GetTotalAverageBuyerVolume() * _config.AverageVolumeWeightFactor;
-            decimal symbolWeightedTotalAverageSellerVolume = symbolPriceClosureCandleBatch.GetTotalAverageSellerVolume() * _config.AverageVolumeWeightFactor;
+            decimal averageBuyerVolume = batch.GetTotalAverageBuyerVolume() * _config.AverageVolumeWeightFactor;
+            decimal averageSellerVolume = batch.GetTotalAverageSellerVolume() * _config.AverageVolumeWeightFactor;
             int massiveVolumeBuyers = 0;
             int massiveVolumeSellers = 0;
 
-            foreach (var symbolPriceClosure in symbolLatestPriceClosures)
+            foreach (PriceClosure priceClosure in latestPriceClosures)
             {
-                if (symbolPriceClosure.BuyerVolume > symbolWeightedTotalAverageBuyerVolume)
+                if (priceClosure.BuyerVolume > averageBuyerVolume)
                 {
                     massiveVolumeBuyers++;
                 }
-                else if (symbolPriceClosure.SellerVolume > symbolWeightedTotalAverageSellerVolume)
+                else if (priceClosure.SellerVolume > averageSellerVolume)
                 {
                     massiveVolumeSellers++;
                 }
             }
 
-            decimal massiveVolumeBuyersPercent = (massiveVolumeBuyers / (decimal)symbolLatestPriceClosures.Count()) * 100.0M;
+            decimal massiveVolumeBuyersPercent = (massiveVolumeBuyers / (decimal)latestPriceClosures.Count()) * 100.0M;
             if (massiveVolumeBuyersPercent < _config.MassiveBuyersPercentLimit)
             {
                 // limit not reached, set to 0
                 massiveVolumeBuyersPercent = 0;
             }
 
-            decimal massiveVolumeSellersPercent = (massiveVolumeSellers / (decimal)symbolLatestPriceClosures.Count()) * 100.0M;
+            decimal massiveVolumeSellersPercent = (massiveVolumeSellers / (decimal)latestPriceClosures.Count()) * 100.0M;
             if (massiveVolumeSellersPercent < _config.MassiveSellersPercentLimit)
             {
                 // limit not reached, set to 0
@@ -398,9 +397,12 @@ namespace CryptoBot.Managers.Miha
             }
 
             if (marketEntity == MarketEntity.Unknown)
+            {
+                // nothing to do
                 return false;
+            }
 
-            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{symbolPriceClosureCandleBatch.Dump()}", verbose: true));
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{marketEntity},{batch.Dump()}", messageSubTag: "marketMetric"));
             return true;
         }
 
@@ -408,39 +410,39 @@ namespace CryptoBot.Managers.Miha
         {
             marketDirection = MarketDirection.Unknown;
 
-            PriceClosureCandleBatch symbolPriceClosureCandleBatch = _priceClosureCandleBatches.FirstOrDefault(x => x.Symbol == symbol);
-            if (symbolPriceClosureCandleBatch == null)
+            PriceClosureCandleBatch batch = _priceClosureCandleBatches.FirstOrDefault(x => x.Symbol == symbol);
+            if (batch == null)
             {
                 ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"!!!Unable to get market direction for symbol {symbol}."));
                 return false;
             }
 
-            if (symbolPriceClosureCandleBatch.PriceClosureCandles.Count() < _config.MarketPriceClosureCandlesOnMarketDirectionDetection)
+            if (batch.PriceClosureCandles.Count() < _config.MarketPriceClosureCandlesOnMarketDirectionDetection)
             {
                 // nothing to do yet
                 return false;
             }
 
-            var symbolLatestPriceClosurePriceMove = symbolPriceClosureCandleBatch.GetLatestPriceClosurePriceMove();
-            decimal symbolWeightedPositiveAveragePriceMove = symbolPriceClosureCandleBatch.GetPositiveAveragePriceMove() * _config.AveragePriceMoveWeightFactor;
-            decimal symbolWeightedNegativeAveragePriceMove = symbolPriceClosureCandleBatch.GetNegativeAveragePriceMove() * _config.AveragePriceMoveWeightFactor;
+            decimal latestPriceClosurePriceMove = batch.GetLatestPriceClosurePriceMove();
+            decimal positiveAveragePriceMove = batch.GetPositiveAveragePriceMove() * _config.AveragePriceMoveWeightFactor;
+            decimal negativeAveragePriceMove = batch.GetNegativeAveragePriceMove() * _config.AveragePriceMoveWeightFactor;
 
-            if (symbolLatestPriceClosurePriceMove > symbolWeightedPositiveAveragePriceMove)
+            if (latestPriceClosurePriceMove > positiveAveragePriceMove)
             {
                 marketDirection = MarketDirection.Uptrend;
             }
-            else if (symbolLatestPriceClosurePriceMove < symbolWeightedNegativeAveragePriceMove)
+            else if (latestPriceClosurePriceMove < negativeAveragePriceMove)
             {
                 marketDirection = MarketDirection.Downtrend;
             }
 
             if (marketDirection == MarketDirection.Unknown)
+            {
+                // nothing to do
                 return false;
+            }
 
-            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information,
-            $"{symbol} - MarketDirection: {marketDirection}, LatestPriceClosurePriceMove: {symbolLatestPriceClosurePriceMove}, WeightedPositiveAveragePriceMove: {symbolWeightedPositiveAveragePriceMove}, WeightedNegativeAveragePriceMove: {symbolWeightedNegativeAveragePriceMove}",
-            verbose: true));
-
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{marketDirection},{batch.Dump()}", messageSubTag: "marketMetric"));
             return true;
         }
 

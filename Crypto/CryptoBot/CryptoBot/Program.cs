@@ -38,7 +38,7 @@ namespace CryptoBot
             }
 
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, BASE_APPLICATION_DIRECTORY,
-                          $"{dataScope ?? "general"}_data_{DateTime.Now:ddMMyyyy}.txt");
+                          $"{dataScope ?? "Application"}_data_{DateTime.Now:ddMMyyyy}.txt");
 
             if (!Helpers.SaveToFile(data, path))
             {
