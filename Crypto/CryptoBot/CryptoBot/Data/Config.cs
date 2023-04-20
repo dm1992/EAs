@@ -6,6 +6,9 @@ namespace CryptoBot.Data
     public class Config
     {
         public bool TestMode { get; set; }
+        public decimal TestAvailableBalance { get; set; }
+        public decimal ROIPercentage { get; set; }
+        public decimal RiskPercentage { get; set; }
         public string Username { get; set; }
         public IEnumerable<string> Symbols { get; set; }
         public string ApiKey { get; set; }
@@ -13,8 +16,6 @@ namespace CryptoBot.Data
         public string ApiEndpoint { get; set; }
         public string SpotStreamEndpoint { get; set; }
         public int ActiveSymbolOrders { get; set; }
-        public decimal OrderTakeProfitPercent { get; set; }
-        public decimal OrderStopLossPercent { get; set; }
         public decimal BuyOrderVolume { get; set; }
         public decimal SellOrderVolume { get; set; }
         public int CandlesInTradeBatch { get; set; }

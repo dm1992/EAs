@@ -54,6 +54,9 @@ namespace CryptoBot.Managers
                 _config = new Config();
 
                 _config.TestMode = bool.Parse(ConfigurationManager.AppSettings["testMode"]);
+                _config.TestAvailableBalance = decimal.Parse(ConfigurationManager.AppSettings["testAvailableBalance"]);
+                _config.ROIPercentage = decimal.Parse(ConfigurationManager.AppSettings["roiPercentage"]);
+                _config.RiskPercentage = decimal.Parse(ConfigurationManager.AppSettings["riskPercentage"]);
                 _config.Username = ConfigurationManager.AppSettings["username"];
                 _config.Symbols = ConfigurationManager.AppSettings["symbols"].ParseCsv<string>();
                 _config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
@@ -61,8 +64,6 @@ namespace CryptoBot.Managers
                 _config.ApiEndpoint = ConfigurationManager.AppSettings["apiEndpoint"];
                 _config.SpotStreamEndpoint = ConfigurationManager.AppSettings["spotStreamEndpoint"];
                 _config.ActiveSymbolOrders = int.Parse(ConfigurationManager.AppSettings["activeSymbolOrders"]);
-                _config.OrderTakeProfitPercent = decimal.Parse(ConfigurationManager.AppSettings["orderTakeProfitPercent"]);
-                _config.OrderStopLossPercent = decimal.Parse(ConfigurationManager.AppSettings["orderStopLossPercent"]);
                 _config.BuyOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["buyOrderVolume"]);
                 _config.SellOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["sellOrderVolume"]);
                 _config.CandlesInTradeBatch = int.Parse(ConfigurationManager.AppSettings["candlesInTradeBatch"]);
@@ -141,9 +142,9 @@ namespace CryptoBot.Managers
         private static void ApplicationEventHandler(object sender, ApplicationEventArgs args)
         {
             string messageScope = null;
-            if (!args.MessageSubTag.IsNullOrEmpty())
+            if (!args.MessageScope.IsNullOrEmpty())
             {
-                messageScope = $"{args.MessageTag}_{args.MessageSubTag}";
+                messageScope = $"{args.EventTag}_{args.MessageScope}";
             }
 
             SaveApplicationMessage(args.Dump(), messageScope);

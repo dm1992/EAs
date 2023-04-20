@@ -159,18 +159,18 @@ namespace CryptoBot.Managers.Miha
 
                     if (balance.IsNullOrEmpty())
                     {
-                        ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, "!!!Failed to obtain trading balance!!!", messageSubTag: "tradingBalance"));
+                        ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, "!!!Failed to obtain trading balance!!!", messageScope: "tradingBalance"));
                     }
                     else
                     {
                         ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Information,
                         $"Trading balance:\n{String.Join("\n", balance.Select(x => $"Asset: '{x.Asset}', Available: '{x.Available}', Locked: '{x.Locked}', Total: '{x.Total}'"))}",
-                        messageSubTag: "tradingBalance"));
+                        messageScope: "tradingBalance"));
                     }
                 }
                 catch (Exception e)
                 {
-                    ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!MonitorTradingBalance failed!!! {e}", messageSubTag: "tradingBalance"));
+                    ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!MonitorTradingBalance failed!!! {e}", messageScope: "tradingBalance"));
                 }
 
                 Task.Delay(30000).Wait();

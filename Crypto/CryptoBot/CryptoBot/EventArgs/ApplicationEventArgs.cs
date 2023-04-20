@@ -10,16 +10,16 @@ namespace CryptoBot.EventArgs
     {
         public DateTime SendAt { get; set; }
         public EventType EventType { get; set; }
-        public abstract string MessageTag { get; }
-        public string MessageSubTag { get; set; }
+        public abstract string  EventTag { get; }
         public string Message { get; set; }
+        public string MessageScope { get; set; }
 
-        public ApplicationEventArgs(EventType eventType, string message, string messageSubTag = null)
+        public ApplicationEventArgs(EventType eventType, string message, string messageScope = null)
         {
             this.SendAt = DateTime.UtcNow;
             this.EventType = eventType;
             this.Message = message;
-            this.MessageSubTag = messageSubTag;
+            this.MessageScope = messageScope;
         }
 
         public abstract string Dump();
@@ -27,46 +27,46 @@ namespace CryptoBot.EventArgs
 
     public class MarketManagerEventArgs : ApplicationEventArgs
     {
-        public override string MessageTag => "MarketManager";
+        public override string EventTag => "MarketManager";
 
-        public MarketManagerEventArgs(EventType eventType, string message, string messageSubTag = null) : base (eventType, message, messageSubTag)
+        public MarketManagerEventArgs(EventType eventType, string message, string messageScope = null) : base (eventType, message, messageScope)
         {
 
         }
 
         public override string Dump()
         {
-            return $"[{this.MessageTag} {this.EventType} ({this.SendAt})]: {this.Message}\n";
+            return $"[{this.EventTag} {this.EventType} ({this.SendAt})]: {this.Message}\n";
         }
     }
 
     public class OrderManagerEventArgs : ApplicationEventArgs
     {
-        public override string MessageTag => "OrderManager";
+        public override string EventTag => "OrderManager";
 
-        public OrderManagerEventArgs(EventType eventType, string message, string messageSubTag = null) : base(eventType, message, messageSubTag)
+        public OrderManagerEventArgs(EventType eventType, string message, string messageScope = null) : base(eventType, message, messageScope)
         {
             // for now only default params
         }
 
         public override string Dump()
         {
-            return $"[{this.MessageTag} {this.EventType} ({this.SendAt})]: {this.Message}\n";
+            return $"[{this.EventTag} {this.EventType} ({this.SendAt})]: {this.Message}\n";
         }
     }
 
     public class TradingManagerEventArgs : ApplicationEventArgs
     {
-        public override string MessageTag => "TradingManager";
+        public override string EventTag => "TradingManager";
 
-        public TradingManagerEventArgs(EventType eventType, string message, string messageSubTag = null) : base(eventType, message, messageSubTag)
+        public TradingManagerEventArgs(EventType eventType, string message, string messageScope = null) : base(eventType, message, messageScope)
         {
             // for now only default params
         }
 
         public override string Dump()
         {
-            return $"[{this.MessageTag} {this.EventType} ({this.SendAt})]: {this.Message}\n";
+            return $"[{this.EventTag} {this.EventType} ({this.SendAt})]: {this.Message}\n";
         }
     }
 }

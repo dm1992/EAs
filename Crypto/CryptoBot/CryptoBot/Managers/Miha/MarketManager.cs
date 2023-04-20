@@ -166,7 +166,7 @@ namespace CryptoBot.Managers.Miha
                                 {
                                     candle.Completed = true;
 
-                                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{candle.Dump()}\n\n{candle.DumpTrades()}", messageSubTag: "tradeCandle"));
+                                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{candle.Dump()}\n\n{candle.DumpTrades()}", messageScope: "tradeCandle"));
                                 }
                             }
                         }
@@ -326,7 +326,7 @@ namespace CryptoBot.Managers.Miha
                 {
                     candle.Completed = true;
 
-                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{candle.Dump()}\n\n{candle.DumpPriceClosures()}", messageSubTag: "priceClosureCandle"));
+                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{candle.Dump()}\n\n{candle.DumpPriceClosures()}", messageScope: "priceClosureCandle"));
                 }
 
                 return true;
@@ -402,7 +402,7 @@ namespace CryptoBot.Managers.Miha
                 return false;
             }
 
-            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{marketEntity},{batch.Dump()}", messageSubTag: "marketMetric"));
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{marketEntity},{batch.Dump()}", messageScope: "marketMetric"));
             return true;
         }
 
@@ -442,7 +442,7 @@ namespace CryptoBot.Managers.Miha
                 return false;
             }
 
-            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{marketDirection},{batch.Dump()}", messageSubTag: "marketMetric"));
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{marketDirection},{batch.Dump()}", messageScope: "marketMetric"));
             return true;
         }
 
