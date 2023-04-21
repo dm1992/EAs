@@ -27,6 +27,10 @@ namespace CryptoBot.Managers.Miha
         private List<UpdateSubscription> _webSocketSubscriptions;
         private List<Order> _orderBuffer;
         private bool _isInitialized;
+        private bool _dismissInvokeOrder;
+        private bool _stopOrderManager;
+        private decimal _balanceProfitAmount;
+        private decimal _balanceLossAmount;
         private decimal _roiOrderAmount;
         private decimal _riskOrderAmount;
 
@@ -42,6 +46,8 @@ namespace CryptoBot.Managers.Miha
             _orderBuffer = new List<Order>();
             _webSocketSubscriptions = new List<UpdateSubscription>();
             _isInitialized = false;
+            _dismissInvokeOrder = false;
+            _stopOrderManager = false;
             _roiOrderAmount = 0;
             _riskOrderAmount = 0;
         }
@@ -97,14 +103,21 @@ namespace CryptoBot.Managers.Miha
                     throw new Exception("No available symbols.");
                 }
 
-                if (!CalculateOrderPLFactor())
+                if (!SetBalanceProfitLossAmount())
                 {
-                    throw new Exception("Not able to calculate PL factor.");
+                    throw new Exception("Failed to set balance profit/loss amount.");
+                }
+
+                if (!SetOrderProfitLossAmount())
+                {
+                    throw new Exception("Failed to set order profit/loss amount.");
                 }
 
                 Task.Run(() => MonitorOrderStatsThread(_monitorOrderStatsCts.Token));
 
-                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Initialized. PL order factors - ROI order amount: {_roiOrderAmount}, risk order amount: {_riskOrderAmount}."));
+                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, 
+                $"Initialized. Balance profit amount: {_balanceProfitAmount}, balance loss amount: {_balanceLossAmount}. " +
+                $"Order ROI amount: {_roiOrderAmount}, order risk amount: {_riskOrderAmount}."));
 
                 _isInitialized = true;
                 return true;
@@ -120,65 +133,12 @@ namespace CryptoBot.Managers.Miha
         {
             try
             {
-                if (_orderBuffer.Where(x => x.Symbol == symbol && x.IsActive).Count() >= _config.ActiveSymbolOrders)
-                {
-                    // wait for order(s) to finish
-                    return false;
-                }
+                if (_dismissInvokeOrder) return false;
 
-                Order placedOrder = new Order();
-                placedOrder.Symbol = symbol;
-                placedOrder.Type = OrderType.Market;
-                placedOrder.Side = orderSide;
-                placedOrder.Quantity = orderSide == OrderSide.Buy ? _config.BuyOrderVolume : _config.SellOrderVolume;
+                Order order = await CreateOrder(symbol, orderSide);
+                if (order == null) return false;
 
-                if (!await _tradingManager.PlaceOrder(placedOrder))
-                    return false;
-
-                if (!_config.TestMode)
-                {
-                    Order order = await _tradingManager.GetOrder(placedOrder.ClientOrderId);
-                    if (order == null)
-                    {
-                        ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Unable to get order '{order.Id}' despite order was placed. Must delete placed order. Very strange!!!"));
-                        return false;
-                    }
-
-                    if (!SetOrderPLPrice(order))
-                    {
-                        ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Unable to set order '{order.Id}' PL price. Must delete placed order."));
-                        return false;
-                    }
-
-                    _orderBuffer.Add(order);
-
-                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Invoked REAL order. {order.Dump()}"));
-                }
-                else
-                {
-                    // modify price due to incorrect test environment price
-                    decimal? lastPrice = await _tradingManager.GetPrice(symbol);
-                    if (!lastPrice.HasValue)
-                    {
-                        ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, $"Failed to get last price for symbol '{symbol}'. Must delete placed order. Very strange!!!"));
-                        return false;
-                    }
-
-                    placedOrder.Price = lastPrice.Value;
-                    placedOrder.IsActive = true;
-
-                    if (!SetOrderPLPrice(placedOrder))
-                    {
-                        ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Unable to set order '{placedOrder.Id}' PL price. Must delete placed order."));
-                        return false;
-                    }
-
-                    _orderBuffer.Add(placedOrder);
-
-                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Invoked TEST order. {placedOrder.Dump()}"));
-                }
-
-                return true;
+                return await HandleOrder(order);
             }
             catch (Exception e)
             {
@@ -193,77 +153,22 @@ namespace CryptoBot.Managers.Miha
             {
                 foreach (Order order in _orderBuffer.Where(x => x.Symbol == symbol && x.IsActive))
                 {
-                    decimal? lastPrice = await _tradingManager.GetPrice(symbol);
-                    if (!lastPrice.HasValue || lastPrice.Value == order.Price)
-                    {
-                        // nothing to do
+                    order.LastPrice = await _tradingManager.GetPrice(symbol);
+
+                    if (!order.MustFinish) 
                         continue;
-                    }
 
-                    bool shouldFinish = false;
+                    if (!await CloseOrder(order))
+                        continue;
 
-                    if (order.Side == OrderSide.Buy)
-                    {
-                        if (lastPrice >= order.TakeProfitPrice)
-                        {
-                            shouldFinish = true;
-                        }
-                        else if (lastPrice <= order.StopLossPrice)
-                        {
-                            shouldFinish = true;
-                        }
-                    }
-                    else if (order.Side == OrderSide.Sell)
-                    {
-                        if (lastPrice <= order.TakeProfitPrice)
-                        {
-                            shouldFinish = true;
-                        }
-                        else if (lastPrice >= order.StopLossPrice)
-                        {
-                            shouldFinish = true;
-                        }
-                    }
+                    SetOrderRealizedProfitLossAmount(order);
 
-                    if (shouldFinish)
-                    {
-                        if (!_config.TestMode)
-                        {
-                            // counter order used only for closing original order
-                            Order placedCounterOrder = new Order();
-                            placedCounterOrder.Symbol = order.Symbol;
-                            placedCounterOrder.Side = order.Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
-                            placedCounterOrder.Quantity = order.Side == OrderSide.Buy ? order.QuantityFilled : order.QuoteQuantity;
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Finished order. {order.Dump()}"));
 
-                            if (!await _tradingManager.PlaceOrder(placedCounterOrder))
-                            {
-                                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, $"Failed to place counter order '{placedCounterOrder.Id}'. Will try to finish order '{order.Id}' later."));
-                                continue;
-                            }
-
-                            Order counterOrder = await _tradingManager.GetOrder(placedCounterOrder.ClientOrderId);
-                            if (counterOrder == null)
-                            {
-                                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Unable to get counter order '{placedCounterOrder.Id}' despite counter order was placed. Very strange!!!"));
-                            }
-
-                            order.ExitPrice = counterOrder.AveragePrice;
-                        }
-                        else
-                        {
-                            // modify price due to incorrect test environment price
-                            order.ExitPrice = lastPrice.Value;
-                        }
-
-                        order.UpdateTime = DateTime.Now;
-                        order.IsActive = false;
-
-                        HandleFinishedOrder(order);
-
-                        //xxx is needed balance reached? Close API subscription connection.
-                        ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Finished invoked order. {order.Dump()}"));
-                    }
+                    DismissInvokeOrder();
                 }
+
+                StopOrderManager();
             }
             catch (Exception e)
             {
@@ -271,35 +176,141 @@ namespace CryptoBot.Managers.Miha
             }
         }
 
-        private bool SetOrderPLPrice(Order order)
+        private async Task<Order> CreateOrder(string symbol, OrderSide orderSide)
+        {
+            if (_orderBuffer.Where(x => x.Symbol == symbol && x.IsActive).Count() >= _config.ActiveSymbolOrders)
+            {
+                // wait for order(s) to finish
+                return null;
+            }
+
+            Order order = new Order();
+            order.Symbol = symbol;
+            order.Type = OrderType.Market;
+            order.Side = orderSide;
+            order.Quantity = orderSide == OrderSide.Buy ? _config.BuyOrderVolume : _config.SellOrderVolume;
+
+            if (!await _tradingManager.PlaceOrder(order))
+            {
+                // failed to place order
+                order = null;
+            }
+
+            return order;
+        }
+
+        private async Task<bool> HandleOrder(Order order)
         {
             if (order == null) return false;
 
-            if (order.Side == OrderSide.Buy)
+            if (!_config.TestMode)
             {
-                order.TakeProfitPrice = order.Price + _roiOrderAmount;
-                order.StopLossPrice = order.Price - _riskOrderAmount;
+                Order latestOrder = await _tradingManager.GetOrder(order.ClientOrderId);
+                if (latestOrder == null)
+                {
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Unable to get order '{order.Id}' despite order was placed. Must delete placed order. Very strange!!!"));
+                    return false;
+                }
 
-                return true;
+                SetOrderTakeProfitAndStopLossPrice(latestOrder);
+
+                _orderBuffer.Add(latestOrder);
+
+                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Invoked REAL order. {latestOrder.Dump()}"));
             }
-            
-            if (order.Side == OrderSide.Sell)
+            else
             {
-                order.TakeProfitPrice = order.Price - _roiOrderAmount;
-                order.StopLossPrice = order.Price + _riskOrderAmount;
+                // modify price due to incorrect test environment price
+                decimal? lastPrice = await _tradingManager.GetPrice(order.Symbol);
+                if (!lastPrice.HasValue)
+                {
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, $"Failed to get last price for symbol '{order.Symbol}'. Must delete placed order. Very strange!!!"));
+                    return false;
+                }
 
-                return true;
+                order.Price = lastPrice.Value;
+                order.IsActive = true;
+
+                SetOrderTakeProfitAndStopLossPrice(order);
+
+                _orderBuffer.Add(order);
+
+                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Invoked TEST order. {order.Dump()}"));
             }
 
-            return false;
+            return true;
         }
 
-        private bool CalculateOrderPLFactor()
+        private async Task<bool> CloseOrder(Order order)
+        {
+            if (order == null) return false;
+
+            if (!_config.TestMode)
+            {
+                // counter order used only for closing original order
+                Order placedCounterOrder = new Order();
+                placedCounterOrder.Symbol = order.Symbol;
+                placedCounterOrder.Side = order.Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
+                placedCounterOrder.Quantity = order.Side == OrderSide.Buy ? order.QuantityFilled : order.QuoteQuantity;
+
+                if (!await _tradingManager.PlaceOrder(placedCounterOrder))
+                {
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, $"Failed to place counter order '{placedCounterOrder.Id}'. Will try to close order '{order.Id}' later."));
+                    return false;
+                }
+
+                Order counterOrder = await _tradingManager.GetOrder(placedCounterOrder.ClientOrderId);
+                if (counterOrder == null)
+                {
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Unable to get counter order '{placedCounterOrder.Id}' despite counter order was placed. Very strange!!!"));
+                }
+
+                order.ExitPrice = counterOrder.AveragePrice;
+            }
+            else
+            {
+                // modify price due to incorrect test environment price
+                order.ExitPrice = order.LastPrice.Value;
+            }
+
+            order.UpdateTime = DateTime.Now;
+            order.IsActive = false;
+
+            return true;
+        }
+
+        private bool ReachedBalanceProfitLossAmount(decimal balance)
+        {
+            return balance >= _balanceProfitAmount || balance <= _balanceLossAmount;
+        }
+
+        private bool SetBalanceProfitLossAmount()
         {
             if (_config.TestMode)
             {
-                _roiOrderAmount = _config.TestAvailableBalance * (_config.ROIPercentage / 100.0M);
-                _riskOrderAmount = _config.TestAvailableBalance * (_config.RiskPercentage / 100.0M);
+                _balanceProfitAmount = _config.TestBalance * (100.0M + _config.BalanceProfitPercent) / 100.0M;
+                _balanceLossAmount = _config.TestBalance * (100.0M -_config.BalanceLossPercent) / 100.0M;
+
+                return true;
+            }
+
+            var balances = _tradingManager.GetBalances().GetAwaiter().GetResult();
+            if (balances.IsNullOrEmpty())
+                return false;
+
+            decimal balance = balances.Sum(x => x.Available);
+            _balanceProfitAmount = balance * (100.0M + _config.BalanceProfitPercent) / 100.0M;
+            _balanceLossAmount = balance * (100.0M - _config.BalanceLossPercent) / 100.0M;
+
+            return true;
+        }
+
+        private bool SetOrderProfitLossAmount()
+        {
+            if (_config.TestMode)
+            {
+                _roiOrderAmount = _config.TestBalance * (_config.ROIPercentage / 100.0M);
+                _riskOrderAmount = _config.TestBalance * (_config.RiskPercentage / 100.0M);
 
                 return true;
             }
@@ -315,17 +326,78 @@ namespace CryptoBot.Managers.Miha
             return true;
         }
 
-        private void HandleFinishedOrder(Order order)
+        private void SetOrderTakeProfitAndStopLossPrice(Order order)
         {
             if (order == null) return;
 
             if (order.Side == OrderSide.Buy)
             {
-                order.RealizedPL = order.ExitPrice - order.Price; // xxx averagePrice
+                order.TakeProfitPrice = order.Price + _roiOrderAmount;
+                order.StopLossPrice = order.Price - _riskOrderAmount;
             }
             else if (order.Side == OrderSide.Sell)
             {
-                order.RealizedPL = order.Price - order.ExitPrice;
+                order.TakeProfitPrice = order.Price - _roiOrderAmount;
+                order.StopLossPrice = order.Price + _riskOrderAmount;
+            }
+        }
+
+        private void SetOrderRealizedProfitLossAmount(Order order)
+        {
+            if (order == null) return;
+
+            if (order.Side == OrderSide.Buy)
+            {
+                order.RealizedProfitLossAmount = order.ExitPrice - order.Price; // xxx averagePrice
+            }
+            else if (order.Side == OrderSide.Sell)
+            {
+                order.RealizedProfitLossAmount = order.Price - order.ExitPrice;
+            }
+
+            if (_config.TestMode)
+            {
+                // we're in test mode. increase/decrease test balance
+                _config.TestBalance += order.RealizedProfitLossAmount;
+            }
+        }
+
+        private void DismissInvokeOrder()
+        {
+            if (_dismissInvokeOrder)
+            {
+                // already dismissed order invocation, nothing to do
+                return;
+            }
+
+            if (_config.TestMode)
+            {
+                _dismissInvokeOrder = ReachedBalanceProfitLossAmount(_config.TestBalance);
+                return;
+            }
+
+            var balances = _tradingManager.GetBalances().GetAwaiter().GetResult();
+            if (balances.IsNullOrEmpty())
+            {
+                // no balances obtained, continue with order
+                return;
+            }
+
+            _dismissInvokeOrder = ReachedBalanceProfitLossAmount(balances.Sum(x => x.Available));
+        }
+
+        private void StopOrderManager()
+        {
+            if (_stopOrderManager) return;
+
+            //xxx for now only this stops order manager
+            if (_dismissInvokeOrder && _orderBuffer.All(x => !x.IsActive)) //xxx implement force closure of all active orders
+            {
+                CloseWebSocketEventSubscription();
+
+                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.TerminateApplication, "Balance profit/loss amount reached. Not allowed to trigger new orders. Terminating application."));
+
+                _stopOrderManager = true;
             }
         }
 
@@ -347,17 +419,17 @@ namespace CryptoBot.Managers.Miha
                             $"SYMBOL: '{symbol}'\n" +
                             $"------------------------\n" +
                             $"ACTIVE orders: '{_orderBuffer.Where(x => x.Symbol == symbol && x.IsActive).Count()}',\n" +
-                            $"PROFIT orders: '{_orderBuffer.Where(x => x.Symbol == symbol && !x.IsActive && x.RealizedPL > 0).Count()}',\n" +
-                            $"LOSS orders: '{_orderBuffer.Where(x => x.Symbol == symbol && !x.IsActive && x.RealizedPL < 0).Count()}'\n" +
-                            $"NEUTRAL orders: '{_orderBuffer.Where(x => x.Symbol == symbol && !x.IsActive && x.RealizedPL == 0).Count()}'\n" +
-                            $"SYMBOL BALANCE: '{_orderBuffer.Where(x => x.Symbol == symbol).Sum(x => x.RealizedPL)}'\n" +
+                            $"PROFIT orders: '{_orderBuffer.Where(x => x.Symbol == symbol && !x.IsActive && x.RealizedProfitLossAmount > 0).Count()}',\n" +
+                            $"LOSS orders: '{_orderBuffer.Where(x => x.Symbol == symbol && !x.IsActive && x.RealizedProfitLossAmount < 0).Count()}'\n" +
+                            $"NEUTRAL orders: '{_orderBuffer.Where(x => x.Symbol == symbol && !x.IsActive && x.RealizedProfitLossAmount == 0).Count()}'\n" +
+                            $"SYMBOL BALANCE: '{_orderBuffer.Where(x => x.Symbol == symbol).Sum(x => x.RealizedProfitLossAmount)}'\n" +
                             $"------------------------\n",
                             messageScope: "orderStats"));
                         }
 
                         ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information,
                         $"\n------------------------\n" +
-                        $"TOTAL BALANCE: '{_orderBuffer.Sum(x => x.RealizedPL)}'\n" +
+                        $"TOTAL BALANCE: '{_orderBuffer.Sum(x => x.RealizedProfitLossAmount)}'\n" +
                         $"------------------------\n",
                         messageScope: "orderStats"));
                     }

@@ -6,7 +6,9 @@ namespace CryptoBot.Data
     public class Config
     {
         public bool TestMode { get; set; }
-        public decimal TestAvailableBalance { get; set; }
+        public decimal TestBalance { get; set; }
+        public decimal BalanceProfitPercent { get; set; }
+        public decimal BalanceLossPercent { get; set; }
         public decimal ROIPercentage { get; set; }
         public decimal RiskPercentage { get; set; }
         public string Username { get; set; }
