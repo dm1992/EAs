@@ -136,10 +136,10 @@ namespace CryptoBot.Managers.Miha
             {
                 if (_dismissInvokeOrder) return false;
 
-                Order order = await CreateOrder(symbol, orderSide);
-                if (order == null) return false;
+                Tuple<bool, Order> result = await CreateOrder(symbol, orderSide);
+                if (!result.Item1) return false;
 
-                return await HandleInvokeOrder(order);
+                return await HandleInvokeOrder(result.Item2);
             }
             catch (Exception e)
             {
@@ -157,7 +157,7 @@ namespace CryptoBot.Managers.Miha
                     await HandleFinishOrder(order);
                 }
 
-                StopOrderManager();
+                CheckForStopOrderManager();
             }
             catch (Exception e)
             {
@@ -165,12 +165,12 @@ namespace CryptoBot.Managers.Miha
             }
         }
 
-        private async Task<Order> CreateOrder(string symbol, OrderSide orderSide)
+        private async Task<Tuple<bool, Order>> CreateOrder(string symbol, OrderSide orderSide)
         {
             if (_orderBuffer.Where(x => x.Symbol == symbol && x.IsActive).Count() >= _config.ActiveSymbolOrders)
             {
                 // wait for order(s) to finish
-                return null;
+                return new Tuple<bool, Order>(false, null);
             }
 
             Order order = new Order();
@@ -181,11 +181,10 @@ namespace CryptoBot.Managers.Miha
 
             if (!await _tradingManager.PlaceOrder(order))
             {
-                // failed to place order
-                order = null;
+                return new Tuple<bool, Order>(false, null);
             }
 
-            return order;
+            return new Tuple<bool, Order>(true, order);
         }
 
         private async Task<bool> HandleInvokeOrder(Order order)
@@ -393,7 +392,7 @@ namespace CryptoBot.Managers.Miha
             _dismissInvokeOrder = ReachedBalanceProfitLossAmount(balances.Sum(x => x.Available));
         }
 
-        private void StopOrderManager()
+        private void CheckForStopOrderManager()
         {
             if (_stopOrderManager) return;
 
