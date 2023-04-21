@@ -460,9 +460,7 @@ namespace CryptoBot.Managers.Miha
             if (!GetMassiveVolumeMarketEntity(symbol, out _)) //xxx for now we don't care about massive volume market entity
                 return false;
 
-            OrderSide marketOrderSide = marketDirection == MarketDirection.Uptrend ? OrderSide.Sell : OrderSide.Buy;
-
-            return await _orderManager.InvokeOrder(symbol, marketOrderSide);
+            return await _orderManager.InvokeOrder(symbol, marketDirection == MarketDirection.Uptrend ? OrderSide.Sell : OrderSide.Buy); //xxx change direction
         }
 
 
@@ -499,12 +497,12 @@ namespace CryptoBot.Managers.Miha
                 _tradeBuffer.Add(trade);
 
                 HandleRegularCandle(trade);
-                
-                if (HandlePriceClosureCandle(trade))
-                {
-                    // price closure handled. Check for potential market order invocation.
-                    await InvokeMarketOrder(trade.Topic);
-                }
+
+                if (!HandlePriceClosureCandle(trade))
+                    return;
+
+                // price closure handled. Check for potential market order invocation.
+                await InvokeMarketOrder(trade.Topic);
             }
             catch (Exception e)
             {
