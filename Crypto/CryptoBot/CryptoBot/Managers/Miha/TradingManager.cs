@@ -62,7 +62,9 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.ExchangeData.GetServerTimeAsync();
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Trading server unavailable. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, 
+                $"!!!Trading server unavailable. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+
                 return false;
             }
 
@@ -74,7 +76,9 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.Account.GetBalancesAsync(API_REQUEST_TIMEOUT);                              
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to get balances. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, 
+                $"!!!Failed to get balances. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+
                 return null;
             }
 
@@ -89,7 +93,9 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.ExchangeData.GetSymbolsAsync();
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to get available symbols. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, 
+                $"!!!Failed to get available symbols. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+
                 return new List<string>();
             }
 
@@ -101,7 +107,9 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.ExchangeData.GetPriceAsync(symbol);
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to get '{symbol}' price. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, 
+                $"!!!Failed to get '{symbol}' price. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+
                 return null;
             }
 
@@ -113,7 +121,9 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.Trading.GetOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to get order for client order id '{clientOrderId}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, 
+                $"!!!Failed to get order for client order id '{clientOrderId}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+
                 return null;
             }
 
@@ -125,7 +135,9 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.Trading.CancelOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to cancel order for client order id '{clientOrderId}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, 
+                $"!!!Failed to cancel order for client order id '{clientOrderId}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+
                 return false;
             }
 
@@ -139,7 +151,9 @@ namespace CryptoBot.Managers.Miha
             var response = await _bybitClient.SpotApiV3.Trading.PlaceOrderAsync(order.Symbol, order.Side, order.Type, order.Quantity, null, null, null, API_REQUEST_TIMEOUT);
             if (!response.Success)
             {
-                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to place order '{order.Id}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+                ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, 
+                $"!!!Failed to place order '{order.Id}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+
                 return false;
             }
 

@@ -31,8 +31,8 @@ namespace CryptoBot.Managers.Miha
         private bool _stopOrderManager;
         private decimal _balanceProfitAmount;
         private decimal _balanceLossAmount;
-        private decimal _roiOrderAmount;
-        private decimal _riskOrderAmount;
+        private decimal _orderProfitAmount;
+        private decimal _orderLossAmount;
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
@@ -48,8 +48,8 @@ namespace CryptoBot.Managers.Miha
             _isInitialized = false;
             _dismissInvokeOrder = false;
             _stopOrderManager = false;
-            _roiOrderAmount = 0;
-            _riskOrderAmount = 0;
+            _orderProfitAmount = 0;
+            _orderLossAmount = 0;
         }
 
         public void InvokeWebSocketEventSubscription()
@@ -66,7 +66,8 @@ namespace CryptoBot.Managers.Miha
 
             foreach (var symbol in _availableSymbols)
             {
-                _webSocketSubscriptions.Add(webSocketClient.SpotStreamsV3.SubscribeToTickerUpdatesAsync(symbol, HandleTicker).GetAwaiter().GetResult().Data); // deadlock issue, async method in sync manner
+                // deadlock issue, async method in sync manner
+                _webSocketSubscriptions.Add(webSocketClient.SpotStreamsV3.SubscribeToTickerUpdatesAsync(symbol, HandleTicker).GetAwaiter().GetResult().Data); 
             }
 
             foreach (var wss in _webSocketSubscriptions)
@@ -117,7 +118,7 @@ namespace CryptoBot.Managers.Miha
 
                 ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, 
                 $"Initialized. Balance profit amount: {_balanceProfitAmount}, balance loss amount: {_balanceLossAmount}. " +
-                $"Order ROI amount: {_roiOrderAmount}, order risk amount: {_riskOrderAmount}."));
+                $"Order profit amount: {_orderProfitAmount}, order loss amount: {_orderLossAmount}."));
 
                 _isInitialized = true;
                 return true;
@@ -138,7 +139,7 @@ namespace CryptoBot.Managers.Miha
                 Order order = await CreateOrder(symbol, orderSide);
                 if (order == null) return false;
 
-                return await HandleOrder(order);
+                return await HandleInvokeOrder(order);
             }
             catch (Exception e)
             {
@@ -153,19 +154,7 @@ namespace CryptoBot.Managers.Miha
             {
                 foreach (Order order in _orderBuffer.Where(x => x.Symbol == symbol && x.IsActive))
                 {
-                    order.LastPrice = await _tradingManager.GetPrice(symbol);
-
-                    if (!order.MustFinish) 
-                        continue;
-
-                    if (!await CloseOrder(order))
-                        continue;
-
-                    SetOrderRealizedProfitLossAmount(order);
-
-                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Finished order. {order.Dump()}"));
-
-                    DismissInvokeOrder();
+                    await HandleFinishOrder(order);
                 }
 
                 StopOrderManager();
@@ -199,24 +188,26 @@ namespace CryptoBot.Managers.Miha
             return order;
         }
 
-        private async Task<bool> HandleOrder(Order order)
+        private async Task<bool> HandleInvokeOrder(Order order)
         {
             if (order == null) return false;
 
             if (!_config.TestMode)
             {
-                Order latestOrder = await _tradingManager.GetOrder(order.ClientOrderId);
-                if (latestOrder == null)
+                Order actualPlacedOrder = await _tradingManager.GetOrder(order.ClientOrderId);
+                if (actualPlacedOrder == null)
                 {
-                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Unable to get order '{order.Id}' despite order was placed. Must delete placed order. Very strange!!!"));
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, 
+                    $"!!!Unable to get order '{order.Id}' despite order was placed. Must delete placed order. Very strange!!!"));
+
                     return false;
                 }
 
-                SetOrderTakeProfitAndStopLossPrice(latestOrder);
+                SetOrderTakeProfitAndStopLossPrice(actualPlacedOrder);
 
-                _orderBuffer.Add(latestOrder);
+                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Invoked REAL order. {actualPlacedOrder.Dump()}"));
 
-                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Invoked REAL order. {latestOrder.Dump()}"));
+                _orderBuffer.Add(actualPlacedOrder);
             }
             else
             {
@@ -224,7 +215,9 @@ namespace CryptoBot.Managers.Miha
                 decimal? lastPrice = await _tradingManager.GetPrice(order.Symbol);
                 if (!lastPrice.HasValue)
                 {
-                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, $"Failed to get last price for symbol '{order.Symbol}'. Must delete placed order. Very strange!!!"));
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, 
+                    $"Failed to get last price for symbol '{order.Symbol}'. Must delete placed order. Very strange!!!"));
+
                     return false;
                 }
 
@@ -233,12 +226,30 @@ namespace CryptoBot.Managers.Miha
 
                 SetOrderTakeProfitAndStopLossPrice(order);
 
-                _orderBuffer.Add(order);
-
                 ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Invoked TEST order. {order.Dump()}"));
+
+                _orderBuffer.Add(order);
             }
 
             return true;
+        }
+
+        private async Task HandleFinishOrder(Order order)
+        {
+            if (order == null) return;
+
+            order.LastPrice = await _tradingManager.GetPrice(order.Symbol);
+
+            if (!order.MustFinish)
+                return;
+
+            if (!await CloseOrder(order))
+                return;
+
+            SetOrderRealizedProfitLossAmount(order);
+            CheckForDismissInvokeOrder();
+
+            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Finished order. {order.Dump()}"));
         }
 
         private async Task<bool> CloseOrder(Order order)
@@ -248,24 +259,27 @@ namespace CryptoBot.Managers.Miha
             if (!_config.TestMode)
             {
                 // counter order used only for closing original order
-                Order placedCounterOrder = new Order();
-                placedCounterOrder.Symbol = order.Symbol;
-                placedCounterOrder.Side = order.Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
-                placedCounterOrder.Quantity = order.Side == OrderSide.Buy ? order.QuantityFilled : order.QuoteQuantity;
+                Order counterOrder = new Order();
+                counterOrder.Symbol = order.Symbol;
+                counterOrder.Side = order.Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
+                counterOrder.Quantity = order.Side == OrderSide.Buy ? order.QuantityFilled : order.QuoteQuantity;
 
-                if (!await _tradingManager.PlaceOrder(placedCounterOrder))
+                if (!await _tradingManager.PlaceOrder(counterOrder))
                 {
-                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, $"Failed to place counter order '{placedCounterOrder.Id}'. Will try to close order '{order.Id}' later."));
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, 
+                    $"Failed to place counter order '{counterOrder.Id}'. Will try to close order '{order.Id}' later."));
+
                     return false;
                 }
 
-                Order counterOrder = await _tradingManager.GetOrder(placedCounterOrder.ClientOrderId);
-                if (counterOrder == null)
+                Order actualCounterOrder = await _tradingManager.GetOrder(counterOrder.ClientOrderId);
+                if (actualCounterOrder == null)
                 {
-                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"!!!Unable to get counter order '{placedCounterOrder.Id}' despite counter order was placed. Very strange!!!"));
+                    ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, 
+                    $"!!!Unable to get counter order '{counterOrder.Id}' despite counter order was placed. Very strange!!!"));
                 }
 
-                order.ExitPrice = counterOrder.AveragePrice;
+                order.ExitPrice = actualCounterOrder.AveragePrice;
             }
             else
             {
@@ -295,7 +309,7 @@ namespace CryptoBot.Managers.Miha
             }
 
             var balances = _tradingManager.GetBalances().GetAwaiter().GetResult();
-            if (balances.IsNullOrEmpty())
+            if (balances.IsNullOrEmpty()) 
                 return false;
 
             decimal balance = balances.Sum(x => x.Available);
@@ -309,8 +323,8 @@ namespace CryptoBot.Managers.Miha
         {
             if (_config.TestMode)
             {
-                _roiOrderAmount = _config.TestBalance * (_config.ROIPercentage / 100.0M);
-                _riskOrderAmount = _config.TestBalance * (_config.RiskPercentage / 100.0M);
+                _orderProfitAmount = _config.TestBalance * (_config.OrderProfitPercent / 100.0M);
+                _orderLossAmount = _config.TestBalance * (_config.OrderLossPercent / 100.0M);
 
                 return true;
             }
@@ -320,8 +334,8 @@ namespace CryptoBot.Managers.Miha
                 return false;
 
             decimal availableBalance = balances.Sum(x => x.Available);
-            _roiOrderAmount = availableBalance * (_config.ROIPercentage / 100.0M);
-            _riskOrderAmount = availableBalance * (_config.RiskPercentage / 100.0M);
+            _orderProfitAmount = availableBalance * (_config.OrderProfitPercent / 100.0M);
+            _orderLossAmount = availableBalance * (_config.OrderLossPercent / 100.0M);
 
             return true;
         }
@@ -332,13 +346,13 @@ namespace CryptoBot.Managers.Miha
 
             if (order.Side == OrderSide.Buy)
             {
-                order.TakeProfitPrice = order.Price + _roiOrderAmount;
-                order.StopLossPrice = order.Price - _riskOrderAmount;
+                order.TakeProfitPrice = order.Price + _orderProfitAmount;
+                order.StopLossPrice = order.Price - _orderLossAmount;
             }
             else if (order.Side == OrderSide.Sell)
             {
-                order.TakeProfitPrice = order.Price - _roiOrderAmount;
-                order.StopLossPrice = order.Price + _riskOrderAmount;
+                order.TakeProfitPrice = order.Price - _orderProfitAmount;
+                order.StopLossPrice = order.Price + _orderLossAmount;
             }
         }
 
@@ -362,13 +376,9 @@ namespace CryptoBot.Managers.Miha
             }
         }
 
-        private void DismissInvokeOrder()
+        private void CheckForDismissInvokeOrder()
         {
-            if (_dismissInvokeOrder)
-            {
-                // already dismissed order invocation, nothing to do
-                return;
-            }
+            if (_dismissInvokeOrder) return;
 
             if (_config.TestMode)
             {
@@ -378,10 +388,7 @@ namespace CryptoBot.Managers.Miha
 
             var balances = _tradingManager.GetBalances().GetAwaiter().GetResult();
             if (balances.IsNullOrEmpty())
-            {
-                // no balances obtained, continue with order
                 return;
-            }
 
             _dismissInvokeOrder = ReachedBalanceProfitLossAmount(balances.Sum(x => x.Available));
         }
@@ -393,9 +400,9 @@ namespace CryptoBot.Managers.Miha
             //xxx for now only this stops order manager
             if (_dismissInvokeOrder && _orderBuffer.All(x => !x.IsActive)) //xxx implement force closure of all active orders
             {
-                CloseWebSocketEventSubscription();
+                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.TerminateApplication, "Invocation of new orders is dismissed and all opened orders completed. Terminating application."));
 
-                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.TerminateApplication, "Balance profit/loss amount reached. Not allowed to trigger new orders. Terminating application."));
+                CloseWebSocketEventSubscription();
 
                 _stopOrderManager = true;
             }

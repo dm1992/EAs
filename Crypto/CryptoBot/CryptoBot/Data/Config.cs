@@ -9,8 +9,8 @@ namespace CryptoBot.Data
         public decimal TestBalance { get; set; }
         public decimal BalanceProfitPercent { get; set; }
         public decimal BalanceLossPercent { get; set; }
-        public decimal ROIPercentage { get; set; }
-        public decimal RiskPercentage { get; set; }
+        public decimal OrderProfitPercent { get; set; }
+        public decimal OrderLossPercent { get; set; }
         public string Username { get; set; }
         public IEnumerable<string> Symbols { get; set; }
         public string ApiKey { get; set; }

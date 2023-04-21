@@ -57,8 +57,8 @@ namespace CryptoBot.Managers
                 _config.TestBalance = decimal.Parse(ConfigurationManager.AppSettings["testBalance"]);
                 _config.BalanceProfitPercent = decimal.Parse(ConfigurationManager.AppSettings["balanceProfitPercent"]);
                 _config.BalanceLossPercent = decimal.Parse(ConfigurationManager.AppSettings["balanceLossPercent"]);
-                _config.ROIPercentage = decimal.Parse(ConfigurationManager.AppSettings["roiPercentage"]);
-                _config.RiskPercentage = decimal.Parse(ConfigurationManager.AppSettings["riskPercentage"]);
+                _config.OrderProfitPercent = decimal.Parse(ConfigurationManager.AppSettings["roiPercentage"]);
+                _config.OrderLossPercent = decimal.Parse(ConfigurationManager.AppSettings["riskPercentage"]);
                 _config.Username = ConfigurationManager.AppSettings["username"];
                 _config.Symbols = ConfigurationManager.AppSettings["symbols"].ParseCsv<string>();
                 _config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
