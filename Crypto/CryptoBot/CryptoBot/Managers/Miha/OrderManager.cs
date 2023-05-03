@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CryptoBot.Managers
+namespace CryptoBot.Managers.Miha
 {
     public class OrderManager : IOrderManager
     {
@@ -25,7 +25,7 @@ namespace CryptoBot.Managers
 
         private List<string> _availableSymbols;
         private List<UpdateSubscription> _webSocketSubscriptions;
-        private List<Order> _orderBuffer;
+        private List<OrderV3> _orderBuffer;
         private bool _isInitialized;
         private bool _dismissInvokeOrder;
         private bool _stopOrderManager;
@@ -43,7 +43,7 @@ namespace CryptoBot.Managers
             _tickerSemaphore = new SemaphoreSlim(1, 1);
             _monitorOrderStatsCts = new CancellationTokenSource();
 
-            _orderBuffer = new List<Order>();
+            _orderBuffer = new List<OrderV3>();
             _webSocketSubscriptions = new List<UpdateSubscription>();
             _isInitialized = false;
             _dismissInvokeOrder = false;
@@ -136,7 +136,7 @@ namespace CryptoBot.Managers
             {
                 if (_dismissInvokeOrder) return false;
 
-                Tuple<bool, Order> result = await CreateOrder(symbol, orderSide);
+                Tuple<bool, OrderV3> result = await CreateOrder(symbol, orderSide);
                 if (!result.Item1) return false;
 
                 return await HandleInvokeOrder(result.Item2);
@@ -152,7 +152,7 @@ namespace CryptoBot.Managers
         {
             try
             {
-                foreach (Order order in _orderBuffer.Where(x => x.Symbol == symbol && x.IsActive))
+                foreach (OrderV3 order in _orderBuffer.Where(x => x.Symbol == symbol && x.IsActive))
                 {
                     await HandleFinishOrder(order);
                 }
@@ -165,15 +165,15 @@ namespace CryptoBot.Managers
             }
         }
 
-        private async Task<Tuple<bool, Order>> CreateOrder(string symbol, OrderSide orderSide)
+        private async Task<Tuple<bool, OrderV3>> CreateOrder(string symbol, OrderSide orderSide)
         {
             if (_orderBuffer.Where(x => x.Symbol == symbol && x.IsActive).Count() >= _config.ActiveSymbolOrders)
             {
                 // wait for order(s) to finish
-                return new Tuple<bool, Order>(false, null);
+                return new Tuple<bool, OrderV3>(false, null);
             }
 
-            Order lastOrder = _orderBuffer.Where(x => x.Symbol == symbol).OrderBy(x => x.CreateTime).LastOrDefault();
+            OrderV3 lastOrder = _orderBuffer.Where(x => x.Symbol == symbol).OrderBy(x => x.CreateTime).LastOrDefault();
             if (lastOrder != null)
             {
                 decimal? lastPrice = await _tradingManager.GetPrice(symbol);
@@ -183,20 +183,20 @@ namespace CryptoBot.Managers
                     {
                         if (lastOrder.Price >= lastPrice)
                         {
-                            return new Tuple<bool, Order>(false, null);
+                            return new Tuple<bool, OrderV3>(false, null);
                         }
                     }
                     else if (orderSide == OrderSide.Sell)
                     {
                         if (lastOrder.Price <= lastPrice)
                         {
-                            return new Tuple<bool, Order>(false, null);
+                            return new Tuple<bool, OrderV3>(false, null);
                         }
                     }
                 }
             }
 
-            Order order = new Order();
+            OrderV3 order = new OrderV3();
             order.Symbol = symbol;
             order.Type = OrderType.Market;
             order.Side = orderSide;
@@ -204,19 +204,19 @@ namespace CryptoBot.Managers
 
             if (!await _tradingManager.PlaceOrder(order))
             {
-                return new Tuple<bool, Order>(false, null);
+                return new Tuple<bool, OrderV3>(false, null);
             }
 
-            return new Tuple<bool, Order>(true, order);
+            return new Tuple<bool, OrderV3>(true, order);
         }
 
-        private async Task<bool> HandleInvokeOrder(Order order)
+        private async Task<bool> HandleInvokeOrder(OrderV3 order)
         {
             if (order == null) return false;
 
             if (!_config.TestMode)
             {
-                Order actualPlacedOrder = await _tradingManager.GetOrder(order.ClientOrderId);
+                OrderV3 actualPlacedOrder = await _tradingManager.GetOrder(order.ClientOrderId);
                 if (actualPlacedOrder == null)
                 {
                     ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, 
@@ -256,7 +256,7 @@ namespace CryptoBot.Managers
             return true;
         }
 
-        private async Task HandleFinishOrder(Order order)
+        private async Task HandleFinishOrder(OrderV3 order)
         {
             if (order == null) return;
 
@@ -274,14 +274,14 @@ namespace CryptoBot.Managers
             ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Finished order. {order.Dump()}"));
         }
 
-        private async Task<bool> CloseOrder(Order order)
+        private async Task<bool> CloseOrder(OrderV3 order)
         {
             if (order == null) return false;
 
             if (!_config.TestMode)
             {
                 // counter order used only for closing original order
-                Order counterOrder = new Order();
+                OrderV3 counterOrder = new OrderV3();
                 counterOrder.Symbol = order.Symbol;
                 counterOrder.Side = order.Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
                 counterOrder.Quantity = order.Side == OrderSide.Buy ? order.QuantityFilled : order.QuoteQuantity;
@@ -294,7 +294,7 @@ namespace CryptoBot.Managers
                     return false;
                 }
 
-                Order actualCounterOrder = await _tradingManager.GetOrder(counterOrder.ClientOrderId);
+                OrderV3 actualCounterOrder = await _tradingManager.GetOrder(counterOrder.ClientOrderId);
                 if (actualCounterOrder == null)
                 {
                     ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, 
@@ -362,7 +362,7 @@ namespace CryptoBot.Managers
             return true;
         }
 
-        private void SetOrderTakeProfitAndStopLossPrice(Order order)
+        private void SetOrderTakeProfitAndStopLossPrice(OrderV3 order)
         {
             if (order == null) return;
 
@@ -378,7 +378,7 @@ namespace CryptoBot.Managers
             }
         }
 
-        private void SetOrderRealizedProfitLossAmount(Order order)
+        private void SetOrderRealizedProfitLossAmount(OrderV3 order)
         {
             if (order == null) return;
 

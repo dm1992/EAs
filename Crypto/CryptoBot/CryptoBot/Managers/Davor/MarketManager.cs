@@ -2,10 +2,12 @@
 using Bybit.Net.Enums;
 using Bybit.Net.Objects;
 using Bybit.Net.Objects.Models.Socket.Spot;
+using Bybit.Net.Objects.Models.V5;
 using CryptoBot.Data;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces;
 using CryptoBot.Interfaces.Managers;
+using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
 using Newtonsoft.Json.Linq;
 using System;
@@ -24,10 +26,10 @@ namespace CryptoBot.Managers.Davor
         private readonly IOrderManager _orderManager;
         private readonly Config _config;
         private readonly SemaphoreSlim _tradeSemaphore;
+        private readonly BybitSocketClient _webSocket;
 
-        private List<DataEvent<BybitSpotTradeUpdate>> _tradeBuffer;
+        private List<BybitTrade> _tradeBuffer;
         private List<string> _availableSymbols;
-        private List<UpdateSubscription> _webSocketSubscriptions;
         private bool _isInitialized;
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
@@ -39,8 +41,13 @@ namespace CryptoBot.Managers.Davor
             _config = config;
             _tradeSemaphore = new SemaphoreSlim(1, 1);
 
-            _tradeBuffer = new List<DataEvent<BybitSpotTradeUpdate>>();
-            _webSocketSubscriptions = new List<UpdateSubscription>();
+            BybitSocketClientOptions webSocketOptions = BybitSocketClientOptions.Default;
+            webSocketOptions.V5StreamsOptions.OutputOriginalData= true;
+            webSocketOptions.V5StreamsOptions.BaseAddress = _config.SpotStreamEndpoint;
+
+            _webSocket = new BybitSocketClient(webSocketOptions);
+
+            _tradeBuffer = new List<BybitTrade>();
             _isInitialized = false;
         }
 
@@ -72,39 +79,23 @@ namespace CryptoBot.Managers.Davor
             }
         }
 
-        public void InvokeWebSocketEventSubscription()
+        public async void InvokeWebSocketEventSubscription()
         {
             if (!_isInitialized) return;
 
-            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Invoked web socket event subscription."));
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Invoking web socket event subscription."));
 
-            BybitSocketClientOptions webSocketOptions = BybitSocketClientOptions.Default;
-            webSocketOptions.SpotStreamsV3Options.OutputOriginalData = true;
-            webSocketOptions.SpotStreamsV3Options.BaseAddress = _config.SpotStreamEndpoint;
-
-            BybitSocketClient webSocketClient = new BybitSocketClient(webSocketOptions);
-
-            foreach (var symbol in _availableSymbols)
-            {
-                _webSocketSubscriptions.Add(webSocketClient.SpotStreamsV3.SubscribeToTradeUpdatesAsync(symbol, HandleTrade).GetAwaiter().GetResult().Data); // deadlock issue, async method in sync manner
-            }
-
-            foreach (var wss in _webSocketSubscriptions)
-            {
-                wss.ConnectionRestored += WebSocketSubscription_ConnectionRestored;
-                wss.ConnectionLost += WebSocketSubscription_ConnectionLost;
-                wss.ConnectionClosed += WebSocketSubscription_ConnectionClosed;
-            }
+            CallResult<UpdateSubscription> updateSubscription = await _webSocket.V5SpotStreams.SubscribeToTradeUpdatesAsync(_availableSymbols, HandleTrade);
+            updateSubscription.Data.ConnectionRestored += WebSocketSubscription_ConnectionRestored;
+            updateSubscription.Data.ConnectionLost += WebSocketSubscription_ConnectionLost;
+            updateSubscription.Data.ConnectionClosed += WebSocketSubscription_ConnectionClosed;
         }
 
         public async void CloseWebSocketEventSubscription()
         {
-            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Closed web socket event subscription."));
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Closing web socket event subscription."));
 
-            foreach (var wss in _webSocketSubscriptions)
-            {
-                await wss.CloseAsync();
-            }
+            await _webSocket.V5SpotStreams.UnsubscribeAllAsync();
         }
 
 
@@ -112,34 +103,27 @@ namespace CryptoBot.Managers.Davor
 
         private void WebSocketSubscription_ConnectionRestored(TimeSpan obj)
         {
-            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Web socket subscription connection restored."));
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Subscription to trade updates restored."));
         }
 
         private void WebSocketSubscription_ConnectionLost()
         {
-            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Web socket subscription connection lost."));
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Subscription to trade updates lost."));
         }
 
         private void WebSocketSubscription_ConnectionClosed()
         {
-            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Web socket subscription connection closed."));
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Subscription to trade updates closed."));
         }
 
-        private async void HandleTrade(DataEvent<BybitSpotTradeUpdate> trade)
+        private void HandleTrade(DataEvent<IEnumerable<BybitTrade>> trades)
         {
             try
             {
-                await _tradeSemaphore.WaitAsync();
+                _tradeSemaphore.WaitAsync();
 
-                trade.Topic = (string)Extensions.ParseObject(trade.OriginalData, "topic");
-                if (trade.Topic == null)
-                {
-                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, "!!!Unable to parse topic from original trade data."));
-                    return;
-                }
-
-                _tradeBuffer.Add(trade);
-
+                // concat recent trades to trade buffer
+                _tradeBuffer.Concat(trades.Data);
             }
             catch (Exception e)
             {
