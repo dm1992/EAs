@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CryptoBot.Managers.Miha
+namespace CryptoBot.Managers
 {
     public class TradingManager : ITradingManager
     {

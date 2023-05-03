@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CryptoBot.Managers.Miha
+namespace CryptoBot.Managers
 {
     public class OrderManager : IOrderManager
     {
@@ -171,6 +171,29 @@ namespace CryptoBot.Managers.Miha
             {
                 // wait for order(s) to finish
                 return new Tuple<bool, Order>(false, null);
+            }
+
+            Order lastOrder = _orderBuffer.Where(x => x.Symbol == symbol).OrderBy(x => x.CreateTime).LastOrDefault();
+            if (lastOrder != null)
+            {
+                decimal? lastPrice = await _tradingManager.GetPrice(symbol);
+                if (lastPrice.HasValue)
+                {
+                    if (orderSide == OrderSide.Buy)
+                    {
+                        if (lastOrder.Price >= lastPrice)
+                        {
+                            return new Tuple<bool, Order>(false, null);
+                        }
+                    }
+                    else if (orderSide == OrderSide.Sell)
+                    {
+                        if (lastOrder.Price <= lastPrice)
+                        {
+                            return new Tuple<bool, Order>(false, null);
+                        }
+                    }
+                }
             }
 
             Order order = new Order();

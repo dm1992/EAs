@@ -100,6 +100,12 @@ namespace CryptoBot.Managers.Miha
 
             foreach (var wss in _webSocketSubscriptions)
             {
+                if (wss == null)
+                {
+                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, "!!!Web socket subscription instance is null!!!"));
+                    continue;
+                }
+
                 wss.ConnectionRestored += WebSocketSubscription_ConnectionRestored;
                 wss.ConnectionLost += WebSocketSubscription_ConnectionLost;
                 wss.ConnectionClosed += WebSocketSubscription_ConnectionClosed;
@@ -454,13 +460,22 @@ namespace CryptoBot.Managers.Miha
                 return false;
             }
 
-            if (!GetMarketDirection(symbol, out MarketDirection marketDirection))
+            //if (!GetMarketDirection(symbol, out MarketDirection marketDirection))
+            //    return false;
+
+            if (!GetMassiveVolumeMarketEntity(symbol, out MarketEntity marketEntity))
                 return false;
 
-            if (!GetMassiveVolumeMarketEntity(symbol, out _)) //xxx for now we don't care about massive volume market entity
-                return false;
+            if (marketEntity == MarketEntity.Seller)
+            {
+                return await _orderManager.InvokeOrder(symbol, OrderSide.Sell);
+            }
+            else if (marketEntity == MarketEntity.Buyer)
+            {
+                return await _orderManager.InvokeOrder(symbol, OrderSide.Buy);
+            }
 
-            return await _orderManager.InvokeOrder(symbol, marketDirection == MarketDirection.Uptrend ? OrderSide.Sell : OrderSide.Buy); //xxx change direction
+            return false;
         }
 
 
