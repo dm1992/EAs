@@ -119,12 +119,10 @@
     <Compile Include="Interfaces\Managers\IOrderManager.cs" />
     <Compile Include="Interfaces\Managers\ITradingManager.cs" />
     <Compile Include="Managers\ApplicationHandler.cs" />
-    <Compile Include="Managers\Davor\MarketManager.cs" />
-    <Compile Include="Managers\Davor\OrderManager.cs" />
+    <Compile Include="Managers\MarketManager.cs" />
+    <Compile Include="Managers\OrderManager.cs" />
     <Compile Include="Managers\ManagerFactory.cs" />
-    <Compile Include="Managers\Miha\OrderManager.cs" />
     <Compile Include="Managers\TradingManager.cs" />
-    <Compile Include="Managers\Miha\MarketManager.cs" />
     <Compile Include="Managers\Test\TradingManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

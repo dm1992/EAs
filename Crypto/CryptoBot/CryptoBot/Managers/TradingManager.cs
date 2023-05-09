@@ -1,7 +1,9 @@
 ﻿using Bybit.Net.Clients;
+using Bybit.Net.Enums;
 using Bybit.Net.Objects;
 using Bybit.Net.Objects.Models.Spot;
 using Bybit.Net.Objects.Models.Spot.v3;
+using Bybit.Net.Objects.Models.V5;
 using CryptoBot.Data;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces.Managers;
@@ -118,7 +120,7 @@ namespace CryptoBot.Managers
 
         public async Task<Order> GetOrder(string clientOrderId)
         {
-            var response = await _bybitClient.SpotApiV3.Trading.GetOrderAsync(null, clientOrderId, API_REQUEST_TIMEOUT);
+            var response = await _bybitClient.V5Api.Trading.GetOrdersAsync(Category.Spot, null, null,null, null, clientOrderId);
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, 
@@ -127,7 +129,10 @@ namespace CryptoBot.Managers
                 return null;
             }
 
-            return (Order)response.Data;
+            BybitOrder activeOrder = response.Data.List.FirstOrDefault();
+            if (activeOrder == null) return null;
+
+            return (Order)activeOrder;
         }
 
         public async Task<bool> CancelOrder(string clientOrderId)
@@ -148,16 +153,16 @@ namespace CryptoBot.Managers
         {
             if (order == null) return false;
 
-            var response = await _bybitClient.SpotApiV3.Trading.PlaceOrderAsync(order.Symbol, order.Side, order.Type, order.Quantity, null, null, null, API_REQUEST_TIMEOUT);
+            var response = await _bybitClient.V5Api.Trading.PlaceOrderAsync(Category.Spot, order.Symbol, order.Side, order.OrderType == OrderType.Market ? NewOrderType.Market : NewOrderType.Limit, order.Quantity, null, null, null);
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, 
-                $"!!!Failed to place order '{order.Id}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
+                $"!!!Failed to place order '{order.OrderId}'. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
 
                 return false;
             }
 
-            order.Id = response.Data.Id;
+            order.OrderId = response.Data.OrderId;
             order.ClientOrderId = response.Data.ClientOrderId;
 
             return true;

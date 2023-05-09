@@ -16,8 +16,8 @@ namespace CryptoBot.Managers
             switch (type)
             {
                 //xxx add other manager types
-                case ManagerType.Miha:
-                    return new Miha.MarketManager(tradingManager, orderManager, config);
+                case ManagerType.Davor:
+                    return new MarketManager(tradingManager, orderManager, config);
 
                 default:
                     return null;
@@ -29,7 +29,7 @@ namespace CryptoBot.Managers
             switch (type)
             {
                 //xxx add other manager types
-                case ManagerType.Miha:
+                case ManagerType.Davor:
                     return new OrderManager(tradingManager, config);
 
                 default:
@@ -42,7 +42,7 @@ namespace CryptoBot.Managers
             switch (type)
             {
                 //xxx add other manager types
-                case ManagerType.Miha:
+                case ManagerType.Davor:
                 {
                     if (config.TestMode)
                     {

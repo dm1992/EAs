@@ -1,20 +1,19 @@
 ﻿using Bybit.Net.Clients;
 using Bybit.Net.Enums;
 using Bybit.Net.Objects;
-using Bybit.Net.Objects.Models.Socket.Spot;
-using Bybit.Net.Objects.Models.Spot.v3;
+using Bybit.Net.Objects.Models.V5;
 using CryptoBot.Data;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces.Managers;
+using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CryptoBot.Managers.Davor
+namespace CryptoBot.Managers
 {
     public class OrderManager : IOrderManager
     {
@@ -22,10 +21,10 @@ namespace CryptoBot.Managers.Davor
         private readonly Config _config;
         private readonly SemaphoreSlim _tickerSemaphore;
         private readonly CancellationTokenSource _monitorOrderStatsCts;
+        private readonly BybitSocketClient _webSocket;
 
         private List<string> _availableSymbols;
-        private List<UpdateSubscription> _webSocketSubscriptions;
-        private List<OrderV3> _orderBuffer;
+        private List<Order> _orderBuffer;
         private bool _isInitialized;
         private bool _dismissInvokeOrder;
         private bool _stopOrderManager;
@@ -43,8 +42,13 @@ namespace CryptoBot.Managers.Davor
             _tickerSemaphore = new SemaphoreSlim(1, 1);
             _monitorOrderStatsCts = new CancellationTokenSource();
 
-            _orderBuffer = new List<OrderV3>();
-            _webSocketSubscriptions = new List<UpdateSubscription>();
+            BybitSocketClientOptions webSocketOptions = BybitSocketClientOptions.Default;
+            webSocketOptions.V5StreamsOptions.OutputOriginalData = true;
+            webSocketOptions.V5StreamsOptions.BaseAddress = _config.SpotStreamEndpoint;
+
+            _webSocket = new BybitSocketClient(webSocketOptions);
+
+            _orderBuffer = new List<Order>();
             _isInitialized = false;
             _dismissInvokeOrder = false;
             _stopOrderManager = false;
@@ -52,40 +56,23 @@ namespace CryptoBot.Managers.Davor
             _orderLossAmount = 0;
         }
 
-        public void InvokeWebSocketEventSubscription()
+        public async void InvokeWebSocketEventSubscription()
         {
             if (!_isInitialized) return;
 
             ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, "Invoked web socket event subscription."));
 
-            BybitSocketClientOptions webSocketOptions = BybitSocketClientOptions.Default;
-            webSocketOptions.SpotStreamsV3Options.OutputOriginalData = true;
-            webSocketOptions.SpotStreamsV3Options.BaseAddress = _config.SpotStreamEndpoint;
-
-            BybitSocketClient webSocketClient = new BybitSocketClient(webSocketOptions);
-
-            foreach (var symbol in _availableSymbols)
-            {
-                // deadlock issue, async method in sync manner
-                _webSocketSubscriptions.Add(webSocketClient.SpotStreamsV3.SubscribeToTickerUpdatesAsync(symbol, HandleTicker).GetAwaiter().GetResult().Data); 
-            }
-
-            foreach (var wss in _webSocketSubscriptions)
-            {
-                wss.ConnectionRestored += WebSocketSubscription_ConnectionRestored;
-                wss.ConnectionLost += WebSocketSubscription_ConnectionLost;
-                wss.ConnectionClosed += WebSocketSubscription_ConnectionClosed;
-            }
+            CallResult<UpdateSubscription> updateSubscription = await _webSocket.V5SpotStreams.SubscribeToTickerUpdatesAsync(_availableSymbols, HandleTicker);
+            updateSubscription.Data.ConnectionRestored += WebSocketEventSubscription_TickerUpdatesConnectionRestored;
+            updateSubscription.Data.ConnectionLost += WebSocketEventSubscription_TickerUpdatesConnectionLost;
+            updateSubscription.Data.ConnectionClosed += WebSocketEventSubscription_TickerUpdatesConnectionClosed;
         }
 
         public async void CloseWebSocketEventSubscription()
         {
             ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, "Closed web socket event subscription."));
 
-            foreach (var wss in _webSocketSubscriptions)
-            {
-                await wss.CloseAsync();
-            }
+            await _webSocket.V5SpotStreams.UnsubscribeAllAsync();
         }
 
         public bool Initialize()
@@ -136,10 +123,10 @@ namespace CryptoBot.Managers.Davor
             {
                 if (_dismissInvokeOrder) return false;
 
-                Tuple<bool, OrderV3> result = await CreateOrder(symbol, orderSide);
-                if (!result.Item1) return false;
+                Order order = await CreateOrder(symbol, orderSide);
+                if (order == null) return false;
 
-                return await HandleInvokeOrder(result.Item2);
+                return await HandleInvokeOrder(order);
             }
             catch (Exception e)
             {
@@ -152,7 +139,7 @@ namespace CryptoBot.Managers.Davor
         {
             try
             {
-                foreach (OrderV3 order in _orderBuffer.Where(x => x.Symbol == symbol && x.IsActive))
+                foreach (Order order in _orderBuffer.Where(x => x.Symbol == symbol && x.IsActive))
                 {
                     await HandleFinishOrder(order);
                 }
@@ -165,15 +152,15 @@ namespace CryptoBot.Managers.Davor
             }
         }
 
-        private async Task<Tuple<bool, OrderV3>> CreateOrder(string symbol, OrderSide orderSide)
+        private async Task<Order> CreateOrder(string symbol, OrderSide orderSide)
         {
             if (_orderBuffer.Where(x => x.Symbol == symbol && x.IsActive).Count() >= _config.ActiveSymbolOrders)
             {
                 // wait for order(s) to finish
-                return new Tuple<bool, OrderV3>(false, null);
+                return null;
             }
 
-            OrderV3 lastOrder = _orderBuffer.Where(x => x.Symbol == symbol).OrderBy(x => x.CreateTime).LastOrDefault();
+            Order lastOrder = _orderBuffer.Where(x => x.Symbol == symbol).OrderBy(x => x.CreateTime).LastOrDefault();
             if (lastOrder != null)
             {
                 decimal? lastPrice = await _tradingManager.GetPrice(symbol);
@@ -183,49 +170,45 @@ namespace CryptoBot.Managers.Davor
                     {
                         if (lastOrder.Price >= lastPrice)
                         {
-                            return new Tuple<bool, OrderV3>(false, null);
+                            return null;
                         }
                     }
                     else if (orderSide == OrderSide.Sell)
                     {
                         if (lastOrder.Price <= lastPrice)
                         {
-                            return new Tuple<bool, OrderV3>(false, null);
+                            return null;
                         }
                     }
                 }
             }
 
-            OrderV3 order = new OrderV3();
+            Order order = new Order();
             order.Symbol = symbol;
-            order.Type = OrderType.Market;
+            order.OrderType = OrderType.Market;
             order.Side = orderSide;
             order.Quantity = orderSide == OrderSide.Buy ? _config.BuyOrderVolume : _config.SellOrderVolume;
 
             if (!await _tradingManager.PlaceOrder(order))
-            {
-                return new Tuple<bool, OrderV3>(false, null);
-            }
+                return null;
 
-            return new Tuple<bool, OrderV3>(true, order);
+            return order;
         }
 
-        private async Task<bool> HandleInvokeOrder(OrderV3 order)
+        private async Task<bool> HandleInvokeOrder(Order order)
         {
             if (order == null) return false;
 
             if (!_config.TestMode)
             {
-                OrderV3 actualPlacedOrder = await _tradingManager.GetOrder(order.ClientOrderId);
+                Order actualPlacedOrder = await _tradingManager.GetOrder(order.ClientOrderId);
                 if (actualPlacedOrder == null)
                 {
                     ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, 
-                    $"!!!Unable to get order '{order.Id}' despite order was placed. Must delete placed order. Very strange!!!"));
+                    $"!!!Unable to get order '{order.OrderId}' despite order was placed. Must delete placed order. Very strange!!!"));
 
                     return false;
                 }
-
-                SetOrderTakeProfitAndStopLossPrice(actualPlacedOrder);
 
                 ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Invoked REAL order. {actualPlacedOrder.Dump()}"));
 
@@ -246,8 +229,6 @@ namespace CryptoBot.Managers.Davor
                 order.Price = lastPrice.Value;
                 order.IsActive = true;
 
-                SetOrderTakeProfitAndStopLossPrice(order);
-
                 ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Invoked TEST order. {order.Dump()}"));
 
                 _orderBuffer.Add(order);
@@ -256,7 +237,7 @@ namespace CryptoBot.Managers.Davor
             return true;
         }
 
-        private async Task HandleFinishOrder(OrderV3 order)
+        private async Task HandleFinishOrder(Order order)
         {
             if (order == null) return;
 
@@ -268,40 +249,40 @@ namespace CryptoBot.Managers.Davor
             if (!await CloseOrder(order))
                 return;
 
-            SetOrderRealizedProfitLossAmount(order);
+            //SetOrderRealizedProfitLossAmount(order);
             CheckForDismissInvokeOrder();
 
             ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, $"Finished order. {order.Dump()}"));
         }
 
-        private async Task<bool> CloseOrder(OrderV3 order)
+        private async Task<bool> CloseOrder(Order order)
         {
             if (order == null) return false;
 
             if (!_config.TestMode)
             {
                 // counter order used only for closing original order
-                OrderV3 counterOrder = new OrderV3();
+                Order counterOrder = new Order();
                 counterOrder.Symbol = order.Symbol;
                 counterOrder.Side = order.Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
-                counterOrder.Quantity = order.Side == OrderSide.Buy ? order.QuantityFilled : order.QuoteQuantity;
+                counterOrder.Quantity = order.Quantity; //xxx check
 
                 if (!await _tradingManager.PlaceOrder(counterOrder))
                 {
                     ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, 
-                    $"Failed to place counter order '{counterOrder.Id}'. Will try to close order '{order.Id}' later."));
+                    $"Failed to place counter order '{counterOrder.OrderId}'. Will try to close order '{order.ClientOrderId}' later."));
 
                     return false;
                 }
 
-                OrderV3 actualCounterOrder = await _tradingManager.GetOrder(counterOrder.ClientOrderId);
+                Order actualCounterOrder = await _tradingManager.GetOrder(counterOrder.ClientOrderId);
                 if (actualCounterOrder == null)
                 {
                     ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, 
-                    $"!!!Unable to get counter order '{counterOrder.Id}' despite counter order was placed. Very strange!!!"));
+                    $"!!!Unable to get counter order '{counterOrder.OrderId}' despite counter order was placed. Very strange!!!"));
                 }
 
-                order.ExitPrice = actualCounterOrder.AveragePrice;
+                order.ExitPrice = actualCounterOrder.ExitPrice;
             }
             else
             {
@@ -362,41 +343,25 @@ namespace CryptoBot.Managers.Davor
             return true;
         }
 
-        private void SetOrderTakeProfitAndStopLossPrice(OrderV3 order)
-        {
-            if (order == null) return;
+        //private void SetOrderRealizedProfitLossAmount(Order order)
+        //{
+        //    if (order == null) return;
 
-            if (order.Side == OrderSide.Buy)
-            {
-                order.TakeProfitPrice = order.Price + _orderProfitAmount;
-                order.StopLossPrice = order.Price - _orderLossAmount;
-            }
-            else if (order.Side == OrderSide.Sell)
-            {
-                order.TakeProfitPrice = order.Price - _orderProfitAmount;
-                order.StopLossPrice = order.Price + _orderLossAmount;
-            }
-        }
+        //    if (order.Side == OrderSide.Buy)
+        //    {
+        //        order.RealizedProfitLossAmount = order.ExitPrice - order.Price; // xxx averagePrice
+        //    }
+        //    else if (order.Side == OrderSide.Sell)
+        //    {
+        //        order.RealizedProfitLossAmount = order.Price - order.ExitPrice;
+        //    }
 
-        private void SetOrderRealizedProfitLossAmount(OrderV3 order)
-        {
-            if (order == null) return;
-
-            if (order.Side == OrderSide.Buy)
-            {
-                order.RealizedProfitLossAmount = order.ExitPrice - order.Price; // xxx averagePrice
-            }
-            else if (order.Side == OrderSide.Sell)
-            {
-                order.RealizedProfitLossAmount = order.Price - order.ExitPrice;
-            }
-
-            if (_config.TestMode)
-            {
-                // we're in test mode. increase/decrease test balance
-                _config.TestBalance += order.RealizedProfitLossAmount;
-            }
-        }
+        //    if (_config.TestMode)
+        //    {
+        //        // we're in test mode. increase/decrease test balance
+        //        _config.TestBalance += order.RealizedProfitLossAmount;
+        //    }
+        //}
 
         private void CheckForDismissInvokeOrder()
         {
@@ -475,19 +440,19 @@ namespace CryptoBot.Managers.Davor
 
         #region Event handlers
 
-        private void WebSocketSubscription_ConnectionRestored(TimeSpan obj)
+        private void WebSocketEventSubscription_TickerUpdatesConnectionRestored(TimeSpan obj)
         {
-            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, "Web socket subscription connection restored."));
+            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, "Subscription to ticker updates restored."));
         }
 
-        private void WebSocketSubscription_ConnectionLost()
+        private void WebSocketEventSubscription_TickerUpdatesConnectionLost()
         {
-            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, "Web socket subscription connection lost."));
+            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, "Subscription to ticker updates lost."));
         }
 
-        private void WebSocketSubscription_ConnectionClosed()
+        private void WebSocketEventSubscription_TickerUpdatesConnectionClosed()
         {
-            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, "Web socket subscription connection closed."));
+            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, "Subscription to ticker updates closed."));
         }
 
         private async void HandleTicker(DataEvent<BybitSpotTickerUpdate> ticker)

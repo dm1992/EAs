@@ -103,7 +103,7 @@ namespace CryptoBot.Managers.Test
             await Task.Delay(DELAY);
 
             Order order = new Order();
-            order.Id = _currentOrderId;
+            order.OrderId = _currentOrderId;
             order.ClientOrderId = _currentClientOrderId;
             order.IsActive = true;
 
@@ -118,10 +118,10 @@ namespace CryptoBot.Managers.Test
 
         public async Task<bool> PlaceOrder(Order order)
         {
-            order.Id = "test";
+            order.OrderId = "test";
             order.ClientOrderId = Guid.NewGuid().ToString();
 
-            _currentOrderId = order.Id;
+            _currentOrderId = order.OrderId;
             _currentClientOrderId = order.ClientOrderId;
 
             await Task.Delay(DELAY);

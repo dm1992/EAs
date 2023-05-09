@@ -9,10 +9,7 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Data
 {
-    /// <summary>
-    /// Reused Bybit spot order model
-    /// </summary>
-    public class OrderV3 : BybitSpotOrderV3
+    public class Order : BybitOrder
     {
         public decimal? LastPrice { get; set; }
         public decimal TakeProfitPrice { get; set; }
@@ -42,16 +39,8 @@ namespace CryptoBot.Data
 
         public string Dump()
         {
-            return $"{this.Id},{this.ClientOrderId},{this.Symbol},{this.Type},{this.Side},{this.UpdateTime},{this.IsActive},{this.Quantity}," +
+            return $"{this.OrderId},{this.ClientOrderId},{this.Symbol},{this},{this.Side},{this.CreateTime},{this.IsActive},{this.Quantity}," +
                    $"{this.Price},{this.TakeProfitPrice},{this.StopLossPrice},{this.ExitPrice},{this.RealizedProfitLossAmount}";
-        }
-    }
-
-    public class OrderV5 : BybitTrade
-    {
-        public string Dump()
-        {
-            return "";
         }
     }
 }

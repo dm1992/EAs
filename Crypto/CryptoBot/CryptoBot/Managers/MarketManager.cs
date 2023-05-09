@@ -18,7 +18,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CryptoBot.Managers.Davor
+namespace CryptoBot.Managers
 {
     public class MarketManager : IMarketManager
     {
@@ -30,6 +30,7 @@ namespace CryptoBot.Managers.Davor
 
         private List<BybitTrade> _tradeBuffer;
         private List<string> _availableSymbols;
+        private Dictionary<string, BybitOrderbook> _orderBooks;
         private bool _isInitialized;
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
@@ -42,12 +43,13 @@ namespace CryptoBot.Managers.Davor
             _tradeSemaphore = new SemaphoreSlim(1, 1);
 
             BybitSocketClientOptions webSocketOptions = BybitSocketClientOptions.Default;
-            webSocketOptions.V5StreamsOptions.OutputOriginalData= true;
+            webSocketOptions.V5StreamsOptions.OutputOriginalData = true;
             webSocketOptions.V5StreamsOptions.BaseAddress = _config.SpotStreamEndpoint;
 
             _webSocket = new BybitSocketClient(webSocketOptions);
 
             _tradeBuffer = new List<BybitTrade>();
+            _orderBooks = new Dictionary<string, BybitOrderbook>();
             _isInitialized = false;
         }
 
@@ -85,10 +87,15 @@ namespace CryptoBot.Managers.Davor
 
             ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Invoking web socket event subscription."));
 
-            CallResult<UpdateSubscription> updateSubscription = await _webSocket.V5SpotStreams.SubscribeToTradeUpdatesAsync(_availableSymbols, HandleTrade);
-            updateSubscription.Data.ConnectionRestored += WebSocketSubscription_ConnectionRestored;
-            updateSubscription.Data.ConnectionLost += WebSocketSubscription_ConnectionLost;
-            updateSubscription.Data.ConnectionClosed += WebSocketSubscription_ConnectionClosed;
+            CallResult<UpdateSubscription> updateSubscription = await _webSocket.V5SpotStreams.SubscribeToTradeUpdatesAsync(_availableSymbols, HandleTrades);
+            updateSubscription.Data.ConnectionRestored += WebSocketEventSubscription_TradeUpdatesConnectionRestored;
+            updateSubscription.Data.ConnectionLost += WebSocketEventSubscription_TradeUpdatesConnectionLost;
+            updateSubscription.Data.ConnectionClosed += WebSocketEventSubscription_TradeUpdatesConnectionClosed;
+
+            updateSubscription = await _webSocket.V5SpotStreams.SubscribeToOrderbookUpdatesAsync(_availableSymbols, 5, HandleOrderbookSnapshot, HandleOrderbookUpdate);
+            updateSubscription.Data.ConnectionRestored += WebSocketEventSubscription_OrderbookUpdatesConnectionRestored;
+            updateSubscription.Data.ConnectionLost += WebSocketEventSubscription_OrderbookUpdatesConnectionLost;
+            updateSubscription.Data.ConnectionClosed += WebSocketEventSubscription_OrderbookUpdatesConnectionClosed;
         }
 
         public async void CloseWebSocketEventSubscription()
@@ -101,37 +108,78 @@ namespace CryptoBot.Managers.Davor
 
         #region Event handlers
 
-        private void WebSocketSubscription_ConnectionRestored(TimeSpan obj)
+        private void WebSocketEventSubscription_TradeUpdatesConnectionRestored(TimeSpan obj)
         {
             ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Subscription to trade updates restored."));
         }
 
-        private void WebSocketSubscription_ConnectionLost()
+        private void WebSocketEventSubscription_TradeUpdatesConnectionLost()
         {
-            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Subscription to trade updates lost."));
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Warning, "Subscription to trade updates lost."));
         }
 
-        private void WebSocketSubscription_ConnectionClosed()
+        private void WebSocketEventSubscription_TradeUpdatesConnectionClosed()
         {
             ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Subscription to trade updates closed."));
         }
 
-        private void HandleTrade(DataEvent<IEnumerable<BybitTrade>> trades)
+        private void WebSocketEventSubscription_OrderbookUpdatesConnectionRestored(TimeSpan obj)
+        {
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Subscription to orderbook updates restored."));
+        }
+
+        private void WebSocketEventSubscription_OrderbookUpdatesConnectionLost()
+        {
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Subscription to orderbook updates lost."));
+        }
+
+        private void WebSocketEventSubscription_OrderbookUpdatesConnectionClosed()
+        {
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Subscription to orderbook updates closed."));
+        }
+
+        private void HandleTrades(DataEvent<IEnumerable<BybitTrade>> trades)
         {
             try
             {
                 _tradeSemaphore.WaitAsync();
 
-                // concat recent trades to trade buffer
                 _tradeBuffer.Concat(trades.Data);
             }
             catch (Exception e)
             {
-                ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"!!!HandleTrade failed!!! {e}"));
+                ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"!!!HandleTrades failed!!! {e}"));
             }
             finally
             {
                 _tradeSemaphore.Release();
+            }
+        }
+
+        private void HandleOrderbookSnapshot(DataEvent<BybitOrderbook> orderbook)
+        {
+            UpdateOrderbookEntry(orderbook.Data);
+        }
+
+        private void HandleOrderbookUpdate(DataEvent<BybitOrderbook> orderbook)
+        {
+            UpdateOrderbookEntry(orderbook.Data);
+        }
+
+        private void UpdateOrderbookEntry(BybitOrderbook orderbook)
+        {
+            if (orderbook == null) return;
+
+            lock (_orderBooks)
+            {
+                if (!_orderBooks.TryGetValue(orderbook.Symbol, out _))
+                {
+                    _orderBooks.Add(orderbook.Symbol, orderbook);
+                }
+                else
+                {
+                    _orderBooks[orderbook.Symbol] = orderbook;
+                }
             }
         }
 

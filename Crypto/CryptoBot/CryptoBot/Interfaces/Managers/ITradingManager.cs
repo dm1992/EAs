@@ -12,8 +12,8 @@ namespace CryptoBot.Interfaces.Managers
         Task<IEnumerable<BybitSpotBalance>> GetBalances();
         Task<IEnumerable<string>> GetAvailableSymbols();
         Task<decimal?> GetPrice(string symbol);
-        Task<OrderV3> GetOrder(string clientOrderId);
+        Task<Order> GetOrder(string clientOrderId);
         Task<bool> CancelOrder(string clientOrderId);
-        Task<bool> PlaceOrder(OrderV3 order);
+        Task<bool> PlaceOrder(Order order);
     }
 }
