@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CryptoBot.Data;
+using CryptoBot.Models;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces;
 using CryptoBot.Managers;

@@ -2,7 +2,7 @@
 using Bybit.Net.Enums;
 using Bybit.Net.Objects;
 using Bybit.Net.Objects.Models.V5;
-using CryptoBot.Data;
+using CryptoBot.Models;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces.Managers;
 using CryptoExchange.Net.Objects;
@@ -28,10 +28,10 @@ namespace CryptoBot.Managers
         private bool _isInitialized;
         private bool _dismissInvokeOrder;
         private bool _stopOrderManager;
-        private decimal _balanceProfitAmount;
-        private decimal _balanceLossAmount;
-        private decimal _orderProfitAmount;
-        private decimal _orderLossAmount;
+        //private decimal _balanceProfitAmount;
+        //private decimal _balanceLossAmount;
+        //private decimal _orderProfitAmount;
+        //private decimal _orderLossAmount;
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
@@ -52,8 +52,8 @@ namespace CryptoBot.Managers
             _isInitialized = false;
             _dismissInvokeOrder = false;
             _stopOrderManager = false;
-            _orderProfitAmount = 0;
-            _orderLossAmount = 0;
+            //_orderProfitAmount = 0;
+            //_orderLossAmount = 0;
         }
 
         public async void InvokeWebSocketEventSubscription()
@@ -91,21 +91,21 @@ namespace CryptoBot.Managers
                     throw new Exception("No available symbols.");
                 }
 
-                if (!SetBalanceProfitLossAmount())
-                {
-                    throw new Exception("Failed to set balance profit/loss amount.");
-                }
+                //if (!SetBalanceProfitLossAmount())
+                //{
+                //    throw new Exception("Failed to set balance profit/loss amount.");
+                //}
 
-                if (!SetOrderProfitLossAmount())
-                {
-                    throw new Exception("Failed to set order profit/loss amount.");
-                }
+                //if (!SetOrderProfitLossAmount())
+                //{
+                //    throw new Exception("Failed to set order profit/loss amount.");
+                //}
 
                 Task.Run(() => MonitorOrderStatsThread(_monitorOrderStatsCts.Token));
 
-                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, 
-                $"Initialized. Balance profit amount: {_balanceProfitAmount}, balance loss amount: {_balanceLossAmount}. " +
-                $"Order profit amount: {_orderProfitAmount}, order loss amount: {_orderLossAmount}."));
+                //ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, 
+                //$"Initialized. Balance profit amount: {_balanceProfitAmount}, balance loss amount: {_balanceLossAmount}. " +
+                //$"Order profit amount: {_orderProfitAmount}, order loss amount: {_orderLossAmount}."));
 
                 _isInitialized = true;
                 return true;
@@ -296,52 +296,52 @@ namespace CryptoBot.Managers
             return true;
         }
 
-        private bool ReachedBalanceProfitLossAmount(decimal balance)
-        {
-            return balance >= _balanceProfitAmount || balance <= _balanceLossAmount;
-        }
+        //private bool ReachedBalanceProfitLossAmount(decimal balance)
+        //{
+        //    return balance >= _balanceProfitAmount || balance <= _balanceLossAmount;
+        //}
 
-        private bool SetBalanceProfitLossAmount()
-        {
-            if (_config.TestMode)
-            {
-                _balanceProfitAmount = _config.TestBalance * (100.0M + _config.BalanceProfitPercent) / 100.0M;
-                _balanceLossAmount = _config.TestBalance * (100.0M -_config.BalanceLossPercent) / 100.0M;
+        //private bool SetBalanceProfitLossAmount()
+        //{
+        //    if (_config.TestMode)
+        //    {
+        //        _balanceProfitAmount = _config.TestBalance * (100.0M + _config.BalanceProfitPercent) / 100.0M;
+        //        _balanceLossAmount = _config.TestBalance * (100.0M -_config.BalanceLossPercent) / 100.0M;
 
-                return true;
-            }
+        //        return true;
+        //    }
 
-            var balances = _tradingManager.GetBalances().GetAwaiter().GetResult();
-            if (balances.IsNullOrEmpty()) 
-                return false;
+        //    var balances = _tradingManager.GetBalances().GetAwaiter().GetResult();
+        //    if (balances.IsNullOrEmpty()) 
+        //        return false;
 
-            decimal balance = balances.Sum(x => x.Available);
-            _balanceProfitAmount = balance * (100.0M + _config.BalanceProfitPercent) / 100.0M;
-            _balanceLossAmount = balance * (100.0M - _config.BalanceLossPercent) / 100.0M;
+        //    decimal balance = balances.Sum(x => x.Available);
+        //    _balanceProfitAmount = balance * (100.0M + _config.BalanceProfitPercent) / 100.0M;
+        //    _balanceLossAmount = balance * (100.0M - _config.BalanceLossPercent) / 100.0M;
 
-            return true;
-        }
+        //    return true;
+        //}
 
-        private bool SetOrderProfitLossAmount()
-        {
-            if (_config.TestMode)
-            {
-                _orderProfitAmount = _config.TestBalance * (_config.OrderProfitPercent / 100.0M);
-                _orderLossAmount = _config.TestBalance * (_config.OrderLossPercent / 100.0M);
+        //private bool SetOrderProfitLossAmount()
+        //{
+        //    if (_config.TestMode)
+        //    {
+        //        _orderProfitAmount = _config.TestBalance * (_config.OrderProfitPercent / 100.0M);
+        //        _orderLossAmount = _config.TestBalance * (_config.OrderLossPercent / 100.0M);
 
-                return true;
-            }
+        //        return true;
+        //    }
 
-            var balances = _tradingManager.GetBalances().GetAwaiter().GetResult();
-            if (balances.IsNullOrEmpty())
-                return false;
+        //    var balances = _tradingManager.GetBalances().GetAwaiter().GetResult();
+        //    if (balances.IsNullOrEmpty())
+        //        return false;
 
-            decimal availableBalance = balances.Sum(x => x.Available);
-            _orderProfitAmount = availableBalance * (_config.OrderProfitPercent / 100.0M);
-            _orderLossAmount = availableBalance * (_config.OrderLossPercent / 100.0M);
+        //    decimal availableBalance = balances.Sum(x => x.Available);
+        //    _orderProfitAmount = availableBalance * (_config.OrderProfitPercent / 100.0M);
+        //    _orderLossAmount = availableBalance * (_config.OrderLossPercent / 100.0M);
 
-            return true;
-        }
+        //    return true;
+        //}
 
         //private void SetOrderRealizedProfitLossAmount(Order order)
         //{
@@ -367,17 +367,17 @@ namespace CryptoBot.Managers
         {
             if (_dismissInvokeOrder) return;
 
-            if (_config.TestMode)
-            {
-                _dismissInvokeOrder = ReachedBalanceProfitLossAmount(_config.TestBalance);
-                return;
-            }
+            //if (_config.TestMode)
+            //{
+            //    _dismissInvokeOrder = ReachedBalanceProfitLossAmount(_config.TestBalance);
+            //    return;
+            //}
 
             var balances = _tradingManager.GetBalances().GetAwaiter().GetResult();
             if (balances.IsNullOrEmpty())
                 return;
 
-            _dismissInvokeOrder = ReachedBalanceProfitLossAmount(balances.Sum(x => x.Available));
+            //_dismissInvokeOrder = ReachedBalanceProfitLossAmount(balances.Sum(x => x.Available));
         }
 
         private void CheckForStopOrderManager()

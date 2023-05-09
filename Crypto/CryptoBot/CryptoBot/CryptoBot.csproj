@@ -102,12 +102,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Candle.cs" />
-    <Compile Include="Data\CandleBatch.cs" />
-    <Compile Include="Data\Config.cs" />
-    <Compile Include="Data\Market.cs" />
-    <Compile Include="Data\Order.cs" />
-    <Compile Include="Data\PriceClosure.cs" />
+    <Compile Include="Models\Candle.cs" />
+    <Compile Include="Models\CandleBatch.cs" />
+    <Compile Include="Models\Config.cs" />
+    <Compile Include="Models\Market.cs" />
+    <Compile Include="Models\Order.cs" />
+    <Compile Include="Models\PriceClosure.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="EventArgs\ApplicationEventArgs.cs" />
     <Compile Include="Extensions.cs" />

@@ -3,7 +3,7 @@ using Bybit.Net.Enums;
 using Bybit.Net.Objects;
 using Bybit.Net.Objects.Models.Socket.Spot;
 using Bybit.Net.Objects.Models.V5;
-using CryptoBot.Data;
+using CryptoBot.Models;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces;
 using CryptoBot.Interfaces.Managers;

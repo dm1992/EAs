@@ -1,4 +1,4 @@
-﻿using CryptoBot.Data;
+﻿using CryptoBot.Models;
 using CryptoBot.Interfaces.Events;
 using System;
 using System.Collections.Generic;

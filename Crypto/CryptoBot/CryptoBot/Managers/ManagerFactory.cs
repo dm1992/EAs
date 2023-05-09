@@ -1,4 +1,4 @@
-﻿using CryptoBot.Data;
+﻿using CryptoBot.Models;
 using CryptoBot.Interfaces.Managers;
 using Microsoft.Extensions.DependencyInjection;
 using System;

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CryptoBot.Data
+namespace CryptoBot.Models
 {
     public class PriceClosure
     {

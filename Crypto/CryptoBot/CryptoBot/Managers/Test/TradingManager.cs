@@ -1,15 +1,14 @@
 ﻿using Bybit.Net.Clients;
 using Bybit.Net.Objects;
-using Bybit.Net.Objects.Models.Spot;
-using Bybit.Net.Objects.Models.Spot.v3;
-using CryptoBot.Data;
+using CryptoBot.Models;
 using CryptoBot.EventArgs;
 using CryptoBot.Interfaces.Managers;
-using CryptoExchange.Net.Authentication;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Bybit.Net.Enums;
+using Bybit.Net.Objects.Models.V5;
 
 namespace CryptoBot.Managers.Test
 {
@@ -44,7 +43,7 @@ namespace CryptoBot.Managers.Test
 
         public async Task<bool> TradingServerAvailable()
         {
-            var response = await _bybitClient.SpotApiV3.ExchangeData.GetServerTimeAsync();
+            var response = await _bybitClient.V5Api.ExchangeData.GetServerTimeAsync();
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Trading server unavailable. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
@@ -54,21 +53,11 @@ namespace CryptoBot.Managers.Test
             return true;
         }
 
-        public async Task<IEnumerable<BybitSpotBalance>> GetBalances()
+        public async Task<IEnumerable<BybitBalance>> GetBalances()
         {
             await Task.Delay(DELAY);
 
-            BybitSpotBalance balance1 = new BybitSpotBalance();
-            balance1.Asset = "BTC";
-            balance1.Available = 0.45M;
-            balance1.Locked = 0;
-
-            BybitSpotBalance balance2 = new BybitSpotBalance();
-            balance2.Asset = "USDT";
-            balance2.Available = 2100M;
-            balance2.Locked = 0;
-
-            return new List<BybitSpotBalance>() { balance1, balance2 };
+            return null;
         }
 
         public async Task<IEnumerable<string>> GetAvailableSymbols()
@@ -76,26 +65,29 @@ namespace CryptoBot.Managers.Test
             if (!_config.Symbols.IsNullOrEmpty())
                 return _config.Symbols.ToList();
 
-            var response = await _bybitClient.SpotApiV3.ExchangeData.GetSymbolsAsync();
+            var response = await _bybitClient.V5Api.ExchangeData.GetSpotSymbolsAsync();
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to get available symbols. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
                 return new List<string>();
             }
 
-            return response.Data.Select(x => x.Name);
+            return response.Data.List.Select(x => x.Name);
         }
 
         public async Task<decimal?> GetPrice(string symbol)
         {
-            var response = await _bybitClient.SpotApiV3.ExchangeData.GetPriceAsync(symbol);
+            var response = await _bybitClient.V5Api.ExchangeData.GetDeliveryPriceAsync(Category.Spot, symbol);
             if (!response.Success)
             {
                 ApplicationEvent?.Invoke(this, new TradingManagerEventArgs(EventType.Error, $"!!!Failed to get '{symbol}' price. Error code: '{response.Error.Code}'. Error message: '{response.Error.Message}'!!!"));
                 return null;
             }
 
-            return response.Data.Price;
+            BybitDeliveryPrice priceInstance = response.Data.List.FirstOrDefault();
+            if (priceInstance == null) return null;
+
+            return priceInstance.DeliveryPrice;
         }
 
         public async Task<Order> GetOrder(string clientOrderId)
@@ -110,7 +102,7 @@ namespace CryptoBot.Managers.Test
             return order;
         }
 
-        public async Task<bool> CancelOrder(string clientOrderId)
+        public async Task<bool> CancelOrder(string symbol, string clientOrderId)
         {
             await Task.Delay(DELAY);
             return true;
