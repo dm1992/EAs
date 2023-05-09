@@ -10,7 +10,7 @@ namespace CryptoBot.Managers
 {
     public static class ApplicationHandler
     {
-        private static Config _config = null;
+        private static AppConfig _config = null;
         private static bool _isInitialized = false;
 
         public static bool Initialize()
@@ -51,33 +51,35 @@ namespace CryptoBot.Managers
         {
             try
             {
-                _config = new Config();
+                //_config = new Config();
 
-                _config.TestMode = bool.Parse(ConfigurationManager.AppSettings["testMode"]);
-                _config.TestBalance = decimal.Parse(ConfigurationManager.AppSettings["testBalance"]);
-                _config.BalanceProfitPercent = decimal.Parse(ConfigurationManager.AppSettings["balanceProfitPercent"]);
-                _config.BalanceLossPercent = decimal.Parse(ConfigurationManager.AppSettings["balanceLossPercent"]);
-                _config.OrderProfitPercent = decimal.Parse(ConfigurationManager.AppSettings["orderProfitPercent"]);
-                _config.OrderLossPercent = decimal.Parse(ConfigurationManager.AppSettings["orderLossPercent"]);
-                _config.Username = ConfigurationManager.AppSettings["username"];
-                _config.Symbols = ConfigurationManager.AppSettings["symbols"].ParseCsv<string>();
-                _config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
-                _config.ApiSecret = ConfigurationManager.AppSettings["apiSecret"];
-                _config.ApiEndpoint = ConfigurationManager.AppSettings["apiEndpoint"];
-                _config.SpotStreamEndpoint = ConfigurationManager.AppSettings["spotStreamEndpoint"];
-                _config.ActiveSymbolOrders = int.Parse(ConfigurationManager.AppSettings["activeSymbolOrders"]);
-                _config.BuyOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["buyOrderVolume"]);
-                _config.SellOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["sellOrderVolume"]);
-                _config.CandlesInTradeBatch = int.Parse(ConfigurationManager.AppSettings["candlesInTradeBatch"]);
-                _config.TradeCandleMinuteTimeframe = int.Parse(ConfigurationManager.AppSettings["tradeCandleMinuteTimeframe"]);
-                _config.PriceClosureCandleSize = int.Parse(ConfigurationManager.AppSettings["priceClosureCandleSize"]);
-                _config.CreatePriceLevelClosureAfterPriceChanges = int.Parse(ConfigurationManager.AppSettings["createPriceLevelClosureAfterPriceChanges"]);
-                _config.MarketPriceClosuresOnMassiveVolumeDetection = int.Parse(ConfigurationManager.AppSettings["marketPriceClosuresOnMassiveVolumeDetection"]);
-                _config.MarketPriceClosureCandlesOnMarketDirectionDetection = int.Parse(ConfigurationManager.AppSettings["marketPriceClosureCandlesOnMarketDirectionDetection"]);
-                _config.MassiveBuyersPercentLimit = decimal.Parse(ConfigurationManager.AppSettings["massiveBuyersPercentLimit"]);
-                _config.MassiveSellersPercentLimit = decimal.Parse(ConfigurationManager.AppSettings["massiveSellersPercentLimit"]);
-                _config.AverageVolumeWeightFactor = decimal.Parse(ConfigurationManager.AppSettings["averageVolumeWeightFactor"]);
-                _config.AveragePriceMoveWeightFactor = decimal.Parse(ConfigurationManager.AppSettings["averagePriceMoveWeightFactor"]);
+                //_config.TestMode = bool.Parse(ConfigurationManager.AppSettings["testMode"]);
+                //_config.TestBalance = decimal.Parse(ConfigurationManager.AppSettings["testBalance"]);
+                //_config.BalanceProfitPercent = decimal.Parse(ConfigurationManager.AppSettings["balanceProfitPercent"]);
+                //_config.BalanceLossPercent = decimal.Parse(ConfigurationManager.AppSettings["balanceLossPercent"]);
+                //_config.OrderProfitPercent = decimal.Parse(ConfigurationManager.AppSettings["orderProfitPercent"]);
+                //_config.OrderLossPercent = decimal.Parse(ConfigurationManager.AppSettings["orderLossPercent"]);
+                //_config.Username = ConfigurationManager.AppSettings["username"];
+                //_config.Symbols = ConfigurationManager.AppSettings["symbols"].ParseCsv<string>();
+                //_config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
+                //_config.ApiSecret = ConfigurationManager.AppSettings["apiSecret"];
+                //_config.ApiEndpoint = ConfigurationManager.AppSettings["apiEndpoint"];
+                //_config.SpotStreamEndpoint = ConfigurationManager.AppSettings["spotStreamEndpoint"];
+                //_config.ActiveSymbolOrders = int.Parse(ConfigurationManager.AppSettings["activeSymbolOrders"]);
+                //_config.BuyOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["buyOrderVolume"]);
+                //_config.SellOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["sellOrderVolume"]);
+                //_config.CandlesInTradeBatch = int.Parse(ConfigurationManager.AppSettings["candlesInTradeBatch"]);
+                //_config.TradeCandleMinuteTimeframe = int.Parse(ConfigurationManager.AppSettings["tradeCandleMinuteTimeframe"]);
+                //_config.PriceClosureCandleSize = int.Parse(ConfigurationManager.AppSettings["priceClosureCandleSize"]);
+                //_config.CreatePriceLevelClosureAfterPriceChanges = int.Parse(ConfigurationManager.AppSettings["createPriceLevelClosureAfterPriceChanges"]);
+                //_config.MarketPriceClosuresOnMassiveVolumeDetection = int.Parse(ConfigurationManager.AppSettings["marketPriceClosuresOnMassiveVolumeDetection"]);
+                //_config.MarketPriceClosureCandlesOnMarketDirectionDetection = int.Parse(ConfigurationManager.AppSettings["marketPriceClosureCandlesOnMarketDirectionDetection"]);
+                //_config.MassiveBuyersPercentLimit = decimal.Parse(ConfigurationManager.AppSettings["massiveBuyersPercentLimit"]);
+                //_config.MassiveSellersPercentLimit = decimal.Parse(ConfigurationManager.AppSettings["massiveSellersPercentLimit"]);
+                //_config.AverageVolumeWeightFactor = decimal.Parse(ConfigurationManager.AppSettings["averageVolumeWeightFactor"]);
+                //_config.AveragePriceMoveWeightFactor = decimal.Parse(ConfigurationManager.AppSettings["averagePriceMoveWeightFactor"]);
+
+                _config = new AppConfig();
 
                 return true;
             }

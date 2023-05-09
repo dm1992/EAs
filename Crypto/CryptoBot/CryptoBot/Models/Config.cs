@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace CryptoBot.Models
 {
+    [Obsolete]
     public class Config
     {
         public bool TestMode { get; set; }
@@ -30,5 +31,23 @@ namespace CryptoBot.Models
         public decimal MassiveSellersPercentLimit { get; set; }
         public decimal AverageVolumeWeightFactor { get; set; }
         public decimal AveragePriceMoveWeightFactor { get; set; }
+    }
+
+    public class AppConfig
+    {
+        public bool TestMode { get; set; }
+        public string Username { get; set; }
+        public IEnumerable<string> Symbols { get; set; }
+        public string ApiKey { get; set; }
+        public string ApiSecret { get; set; }
+        public string ApiEndpoint { get; set; }
+        public string SpotStreamEndpoint { get; set; }
+        public int ActiveSymbolOrders { get; set; }
+        public decimal BuyOrderVolume { get; set; }
+        public decimal SellOrderVolume { get; set; }
+        public int ExecutedTradesMicroLevel { get; set; }
+        public int ExecutedTradesMacroLevel { get; set; }
+        public int ElapsedTimeMicroLevel { get; set; }
+        public int ElapsedTimeMacroLevel { get; set; }
     }
 }

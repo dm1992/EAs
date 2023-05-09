@@ -18,7 +18,7 @@ namespace CryptoBot.Managers
     public class OrderManager : IOrderManager
     {
         private readonly ITradingManager _tradingManager;
-        private readonly Config _config;
+        private readonly AppConfig _config;
         private readonly SemaphoreSlim _tickerSemaphore;
         private readonly CancellationTokenSource _monitorOrderStatsCts;
         private readonly BybitSocketClient _webSocket;
@@ -35,7 +35,7 @@ namespace CryptoBot.Managers
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
-        public OrderManager(ITradingManager tradingManager, Config config)
+        public OrderManager(ITradingManager tradingManager, AppConfig config)
         {
             _tradingManager = tradingManager;
             _config = config;

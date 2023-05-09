@@ -24,7 +24,7 @@ namespace CryptoBot.Managers
     {
         private readonly ITradingManager _tradingManager;
         private readonly IOrderManager _orderManager;
-        private readonly Config _config;
+        private readonly AppConfig _config;
         private readonly SemaphoreSlim _tradeSemaphore;
         private readonly BybitSocketClient _webSocket;
 
@@ -35,7 +35,7 @@ namespace CryptoBot.Managers
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
-        public MarketManager(ITradingManager tradingManager, IOrderManager orderManager, Config config)
+        public MarketManager(ITradingManager tradingManager, IOrderManager orderManager, AppConfig config)
         {
             _tradingManager = tradingManager;
             _orderManager = orderManager;
@@ -92,7 +92,7 @@ namespace CryptoBot.Managers
             updateSubscription.Data.ConnectionLost += WebSocketEventSubscription_TradeUpdatesConnectionLost;
             updateSubscription.Data.ConnectionClosed += WebSocketEventSubscription_TradeUpdatesConnectionClosed;
 
-            updateSubscription = await _webSocket.V5SpotStreams.SubscribeToOrderbookUpdatesAsync(_availableSymbols, 5, HandleOrderbookSnapshot, HandleOrderbookUpdate);
+            updateSubscription = await _webSocket.V5SpotStreams.SubscribeToOrderbookUpdatesAsync(_availableSymbols, 50, HandleOrderbookSnapshot, HandleOrderbookUpdate);
             updateSubscription.Data.ConnectionRestored += WebSocketEventSubscription_OrderbookUpdatesConnectionRestored;
             updateSubscription.Data.ConnectionLost += WebSocketEventSubscription_OrderbookUpdatesConnectionLost;
             updateSubscription.Data.ConnectionClosed += WebSocketEventSubscription_OrderbookUpdatesConnectionClosed;
@@ -105,6 +105,105 @@ namespace CryptoBot.Managers
             await _webSocket.V5SpotStreams.UnsubscribeAllAsync();
         }
 
+        private bool DetermineMarketVolumeIntensity(string symbol, MarketSpectatorMode marketSpectatorMode, out MarketVolumeIntensity marketVolumeIntensity)
+        {
+            marketVolumeIntensity = MarketVolumeIntensity.Unknown;
+
+            if (!GetMarketLevelDepth(marketSpectatorMode, out int? marketLevelDepth))
+                return false;
+
+            return marketVolumeIntensity != MarketVolumeIntensity.Unknown;
+        }
+
+        private bool DetermineMarketDirection(string symbol, MarketSpectatorMode marketSpectatorMode, out MarketDirection marketDirection)
+        {
+            marketDirection = MarketDirection.Unknown;
+
+            if (!GetMarketLevelDepth(marketSpectatorMode, out int? marketLevelDepth))
+                return false;
+
+            return marketDirection != MarketDirection.Unknown;
+        }
+
+        /// <summary>
+        /// Get market level depth regarding executed trades or elapsed time.
+        /// </summary>
+        /// <param name="marketSpectatorMode"></param>
+        /// <param name="marketLevelDepth"></param>
+        /// <returns></returns>
+        private bool GetMarketLevelDepth(MarketSpectatorMode marketSpectatorMode, out int? marketLevelDepth)
+        {
+            marketLevelDepth = null;
+
+            switch (marketSpectatorMode)
+            {
+                case MarketSpectatorMode.ExecutedTrades_MicroLevel:
+                    marketLevelDepth = _config.ElapsedTimeMicroLevel;
+                    break;
+
+                case MarketSpectatorMode.ExecutedTrades_MacroLevel:
+                    marketLevelDepth = _config.ElapsedTimeMacroLevel;
+                    break;
+
+                case MarketSpectatorMode.ElapsedTime_MicroLevel:
+                    marketLevelDepth = _config.ElapsedTimeMicroLevel;
+                    break;
+
+                case MarketSpectatorMode.ElapsedTime_MacroLevel:
+                    marketLevelDepth = _config.ElapsedTimeMacroLevel;
+                    break;
+
+                default:
+                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"!!!Failed to get market level depth. Not supported market spectator mode {marketSpectatorMode}!!!"));
+                    break;
+            }
+
+            return marketLevelDepth.HasValue;
+        }
+
+        /// <summary>
+        ///  Prepare symbol market metrics like volume and direction according to number of executed trades or elapsed time. 
+        /// </summary>
+        /// <param name="symbol"></param>
+        private void PrepareMarketMetric(string symbol)
+        {
+            //xxx for now market spectator set to micro level
+            DetermineMarketDirection(symbol, MarketSpectatorMode.ExecutedTrades_MicroLevel, out MarketDirection marketDirectionExecutedTrades);
+            DetermineMarketDirection(symbol, MarketSpectatorMode.ElapsedTime_MicroLevel, out MarketDirection marketDirectionElapsedTime);
+            DetermineMarketVolumeIntensity(symbol, MarketSpectatorMode.ExecutedTrades_MicroLevel, out MarketVolumeIntensity marketVolumeIntensityExecutedTrades);
+            DetermineMarketVolumeIntensity(symbol, MarketSpectatorMode.ElapsedTime_MicroLevel, out MarketVolumeIntensity marketVolumeIntensityElapsedTime);
+
+            MarketMetric marketMetric = new MarketMetric(symbol);
+            marketMetric.MarketDirection_ExecutedTrades = marketDirectionExecutedTrades;
+            marketMetric.MarketDirection_ElapsedTime = marketDirectionElapsedTime;
+            marketMetric.MarketVolumeIntensity_ExecutedTrades = marketVolumeIntensityExecutedTrades;
+            marketMetric.MarketVolumeIntensity_ElapsedTime = marketVolumeIntensityElapsedTime;
+
+            HandleMarketMetric(marketMetric);
+        }
+
+        private void HandleMarketMetric(MarketMetric marketMetric)
+        {
+            if (marketMetric == null) return;
+
+            //ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Debug, $"{marketMetric.Dump()}"));
+
+            if (marketMetric.ValidateMarketDirection(out MarketDirection marketDirection))
+            {
+                if (marketMetric.ValidateMarketVolumeIntensity(out MarketVolumeIntensity marketVolumeIntensity))
+                {
+                    if (marketDirection == MarketDirection.Uptrend && marketVolumeIntensity == MarketVolumeIntensity.BigBuyers)
+                    {
+                        _orderManager.InvokeOrder(marketMetric.Symbol, OrderSide.Buy);
+                    }
+                    else if (marketDirection == MarketDirection.Downtrend && marketVolumeIntensity == MarketVolumeIntensity.BigSellers)
+                    {
+                        _orderManager.InvokeOrder(marketMetric.Symbol, OrderSide.Sell);
+                    }
+                }
+            }
+
+        }
 
         #region Event handlers
 
@@ -145,6 +244,8 @@ namespace CryptoBot.Managers
                 _tradeSemaphore.WaitAsync();
 
                 _tradeBuffer.Concat(trades.Data);
+
+                PrepareMarketMetric(trades.Topic);
             }
             catch (Exception e)
             {

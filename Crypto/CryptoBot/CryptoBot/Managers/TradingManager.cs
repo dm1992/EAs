@@ -17,14 +17,14 @@ namespace CryptoBot.Managers
 {
     public class TradingManager : ITradingManager
     {
-        private readonly Config _config;
+        private readonly AppConfig _config;
         private readonly BybitClient _bybitClient;
 
         private bool _isInitialized;
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
-        public TradingManager(Config config)
+        public TradingManager(AppConfig config)
         {
             _config = config;
 

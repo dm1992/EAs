@@ -16,7 +16,7 @@ namespace CryptoBot.Managers.Test
     {
         private const int DELAY = 500;
 
-        private readonly Config _config;
+        private readonly AppConfig _config;
         private readonly BybitClient _bybitClient;
 
         private string _currentOrderId = null;
@@ -24,7 +24,7 @@ namespace CryptoBot.Managers.Test
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
-        public TradingManager(Config config)
+        public TradingManager(AppConfig config)
         {
             _config = config;
 

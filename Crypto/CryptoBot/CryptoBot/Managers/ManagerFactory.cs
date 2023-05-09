@@ -11,7 +11,7 @@ namespace CryptoBot.Managers
 {
     public class ManagerFactory
     {
-        public static IMarketManager CreateMarketManager(ManagerType type, ITradingManager tradingManager, IOrderManager orderManager, Config config)
+        public static IMarketManager CreateMarketManager(ManagerType type, ITradingManager tradingManager, IOrderManager orderManager, AppConfig config)
         {
             switch (type)
             {
@@ -24,7 +24,7 @@ namespace CryptoBot.Managers
             }
         }
 
-        public static IOrderManager CreateOrderManager(ManagerType type, ITradingManager tradingManager, Config config)
+        public static IOrderManager CreateOrderManager(ManagerType type, ITradingManager tradingManager, AppConfig config)
         {
             switch (type)
             {
@@ -37,7 +37,7 @@ namespace CryptoBot.Managers
             }
         }
 
-        public static ITradingManager CreateTradingManager(ManagerType type, Config config)
+        public static ITradingManager CreateTradingManager(ManagerType type, AppConfig config)
         {
             switch (type)
             {
