@@ -15,6 +15,14 @@ namespace CryptoBot
             return false;
         }
 
+        public static decimal? Average(this IEnumerable<decimal> list)
+        {
+            if (list.IsNullOrEmpty())
+                return null;
+
+            return list.Average(x => x);
+        }
+
         public static IEnumerable<T> ParseCsv<T>(this string csv)
         {
             if (String.IsNullOrWhiteSpace(csv)) yield break;

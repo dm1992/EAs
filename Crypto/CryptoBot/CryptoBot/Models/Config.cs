@@ -45,9 +45,7 @@ namespace CryptoBot.Models
         public int ActiveSymbolOrders { get; set; }
         public decimal BuyOrderVolume { get; set; }
         public decimal SellOrderVolume { get; set; }
-        public int ExecutedTradesMicroLevel { get; set; }
-        public int ExecutedTradesMacroLevel { get; set; }
-        public int ElapsedTimeMicroLevel { get; set; }
-        public int ElapsedTimeMacroLevel { get; set; }
+        public int NumberOfExecutedTrades { get; set; }
+        public int ElapsedTimeInMinutes { get; set; }
     }
 }

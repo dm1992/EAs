@@ -1,7 +1,6 @@
 ﻿using Bybit.Net.Clients;
 using Bybit.Net.Enums;
 using Bybit.Net.Objects;
-using Bybit.Net.Objects.Models.Socket.Spot;
 using Bybit.Net.Objects.Models.V5;
 using CryptoBot.Models;
 using CryptoBot.EventArgs;
@@ -25,13 +24,22 @@ namespace CryptoBot.Managers
         private readonly ITradingManager _tradingManager;
         private readonly IOrderManager _orderManager;
         private readonly AppConfig _config;
+        private readonly SemaphoreSlim _tickerSemaphore;
         private readonly SemaphoreSlim _tradeSemaphore;
+        private readonly SemaphoreSlim _orderbookSnapshotSemaphore;
+        private readonly SemaphoreSlim _orderbookUpdateSemaphore;
         private readonly BybitSocketClient _webSocket;
 
-        private List<BybitTrade> _tradeBuffer;
+        private List<BybitTrade> _trades;
+        private List<TradingSignal> _tradingSignals;
         private List<string> _availableSymbols;
-        private Dictionary<string, BybitOrderbook> _orderBooks;
+        private Dictionary<string, BybitOrderbook> _orderbooks;
+        private Dictionary<string, BybitSpotTickerUpdate> _tickers;
         private bool _isInitialized;
+
+        private MarketDirection _marketDirection = MarketDirection.Unknown;
+        private object _marketDirectionLocker = new object();
+        
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
@@ -40,7 +48,10 @@ namespace CryptoBot.Managers
             _tradingManager = tradingManager;
             _orderManager = orderManager;
             _config = config;
+            _tickerSemaphore = new SemaphoreSlim(1, 1);
             _tradeSemaphore = new SemaphoreSlim(1, 1);
+            _orderbookSnapshotSemaphore = new SemaphoreSlim(1, 1);
+            _orderbookUpdateSemaphore = new SemaphoreSlim(1, 1);
 
             BybitSocketClientOptions webSocketOptions = BybitSocketClientOptions.Default;
             webSocketOptions.V5StreamsOptions.OutputOriginalData = true;
@@ -48,9 +59,13 @@ namespace CryptoBot.Managers
 
             _webSocket = new BybitSocketClient(webSocketOptions);
 
-            _tradeBuffer = new List<BybitTrade>();
-            _orderBooks = new Dictionary<string, BybitOrderbook>();
+            _trades = new List<BybitTrade>();
+            _tradingSignals = new List<TradingSignal>();
+            _orderbooks = new Dictionary<string, BybitOrderbook>();
+            _tickers = new Dictionary<string, BybitSpotTickerUpdate>();
             _isInitialized = false;
+
+            Task.Run(() => MonitorActiveTradingSignals());
         }
 
         public bool Initialize()
@@ -87,15 +102,35 @@ namespace CryptoBot.Managers
 
             ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Invoking web socket event subscription."));
 
-            CallResult<UpdateSubscription> updateSubscription = await _webSocket.V5SpotStreams.SubscribeToTradeUpdatesAsync(_availableSymbols, HandleTrades);
-            updateSubscription.Data.ConnectionRestored += WebSocketEventSubscription_TradeUpdatesConnectionRestored;
-            updateSubscription.Data.ConnectionLost += WebSocketEventSubscription_TradeUpdatesConnectionLost;
-            updateSubscription.Data.ConnectionClosed += WebSocketEventSubscription_TradeUpdatesConnectionClosed;
+            CallResult<UpdateSubscription> response = await _webSocket.V5SpotStreams.SubscribeToTradeUpdatesAsync(_availableSymbols, HandleTrades);
+            if (!response.GetResultOrError(out UpdateSubscription updateSubscription, out Error error))
+            {
+                throw new Exception($"Failed to subscribe to trade updates. Error: ({error?.Code}) {error?.Message}.");
+            }
 
-            updateSubscription = await _webSocket.V5SpotStreams.SubscribeToOrderbookUpdatesAsync(_availableSymbols, 50, HandleOrderbookSnapshot, HandleOrderbookUpdate);
-            updateSubscription.Data.ConnectionRestored += WebSocketEventSubscription_OrderbookUpdatesConnectionRestored;
-            updateSubscription.Data.ConnectionLost += WebSocketEventSubscription_OrderbookUpdatesConnectionLost;
-            updateSubscription.Data.ConnectionClosed += WebSocketEventSubscription_OrderbookUpdatesConnectionClosed;
+            updateSubscription.ConnectionRestored += WebSocketEventSubscription_TradeUpdatesConnectionRestored;
+            updateSubscription.ConnectionLost += WebSocketEventSubscription_TradeUpdatesConnectionLost;
+            updateSubscription.ConnectionClosed += WebSocketEventSubscription_TradeUpdatesConnectionClosed;
+
+            response = await _webSocket.V5SpotStreams.SubscribeToOrderbookUpdatesAsync(_availableSymbols, 50, HandleOrderbookSnapshot, HandleOrderbookUpdate);
+            if (!response.GetResultOrError(out updateSubscription, out error))
+            {
+                throw new Exception($"Failed to subscribe to orderbook updates. Error: ({error?.Code}) {error?.Message}.");
+            }
+
+            updateSubscription.ConnectionRestored += WebSocketEventSubscription_OrderbookUpdatesConnectionRestored;
+            updateSubscription.ConnectionLost += WebSocketEventSubscription_OrderbookUpdatesConnectionLost;
+            updateSubscription.ConnectionClosed += WebSocketEventSubscription_OrderbookUpdatesConnectionClosed;
+
+            response = await _webSocket.V5SpotStreams.SubscribeToTickerUpdatesAsync(_availableSymbols, HandleTicker);
+            if (!response.GetResultOrError(out updateSubscription, out error))
+            {
+                throw new Exception($"Failed to subscribe to ticker updates. Error: ({error?.Code}) {error?.Message}.");
+            }
+
+            updateSubscription.ConnectionRestored += WebSocketEventSubscription_TickerUpdatesConnectionRestored;
+            updateSubscription.ConnectionLost += WebSocketEventSubscription_TickerUpdatesConnectionLost;
+            updateSubscription.ConnectionClosed += WebSocketEventSubscription_TickerUpdatesConnectionClosed;
         }
 
         public async void CloseWebSocketEventSubscription()
@@ -105,105 +140,216 @@ namespace CryptoBot.Managers
             await _webSocket.V5SpotStreams.UnsubscribeAllAsync();
         }
 
-        private bool DetermineMarketVolumeIntensity(string symbol, MarketSpectatorMode marketSpectatorMode, out MarketVolumeIntensity marketVolumeIntensity)
+        private MarketDirection GetLatestMarketDirection()
         {
-            marketVolumeIntensity = MarketVolumeIntensity.Unknown;
-
-            if (!GetMarketLevelDepth(marketSpectatorMode, out int? marketLevelDepth))
-                return false;
-
-            return marketVolumeIntensity != MarketVolumeIntensity.Unknown;
-        }
-
-        private bool DetermineMarketDirection(string symbol, MarketSpectatorMode marketSpectatorMode, out MarketDirection marketDirection)
-        {
-            marketDirection = MarketDirection.Unknown;
-
-            if (!GetMarketLevelDepth(marketSpectatorMode, out int? marketLevelDepth))
-                return false;
-
-            return marketDirection != MarketDirection.Unknown;
-        }
-
-        /// <summary>
-        /// Get market level depth regarding executed trades or elapsed time.
-        /// </summary>
-        /// <param name="marketSpectatorMode"></param>
-        /// <param name="marketLevelDepth"></param>
-        /// <returns></returns>
-        private bool GetMarketLevelDepth(MarketSpectatorMode marketSpectatorMode, out int? marketLevelDepth)
-        {
-            marketLevelDepth = null;
-
-            switch (marketSpectatorMode)
+            lock (_marketDirectionLocker)
             {
-                case MarketSpectatorMode.ExecutedTrades_MicroLevel:
-                    marketLevelDepth = _config.ElapsedTimeMicroLevel;
-                    break;
-
-                case MarketSpectatorMode.ExecutedTrades_MacroLevel:
-                    marketLevelDepth = _config.ElapsedTimeMacroLevel;
-                    break;
-
-                case MarketSpectatorMode.ElapsedTime_MicroLevel:
-                    marketLevelDepth = _config.ElapsedTimeMicroLevel;
-                    break;
-
-                case MarketSpectatorMode.ElapsedTime_MacroLevel:
-                    marketLevelDepth = _config.ElapsedTimeMacroLevel;
-                    break;
-
-                default:
-                    ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"!!!Failed to get market level depth. Not supported market spectator mode {marketSpectatorMode}!!!"));
-                    break;
+                return _marketDirection;
             }
-
-            return marketLevelDepth.HasValue;
         }
 
-        /// <summary>
-        ///  Prepare symbol market metrics like volume and direction according to number of executed trades or elapsed time. 
-        /// </summary>
-        /// <param name="symbol"></param>
-        private void PrepareMarketMetric(string symbol)
+        private BybitOrderbook GetLatestOrderbookEntry(string symbol)
         {
-            //xxx for now market spectator set to micro level
-            DetermineMarketDirection(symbol, MarketSpectatorMode.ExecutedTrades_MicroLevel, out MarketDirection marketDirectionExecutedTrades);
-            DetermineMarketDirection(symbol, MarketSpectatorMode.ElapsedTime_MicroLevel, out MarketDirection marketDirectionElapsedTime);
-            DetermineMarketVolumeIntensity(symbol, MarketSpectatorMode.ExecutedTrades_MicroLevel, out MarketVolumeIntensity marketVolumeIntensityExecutedTrades);
-            DetermineMarketVolumeIntensity(symbol, MarketSpectatorMode.ElapsedTime_MicroLevel, out MarketVolumeIntensity marketVolumeIntensityElapsedTime);
-
-            MarketMetric marketMetric = new MarketMetric(symbol);
-            marketMetric.MarketDirection_ExecutedTrades = marketDirectionExecutedTrades;
-            marketMetric.MarketDirection_ElapsedTime = marketDirectionElapsedTime;
-            marketMetric.MarketVolumeIntensity_ExecutedTrades = marketVolumeIntensityExecutedTrades;
-            marketMetric.MarketVolumeIntensity_ElapsedTime = marketVolumeIntensityElapsedTime;
-
-            HandleMarketMetric(marketMetric);
-        }
-
-        private void HandleMarketMetric(MarketMetric marketMetric)
-        {
-            if (marketMetric == null) return;
-
-            //ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Debug, $"{marketMetric.Dump()}"));
-
-            if (marketMetric.ValidateMarketDirection(out MarketDirection marketDirection))
+            lock (_orderbooks)
             {
-                if (marketMetric.ValidateMarketVolumeIntensity(out MarketVolumeIntensity marketVolumeIntensity))
+                if (!_orderbooks.TryGetValue(symbol, out BybitOrderbook orderbook))
                 {
-                    if (marketDirection == MarketDirection.Uptrend && marketVolumeIntensity == MarketVolumeIntensity.BigBuyers)
+                    return null;
+                }
+
+                return orderbook;
+            }
+        }
+
+        private BybitSpotTickerUpdate GetLatestTickerEntry(string symbol)
+        {
+            lock (_tickers)
+            {
+                if (!_tickers.TryGetValue(symbol, out BybitSpotTickerUpdate ticker))
+                {
+                    return null;
+                }
+
+                return ticker;
+            }
+        }
+
+        private void UpdateOrderbookEntry(BybitOrderbook orderbook)
+        {
+            if (orderbook == null) return;
+
+            lock (_orderbooks)
+            {
+                if (!_orderbooks.TryGetValue(orderbook.Symbol, out BybitOrderbook orderbookEntry))
+                {
+                    _orderbooks.Add(orderbook.Symbol, orderbook);
+                }
+                else
+                {
+                    if (!orderbook.Bids.IsNullOrEmpty())
                     {
-                        _orderManager.InvokeOrder(marketMetric.Symbol, OrderSide.Buy);
+                        List<BybitOrderbookEntry> bids = orderbookEntry.Bids.ToList();
+
+                        for (int i = 0; i < orderbook.Bids.Count(); i++)
+                        {
+                            bids[i] = orderbook.Bids.ElementAt(i);
+                        }
+
+                        orderbookEntry.Bids = bids;
                     }
-                    else if (marketDirection == MarketDirection.Downtrend && marketVolumeIntensity == MarketVolumeIntensity.BigSellers)
+
+                    if (!orderbook.Asks.IsNullOrEmpty())
                     {
-                        _orderManager.InvokeOrder(marketMetric.Symbol, OrderSide.Sell);
+                        List<BybitOrderbookEntry> asks = orderbookEntry.Asks.ToList();
+
+                        for (int i = 0; i < orderbook.Asks.Count(); i++)
+                        {
+                            asks[i] = orderbook.Asks.ElementAt(i);
+                        }
+
+                        orderbookEntry.Asks = asks;
                     }
                 }
             }
-
         }
+
+        private void UpdateTickerEntry(BybitSpotTickerUpdate ticker)
+        {
+            if (ticker == null) return;
+
+            lock (_tickers)
+            {
+                if (!_tickers.TryGetValue(ticker.Symbol, out _))
+                {
+                    _tickers.Add(ticker.Symbol, ticker);
+                }
+                else
+                {
+                    _tickers[ticker.Symbol] = ticker;
+                }
+            }
+        }
+
+        private void UpdateMarketDirection(BybitSpotTickerUpdate ticker)
+        {
+            if (ticker == null) return;
+
+            decimal averagePrice24h = (ticker.HighPrice24h + ticker.LowPrice24h) / 2.0m;
+
+            if (ticker.LastPrice > averagePrice24h)
+            {
+                if (ticker.PricePercentage24h > 0)
+                {
+                    _marketDirection = MarketDirection.Uptrend;
+                }
+            }
+            else if (ticker.LastPrice < averagePrice24h)
+            {
+                if (ticker.PricePercentage24h < 0)
+                {
+                    _marketDirection = MarketDirection.Downtrend;
+                }
+            }
+        }
+
+        private void MonitorActiveTradingSignals()
+        {
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Debug, $"MonitorActiveTradingSignals started."));
+
+            while (true)
+            {
+                foreach (var tradingSignalSymbolGroup in _tradingSignals.Where(x => x.Active).GroupBy(x => x.Symbol))
+                {
+                    foreach (var tradingSignal in tradingSignalSymbolGroup)
+                    {
+                        // handle trading signal depending on current market situation.
+                    }
+                }
+
+                Thread.Sleep(10);
+            }
+        }
+
+        
+        #region Subscription handlers
+
+        private async void HandleTicker(DataEvent<BybitSpotTickerUpdate> ticker)
+        {
+            try
+            {
+                await _tickerSemaphore.WaitAsync();
+
+                UpdateTickerEntry(ticker.Data);
+
+                UpdateMarketDirection(ticker.Data);
+            }
+            catch (Exception e)
+            {
+                ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Error, $"HandleTicker failed. {e}"));
+            }
+            finally
+            {
+                _tickerSemaphore.Release();
+            }
+        }
+
+        private void HandleTrades(DataEvent<IEnumerable<BybitTrade>> trades)
+        {
+            try
+            {
+                _tradeSemaphore.WaitAsync();
+
+                _trades.AddRange(trades.Data);
+
+            }
+            catch (Exception e)
+            {
+                ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"HandleTrades failed. {e}"));
+            }
+            finally
+            {
+                _tradeSemaphore.Release();
+            }
+        }
+
+        private void HandleOrderbookSnapshot(DataEvent<BybitOrderbook> orderbook)
+        {
+            try
+            {
+                _orderbookSnapshotSemaphore.WaitAsync();
+
+                UpdateOrderbookEntry(orderbook.Data);
+            }
+            catch (Exception e)
+            {
+                ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"HandleOrderbookSnapshot failed. {e}"));
+            }
+            finally
+            {
+                _orderbookSnapshotSemaphore.Release();
+            }
+        }
+
+        private void HandleOrderbookUpdate(DataEvent<BybitOrderbook> orderbook)
+        {
+            try
+            {
+                _orderbookUpdateSemaphore.WaitAsync();
+
+                UpdateOrderbookEntry(orderbook.Data);
+            }
+            catch (Exception e)
+            {
+                ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"HandleOrderbookUpdate failed. {e}"));
+            }
+            finally
+            {
+                _orderbookUpdateSemaphore.Release();
+            }
+        }
+
+        #endregion
+
 
         #region Event handlers
 
@@ -237,51 +383,19 @@ namespace CryptoBot.Managers
             ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, "Subscription to orderbook updates closed."));
         }
 
-        private void HandleTrades(DataEvent<IEnumerable<BybitTrade>> trades)
+        private void WebSocketEventSubscription_TickerUpdatesConnectionRestored(TimeSpan obj)
         {
-            try
-            {
-                _tradeSemaphore.WaitAsync();
-
-                _tradeBuffer.Concat(trades.Data);
-
-                PrepareMarketMetric(trades.Topic);
-            }
-            catch (Exception e)
-            {
-                ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Error, $"!!!HandleTrades failed!!! {e}"));
-            }
-            finally
-            {
-                _tradeSemaphore.Release();
-            }
+            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, "Subscription to ticker updates restored."));
         }
 
-        private void HandleOrderbookSnapshot(DataEvent<BybitOrderbook> orderbook)
+        private void WebSocketEventSubscription_TickerUpdatesConnectionLost()
         {
-            UpdateOrderbookEntry(orderbook.Data);
+            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Warning, "Subscription to ticker updates lost."));
         }
 
-        private void HandleOrderbookUpdate(DataEvent<BybitOrderbook> orderbook)
+        private void WebSocketEventSubscription_TickerUpdatesConnectionClosed()
         {
-            UpdateOrderbookEntry(orderbook.Data);
-        }
-
-        private void UpdateOrderbookEntry(BybitOrderbook orderbook)
-        {
-            if (orderbook == null) return;
-
-            lock (_orderBooks)
-            {
-                if (!_orderBooks.TryGetValue(orderbook.Symbol, out _))
-                {
-                    _orderBooks.Add(orderbook.Symbol, orderbook);
-                }
-                else
-                {
-                    _orderBooks[orderbook.Symbol] = orderbook;
-                }
-            }
+            ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, "Subscription to ticker updates closed."));
         }
 
         #endregion

@@ -62,10 +62,15 @@ namespace CryptoBot.Managers
 
             ApplicationEvent?.Invoke(this, new OrderManagerEventArgs(EventType.Information, "Invoked web socket event subscription."));
 
-            CallResult<UpdateSubscription> updateSubscription = await _webSocket.V5SpotStreams.SubscribeToTickerUpdatesAsync(_availableSymbols, HandleTicker);
-            updateSubscription.Data.ConnectionRestored += WebSocketEventSubscription_TickerUpdatesConnectionRestored;
-            updateSubscription.Data.ConnectionLost += WebSocketEventSubscription_TickerUpdatesConnectionLost;
-            updateSubscription.Data.ConnectionClosed += WebSocketEventSubscription_TickerUpdatesConnectionClosed;
+            CallResult<UpdateSubscription> response = await _webSocket.V5SpotStreams.SubscribeToTickerUpdatesAsync(_availableSymbols, HandleTicker);
+            if (!response.GetResultOrError(out UpdateSubscription updateSubscription, out Error error))
+            {
+                throw new Exception($"Failed to subscribe to ticker updates. Error: ({error?.Code}) {error?.Message}.");
+            }
+
+            updateSubscription.ConnectionRestored += WebSocketEventSubscription_TickerUpdatesConnectionRestored;
+            updateSubscription.ConnectionLost += WebSocketEventSubscription_TickerUpdatesConnectionLost;
+            updateSubscription.ConnectionClosed += WebSocketEventSubscription_TickerUpdatesConnectionClosed;
         }
 
         public async void CloseWebSocketEventSubscription()

@@ -81,6 +81,19 @@ namespace CryptoBot.Managers
 
                 _config = new AppConfig();
 
+                _config.TestMode = bool.Parse(ConfigurationManager.AppSettings["testMode"]);
+                _config.Username = ConfigurationManager.AppSettings["username"];
+                _config.Symbols = ConfigurationManager.AppSettings["symbols"].ParseCsv<string>();
+                _config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
+                _config.ApiSecret = ConfigurationManager.AppSettings["apiSecret"];
+                _config.ApiEndpoint = ConfigurationManager.AppSettings["apiEndpoint"];
+                _config.SpotStreamEndpoint = ConfigurationManager.AppSettings["spotStreamEndpoint"];
+                _config.ActiveSymbolOrders = int.Parse(ConfigurationManager.AppSettings["activeSymbolOrders"]);
+                _config.BuyOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["buyOrderVolume"]);
+                _config.SellOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["sellOrderVolume"]);
+                _config.NumberOfExecutedTrades = int.Parse(ConfigurationManager.AppSettings["executedTradesMicroLevel"]);
+                _config.ElapsedTimeInMinutes = int.Parse(ConfigurationManager.AppSettings["elapsedTimeMicroLevel"]);
+
                 return true;
             }
             catch (Exception e)

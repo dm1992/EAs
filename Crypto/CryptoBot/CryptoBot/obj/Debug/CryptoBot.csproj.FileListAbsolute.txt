@@ -33,3 +33,4 @@ C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\CryptoBot\bin\Debug\Sy
 C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\CryptoBot\bin\Debug\System.ValueTuple.dll
 C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\CryptoBot\bin\Debug\Bybit.Net.xml
 C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\CryptoBot\bin\Debug\System.Text.Json.xml
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\CryptoBot\obj\Debug\CryptoBot.exe.config

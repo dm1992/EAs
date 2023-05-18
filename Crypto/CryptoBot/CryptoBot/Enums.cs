@@ -23,22 +23,6 @@ namespace CryptoBot
         Neutral = 3
     }
 
-    public enum MarketVolumeIntensity
-    {
-        Unknown = 0,
-        BigBuyers = 1,
-        BigSellers = 2
-    }
-
-    public enum MarketSpectatorMode
-    {
-        Unknown = 0,
-        ExecutedTrades_MicroLevel = 1,
-        ExecutedTrades_MacroLevel = 2,
-        ElapsedTime_MicroLevel = 3,
-        ElapsedTime_MacroLevel = 4,
-    }
-
     public enum ManagerType
     {
         Unknown = 0,

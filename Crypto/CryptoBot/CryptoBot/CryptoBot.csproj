@@ -105,8 +105,6 @@
     <Compile Include="Models\Candle.cs" />
     <Compile Include="Models\CandleBatch.cs" />
     <Compile Include="Models\Config.cs" />
-    <Compile Include="Models\Market.cs" />
-    <Compile Include="Models\MarketMetric.cs" />
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\PriceClosure.cs" />
     <Compile Include="Enums.cs" />
@@ -125,6 +123,7 @@
     <Compile Include="Managers\ManagerFactory.cs" />
     <Compile Include="Managers\TradingManager.cs" />
     <Compile Include="Managers\Test\TradingManager.cs" />
+    <Compile Include="Models\TradingSignal.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
