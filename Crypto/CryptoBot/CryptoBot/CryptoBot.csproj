@@ -35,8 +35,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Bybit.Net, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bybit.Net.2.0.1\lib\netstandard2.0\Bybit.Net.dll</HintPath>
+    <Reference Include="Bybit.Net, Version=2.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bybit.Net.2.0.3\lib\netstandard2.0\Bybit.Net.dll</HintPath>
     </Reference>
     <Reference Include="CryptoExchange.Net, Version=5.4.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CryptoExchange.Net.5.4.3\lib\netstandard2.0\CryptoExchange.Net.dll</HintPath>
@@ -106,6 +106,7 @@
     <Compile Include="Models\CandleBatch.cs" />
     <Compile Include="Models\Config.cs" />
     <Compile Include="Models\Order.cs" />
+    <Compile Include="Models\MarketEntity.cs" />
     <Compile Include="Models\PriceClosure.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="EventArgs\ApplicationEventArgs.cs" />

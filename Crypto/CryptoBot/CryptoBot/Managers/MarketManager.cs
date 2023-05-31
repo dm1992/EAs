@@ -30,16 +30,14 @@ namespace CryptoBot.Managers
         private readonly SemaphoreSlim _orderbookUpdateSemaphore;
         private readonly BybitSocketClient _webSocket;
 
-        private List<BybitTrade> _trades;
         private List<TradingSignal> _tradingSignals;
         private List<string> _availableSymbols;
         private Dictionary<string, BybitOrderbook> _orderbooks;
         private Dictionary<string, BybitSpotTickerUpdate> _tickers;
+        private Dictionary<string, IEnumerable<BybitTrade>> _latestTrades;
+        private Dictionary<string, List<MarketEntity>> _marketEntities;
+        private Dictionary<string, MarketDirection> _marketDirections;
         private bool _isInitialized;
-
-        private MarketDirection _marketDirection = MarketDirection.Unknown;
-        private object _marketDirectionLocker = new object();
-        
 
         public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
@@ -59,13 +57,16 @@ namespace CryptoBot.Managers
 
             _webSocket = new BybitSocketClient(webSocketOptions);
 
-            _trades = new List<BybitTrade>();
             _tradingSignals = new List<TradingSignal>();
             _orderbooks = new Dictionary<string, BybitOrderbook>();
             _tickers = new Dictionary<string, BybitSpotTickerUpdate>();
+            _latestTrades = new Dictionary<string, IEnumerable<BybitTrade>>();
+            _marketEntities = new Dictionary<string, List<MarketEntity>>();
+            _marketDirections = new Dictionary<string, MarketDirection>();
             _isInitialized = false;
 
             Task.Run(() => MonitorActiveTradingSignals());
+            Task.Run(() => MonitorMarketEntities());
         }
 
         public bool Initialize()
@@ -140,11 +141,16 @@ namespace CryptoBot.Managers
             await _webSocket.V5SpotStreams.UnsubscribeAllAsync();
         }
 
-        private MarketDirection GetLatestMarketDirection()
+        public MarketDirection GetMarketDirection(string symbol)
         {
-            lock (_marketDirectionLocker)
+            lock (_marketDirections)
             {
-                return _marketDirection;
+                if (!_marketDirections.TryGetValue(symbol, out MarketDirection marketDirection))
+                {
+                    return MarketDirection.Unknown;
+                }
+
+                return marketDirection;
             }
         }
 
@@ -174,6 +180,31 @@ namespace CryptoBot.Managers
             }
         }
 
+        private IEnumerable<BybitTrade> GetLatestTradesEntry(string symbol)
+        {
+            lock (_latestTrades)
+            {
+                if (!_latestTrades.TryGetValue(symbol, out IEnumerable<BybitTrade> trades))
+                {
+                    return null;
+                }
+
+                return trades;
+            }
+        }
+
+        private MarketEntity GetLatestMarketEntity(string symbol)
+        {
+            var trades = GetLatestTradesEntry(symbol);
+            if (trades.IsNullOrEmpty()) 
+                return null;
+
+            MarketEntity marketEntity = new MarketEntity(symbol, _config.MarketEntityBuyerVolumePercentageLimit, _config.MarketEntitySellerVolumePercentageLimit);
+            marketEntity.Trades = trades;
+
+            return marketEntity;
+        }
+
         private void UpdateOrderbookEntry(BybitOrderbook orderbook)
         {
             if (orderbook == null) return;
@@ -183,32 +214,43 @@ namespace CryptoBot.Managers
                 if (!_orderbooks.TryGetValue(orderbook.Symbol, out BybitOrderbook orderbookEntry))
                 {
                     _orderbooks.Add(orderbook.Symbol, orderbook);
+                    return;
                 }
-                else
+
+                if (!orderbook.Bids.IsNullOrEmpty())
                 {
-                    if (!orderbook.Bids.IsNullOrEmpty())
-                    {
-                        List<BybitOrderbookEntry> bids = orderbookEntry.Bids.ToList();
+                    List<BybitOrderbookEntry> bids = orderbookEntry.Bids.ToList();
 
-                        for (int i = 0; i < orderbook.Bids.Count(); i++)
+                    for (int i = 0; i < orderbook.Bids.Count(); i++)
+                    {
+                        if (i >= bids.Count())
                         {
-                            bids[i] = orderbook.Bids.ElementAt(i);
+                            // overhead detected
+                            break;
                         }
 
-                        orderbookEntry.Bids = bids;
+                        bids[i] = orderbook.Bids.ElementAt(i);
                     }
 
-                    if (!orderbook.Asks.IsNullOrEmpty())
-                    {
-                        List<BybitOrderbookEntry> asks = orderbookEntry.Asks.ToList();
+                    orderbookEntry.Bids = bids;
+                }
 
-                        for (int i = 0; i < orderbook.Asks.Count(); i++)
+                if (!orderbook.Asks.IsNullOrEmpty())
+                {
+                    List<BybitOrderbookEntry> asks = orderbookEntry.Asks.ToList();
+
+                    for (int i = 0; i < orderbook.Asks.Count(); i++)
+                    {
+                        if (i >= asks.Count())
                         {
-                            asks[i] = orderbook.Asks.ElementAt(i);
+                            // overhead detected
+                            break;
                         }
 
-                        orderbookEntry.Asks = asks;
+                        asks[i] = orderbook.Asks.ElementAt(i);
                     }
+
+                    orderbookEntry.Asks = asks;
                 }
             }
         }
@@ -230,25 +272,102 @@ namespace CryptoBot.Managers
             }
         }
 
-        private void UpdateMarketDirection(BybitSpotTickerUpdate ticker)
+        private void UpdateLatestTradesEntry(IEnumerable<BybitTrade> trades)
         {
+            BybitTrade trade = trades.FirstOrDefault();
+            if (trade == null) return;
+
+            lock (_latestTrades)
+            {
+                if (!_latestTrades.TryGetValue(trade.Symbol, out _))
+                {
+                    _latestTrades.Add(trade.Symbol, trades);
+                }
+                else
+                {
+                    _latestTrades[trade.Symbol] = trades;
+                }
+            }
+        }
+
+        private void UpdateMarketDirection(string symbol)
+        {
+            var ticker = GetLatestTickerEntry(symbol);
             if (ticker == null) return;
 
             decimal averagePrice24h = (ticker.HighPrice24h + ticker.LowPrice24h) / 2.0m;
+            MarketDirection marketDirection = MarketDirection.Unknown;
 
             if (ticker.LastPrice > averagePrice24h)
             {
                 if (ticker.PricePercentage24h > 0)
                 {
-                    _marketDirection = MarketDirection.Uptrend;
+                    marketDirection = MarketDirection.Uptrend;
                 }
             }
             else if (ticker.LastPrice < averagePrice24h)
             {
                 if (ticker.PricePercentage24h < 0)
                 {
-                    _marketDirection = MarketDirection.Downtrend;
+                    marketDirection = MarketDirection.Downtrend;
                 }
+            }
+
+            lock (_marketDirections)
+            {
+                if (!_marketDirections.TryGetValue(ticker.Symbol, out _))
+                {
+                    _marketDirections.Add(ticker.Symbol, marketDirection);
+                }
+                else
+                {
+                    _marketDirections[ticker.Symbol] = marketDirection;
+                }
+            }
+        }
+
+        private void UpdateMarketEntity_RealMarket(string symbol)
+        {
+            MarketEntity marketEntity = GetLatestMarketEntity(symbol);
+            if (marketEntity == null) return;
+
+            lock (_marketEntities)
+            {
+                if (!_marketEntities.TryGetValue(symbol, out List<MarketEntity> symbolMarketEntities))
+                {
+                    _marketEntities.Add(symbol, new List<MarketEntity>() { marketEntity });
+                    return;
+                }
+
+                MarketEntity symbolMarketEntity = symbolMarketEntities.FirstOrDefault(x => x.Price == marketEntity.Price);
+                if (symbolMarketEntity == null)
+                {
+                    // new market price
+                    symbolMarketEntities.Add(marketEntity);
+                    return;
+                }
+
+                // update trades in existent market price
+                symbolMarketEntity.Trades.ToList().AddRange(marketEntity.Trades);
+            }
+        }
+
+        private void UpdateMarketEntity_LimitMarket(string symbol)
+        {
+            var orderbook = GetLatestOrderbookEntry(symbol);
+            if (orderbook == null) return;
+
+            lock (_marketEntities)
+            {
+                if (!_marketEntities.TryGetValue(symbol, out List<MarketEntity> symbolMarketEntities))
+                {
+                    // non existent symbol market entity, wait for it
+                    return;
+                }
+
+                // update latest known market entity
+                MarketEntity latestSymbolMarketEntity = symbolMarketEntities.OrderByDescending(x => x.CreatedAt).First();
+                latestSymbolMarketEntity.Orderbook = orderbook;
             }
         }
 
@@ -258,19 +377,171 @@ namespace CryptoBot.Managers
 
             while (true)
             {
-                foreach (var tradingSignalSymbolGroup in _tradingSignals.Where(x => x.Active).GroupBy(x => x.Symbol))
-                {
-                    foreach (var tradingSignal in tradingSignalSymbolGroup)
-                    {
-                        // handle trading signal depending on current market situation.
-                    }
-                }
+                HandleActiveTradingSignals();
 
                 Thread.Sleep(10);
             }
         }
 
-        
+        private void HandleActiveTradingSignals()
+        {
+            lock (_tradingSignals)
+            {
+                foreach (var tradingSignalGroup in _tradingSignals.Where(x => x.Active).GroupBy(x => x.Symbol))
+                {
+                    foreach (var tradingSignal in tradingSignalGroup)
+                    {
+                        // handle trading signal depending on current market situation.
+                    }
+                }
+            }
+        }
+
+        private void MonitorMarketEntities()
+        {
+            ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Debug, $"MonitorMarketEntities started."));
+
+            while (true)
+            {
+                HandleMarketEntities();
+
+                Thread.Sleep(100);
+            }
+        }
+
+        private void HandleMarketEntities()
+        {
+            lock (_marketEntities)
+            {
+                foreach (var marketEntity in _marketEntities)
+                {
+                    List<MarketEntity> filteredMarketEntities = FilterMarketEntities(marketEntity.Value);
+
+                    PriceChange marketEntitiesPriceChange = GetMarketEntitiesPriceChange(filteredMarketEntities);
+
+                    VolumeIntensity marketEntitiesVolumeIntensity = GetMarketEntitiesVolumeIntensity(filteredMarketEntities);
+
+                    InvokeTradingSignal(marketEntity.Key, marketEntitiesPriceChange, marketEntitiesVolumeIntensity);
+                }
+            }
+        }
+
+        private List<MarketEntity> FilterMarketEntities(List<MarketEntity> marketEntities)
+        {
+            if (marketEntities.IsNullOrEmpty())
+                return null;
+
+            if (marketEntities.All(x => x.IsDirty) || marketEntities.Count() < _config.MarketEntitiesWindowSize)
+                return null;
+
+            // all market entities are dirty. Added to prevent handling it again.
+            marketEntities.ForEach(x => x.IsDirty = true);
+
+            return marketEntities.OrderByDescending(x => x.CreatedAt).Take(_config.MarketEntitiesWindowSize).ToList();
+        }
+
+        private PriceChange GetMarketEntitiesPriceChange(List<MarketEntity> marketEntities)
+        {
+            if (marketEntities.IsNullOrEmpty())
+                return PriceChange.Unknown;
+
+            var orderedMarketEntities = marketEntities.OrderByDescending(x => x.CreatedAt);
+
+            decimal firstMarketEntryPrice = orderedMarketEntities.Last().Price ?? 0;
+            decimal lastMarketEntryPrice = orderedMarketEntities.First().Price ?? 0;
+
+            decimal priceChangePercentage = ((lastMarketEntryPrice - firstMarketEntryPrice) / Math.Abs(firstMarketEntryPrice)) * 100.0m;
+
+            if (priceChangePercentage == 0)
+            {
+                return PriceChange.Neutral;
+            }
+            else if (priceChangePercentage > _config.MarketEntitiesPositivePriceChangePercentageLimit)
+            {
+                return PriceChange.Up;
+            }
+            else if (priceChangePercentage < _config.MarketEntitiesNegativePriceChangePercentageLimit)
+            {
+                return PriceChange.Down;
+            }
+
+            return PriceChange.Unknown;
+        }
+
+        private VolumeIntensity GetMarketEntitiesVolumeIntensity(List<MarketEntity> marketEntities)
+        {
+            if (marketEntities.IsNullOrEmpty())
+                return VolumeIntensity.Unknown;
+
+            int buyerVolumeIntensity = 0;
+            int sellerVolumeIntensity = 0;
+
+            foreach (var marketEntity in marketEntities)
+            {
+                VolumeIntensity volumeIntensity = marketEntity.GetVolumeIntensity();
+
+                if (volumeIntensity == VolumeIntensity.Buyer)
+                {
+                    buyerVolumeIntensity++;
+                }
+                else if (volumeIntensity == VolumeIntensity.Seller)
+                {
+                    sellerVolumeIntensity++;
+                }
+            }
+
+            decimal buyerVolumeIntensityPercentage = (buyerVolumeIntensity / marketEntities.Count()) * 100.0m;
+            decimal sellerVolumeIntensityPercentage = (sellerVolumeIntensity / marketEntities.Count()) * 100.0m;
+
+            if (buyerVolumeIntensityPercentage == sellerVolumeIntensityPercentage)
+            {
+                return VolumeIntensity.Neutral;
+            }
+            else if (buyerVolumeIntensityPercentage > _config.MarketEntitiesBuyerVolumePercentageLimit)
+            {
+                return VolumeIntensity.Buyer;
+            }
+            else if (sellerVolumeIntensityPercentage > _config.MarketEntitiesSellerVolumePercentageLimit)
+            {
+                return VolumeIntensity.Seller;
+            }
+
+            return VolumeIntensity.Unknown;
+        }
+
+        private void InvokeTradingSignal(string symbol, PriceChange priceChange, VolumeIntensity volumeIntensity)
+        {
+            var ticker = GetLatestTickerEntry(symbol);
+            if (ticker == null) return;
+
+            MarketDirection marketDirection = GetMarketDirection(symbol);
+            if (marketDirection == MarketDirection.Unknown || marketDirection == MarketDirection.Neutral)
+                return;
+
+            //xxx for now
+            if (priceChange == PriceChange.Up)
+            {
+                if (volumeIntensity == VolumeIntensity.Buyer)
+                {
+                    if (marketDirection == MarketDirection.Uptrend)
+                    {
+                        ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{symbol} BUY @ {ticker.LastPrice}."));
+                    }
+                }
+            }
+            else if (priceChange == PriceChange.Down)
+            {
+                if (volumeIntensity == VolumeIntensity.Seller)
+                {
+                    if (marketDirection == MarketDirection.Downtrend)
+                    {
+                        ApplicationEvent?.Invoke(this, new MarketManagerEventArgs(EventType.Information, $"{symbol} SELL @ {ticker.LastPrice}."));
+                    }
+                }
+            }
+        }
+
+
         #region Subscription handlers
 
         private async void HandleTicker(DataEvent<BybitSpotTickerUpdate> ticker)
@@ -281,7 +552,7 @@ namespace CryptoBot.Managers
 
                 UpdateTickerEntry(ticker.Data);
 
-                UpdateMarketDirection(ticker.Data);
+                UpdateMarketDirection(ticker.Topic);
             }
             catch (Exception e)
             {
@@ -299,8 +570,9 @@ namespace CryptoBot.Managers
             {
                 _tradeSemaphore.WaitAsync();
 
-                _trades.AddRange(trades.Data);
+                UpdateLatestTradesEntry(trades.Data);
 
+                UpdateMarketEntity_RealMarket(trades.Topic);
             }
             catch (Exception e)
             {
@@ -319,6 +591,8 @@ namespace CryptoBot.Managers
                 _orderbookSnapshotSemaphore.WaitAsync();
 
                 UpdateOrderbookEntry(orderbook.Data);
+
+                UpdateMarketEntity_LimitMarket(orderbook.Topic);
             }
             catch (Exception e)
             {
@@ -337,6 +611,8 @@ namespace CryptoBot.Managers
                 _orderbookUpdateSemaphore.WaitAsync();
 
                 UpdateOrderbookEntry(orderbook.Data);
+
+                UpdateMarketEntity_LimitMarket(orderbook.Topic);
             }
             catch (Exception e)
             {

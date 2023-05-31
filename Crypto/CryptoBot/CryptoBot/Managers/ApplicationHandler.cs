@@ -91,8 +91,13 @@ namespace CryptoBot.Managers
                 _config.ActiveSymbolOrders = int.Parse(ConfigurationManager.AppSettings["activeSymbolOrders"]);
                 _config.BuyOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["buyOrderVolume"]);
                 _config.SellOrderVolume = decimal.Parse(ConfigurationManager.AppSettings["sellOrderVolume"]);
-                _config.NumberOfExecutedTrades = int.Parse(ConfigurationManager.AppSettings["executedTradesMicroLevel"]);
-                _config.ElapsedTimeInMinutes = int.Parse(ConfigurationManager.AppSettings["elapsedTimeMicroLevel"]);
+                _config.MarketEntitiesWindowSize = int.Parse(ConfigurationManager.AppSettings["marketEntitiesWindowSize"]);
+                _config.MarketEntitiesPositivePriceChangePercentageLimit = decimal.Parse(ConfigurationManager.AppSettings["marketEntitiesPositivePriceChangePercentageLimit"]);
+                _config.MarketEntitiesNegativePriceChangePercentageLimit = decimal.Parse(ConfigurationManager.AppSettings["marketEntitiesNegativePriceChangePercentageLimit"]);
+                _config.MarketEntitiesBuyerVolumePercentageLimit = decimal.Parse(ConfigurationManager.AppSettings["marketEntitiesBuyerVolumePercentageLimit"]);
+                _config.MarketEntitiesSellerVolumePercentageLimit = decimal.Parse(ConfigurationManager.AppSettings["marketEntitiesSellerVolumePercentageLimit"]);
+                _config.MarketEntityBuyerVolumePercentageLimit = decimal.Parse(ConfigurationManager.AppSettings["marketEntityBuyerVolumePercentageLimit"]);
+                _config.MarketEntitySellerVolumePercentageLimit = decimal.Parse(ConfigurationManager.AppSettings["marketEntitySellerVolumePercentageLimit"]);
 
                 return true;
             }

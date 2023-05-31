@@ -45,7 +45,12 @@ namespace CryptoBot.Models
         public int ActiveSymbolOrders { get; set; }
         public decimal BuyOrderVolume { get; set; }
         public decimal SellOrderVolume { get; set; }
-        public int NumberOfExecutedTrades { get; set; }
-        public int ElapsedTimeInMinutes { get; set; }
+        public int MarketEntitiesWindowSize { get; set; }
+        public decimal MarketEntitiesPositivePriceChangePercentageLimit { get; set; }
+        public decimal MarketEntitiesNegativePriceChangePercentageLimit { get; set; }
+        public decimal MarketEntitiesBuyerVolumePercentageLimit { get; set; }
+        public decimal MarketEntitiesSellerVolumePercentageLimit { get; set; }
+        public decimal MarketEntityBuyerVolumePercentageLimit { get; set; }
+        public decimal MarketEntitySellerVolumePercentageLimit { get; set; }
     }
 }
