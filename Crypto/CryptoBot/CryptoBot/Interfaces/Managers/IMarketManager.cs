@@ -10,6 +10,5 @@ namespace CryptoBot.Interfaces.Managers
 {
     public interface IMarketManager : IManager, IWebSocketEvent
     {
-        MarketDirection GetMarketDirection(string symbol);
     }
 }

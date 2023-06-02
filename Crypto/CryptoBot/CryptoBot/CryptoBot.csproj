@@ -102,12 +102,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\Candle.cs" />
-    <Compile Include="Models\CandleBatch.cs" />
-    <Compile Include="Models\Config.cs" />
-    <Compile Include="Models\Order.cs" />
+    <Compile Include="DeprecatedModels\Candle.cs" />
+    <Compile Include="DeprecatedModels\CandleBatch.cs" />
+    <Compile Include="DeprecatedModels\Config.cs" />
+    <Compile Include="DeprecatedModels\Order.cs" />
     <Compile Include="Models\MarketEntity.cs" />
-    <Compile Include="Models\PriceClosure.cs" />
+    <Compile Include="DeprecatedModels\PriceClosure.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="EventArgs\ApplicationEventArgs.cs" />
     <Compile Include="Extensions.cs" />
@@ -124,7 +124,7 @@
     <Compile Include="Managers\ManagerFactory.cs" />
     <Compile Include="Managers\TradingManager.cs" />
     <Compile Include="Managers\Test\TradingManager.cs" />
-    <Compile Include="Models\TradingSignal.cs" />
+    <Compile Include="DeprecatedModels\TradingSignal.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
