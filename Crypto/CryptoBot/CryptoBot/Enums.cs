@@ -23,27 +23,17 @@ namespace CryptoBot
         Neutral = 3
     }
 
-    public enum PriceChange
+    public enum PriceChangeDirection
     {
         Unknown = 0,
         Up = 1,
         Down = 2,
-        Neutral = 3
     }
 
-    public enum VolumeIntensity
+    public enum VolumeDirection
     {
         Unknown = 0,
-        Buyer = 1,
-        Seller = 2,
-        Neutral = 3
-    }
-
-    public enum ManagerType
-    {
-        Unknown = 0,
-        Davor = 1,
-        Miha = 2,
-        Simulation = 3
+        Buy = 1,
+        Sell = 2,
     }
 }

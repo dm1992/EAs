@@ -24,49 +24,4 @@ namespace CryptoBot.EventArgs
 
         public abstract string Dump();
     }
-
-    public class MarketManagerEventArgs : ApplicationEventArgs
-    {
-        public override string EventTag => "MarketManager";
-
-        public MarketManagerEventArgs(EventType eventType, string message, string messageScope = null) : base (eventType, message, messageScope)
-        {
-
-        }
-
-        public override string Dump()
-        {
-            return $"[{this.EventTag} {this.EventType} ({this.SendAt})]: {this.Message}\n";
-        }
-    }
-
-    public class OrderManagerEventArgs : ApplicationEventArgs
-    {
-        public override string EventTag => "OrderManager";
-
-        public OrderManagerEventArgs(EventType eventType, string message, string messageScope = null) : base(eventType, message, messageScope)
-        {
-            // for now only default params
-        }
-
-        public override string Dump()
-        {
-            return $"[{this.EventTag} {this.EventType} ({this.SendAt})]: {this.Message}\n";
-        }
-    }
-
-    public class TradingManagerEventArgs : ApplicationEventArgs
-    {
-        public override string EventTag => "TradingManager";
-
-        public TradingManagerEventArgs(EventType eventType, string message, string messageScope = null) : base(eventType, message, messageScope)
-        {
-            // for now only default params
-        }
-
-        public override string Dump()
-        {
-            return $"[{this.EventTag} {this.EventType} ({this.SendAt})]: {this.Message}\n";
-        }
-    }
 }
