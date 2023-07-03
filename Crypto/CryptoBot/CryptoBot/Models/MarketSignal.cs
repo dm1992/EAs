@@ -9,10 +9,41 @@ namespace CryptoBot.Models
     public class MarketSignal
     {
         public string Symbol { get; set; }
+        public bool IsCounter { get; set; }
+        public decimal EntryPrice { get; set; }
+        public decimal ExitPrice { get; set; }
+
+        private decimal CalculateROI()
+        {
+            if (this.MarketDirection == MarketDirection.Uptrend)
+            {
+                return this.ExitPrice - this.EntryPrice;
+            }
+            else if (this.MarketDirection == MarketDirection.Downtrend)
+            {
+                return this.EntryPrice - this.ExitPrice;
+            }
+
+            return 0;
+        }
+        public decimal ROI { get { return CalculateROI(); } }
+
+        public MarketDirection MarketDirection { get; set; }
+        public MarketInformation MarketInformation { get; set; }
 
         public MarketSignal(string symbol)
         {
             this.Symbol = symbol;
+        }
+
+        public string DumpOnCreate()
+        {
+            return $"!!! CREATED {(this.IsCounter ? "COUNTER" : "")} {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.EntryPrice}$ !!!";
+        }
+
+        public string DumpOnRemove()
+        {
+            return $"!!! REMOVED {(this.IsCounter ? "COUNTER" : "")} {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.ExitPrice}$ with ROI {this.ROI}$ !!!";
         }
     }
 }

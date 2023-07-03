@@ -21,14 +21,22 @@ namespace CryptoBot.Models
                 return MarketDirection.Unknown;
 
             Dictionary<int, VolumeDirection> marketEntitySubwindowVolumeDirections = this.MarketVolumeComponent.GetMarketEntitySubwindowVolumeDirections();
+
             if (marketEntitySubwindowVolumeDirections.IsNullOrEmpty())
                 return MarketDirection.Unknown;
+
+            Dictionary<int, PriceChangeDirection> marketEntitySubwindowPriceChangeDirections = this.MarketPriceComponent.GetMarketEntitySubwindowPriceChangeDirections();
+
+            if (marketEntitySubwindowPriceChangeDirections.IsNullOrEmpty())
+                return MarketDirection.Unknown;
+
 
             VolumeDirection marketEntityWindowVolumeDirection = this.MarketVolumeComponent.GetMarketEntityWindowVolumeDirection();
             decimal activeBuyVolume = this.MarketVolumeComponent.GetActiveBuyVolume();
             decimal activeSellVolume = this.MarketVolumeComponent.GetActiveSellVolume();
             decimal passiveBuyVolume = this.MarketVolumeComponent.GetPassiveBuyVolume();
             decimal passiveSellVolume = this.MarketVolumeComponent.GetPassiveSellVolume();
+
 
             if (marketEntityWindowVolumeDirection == VolumeDirection.Buy)
             {
@@ -37,13 +45,16 @@ namespace CryptoBot.Models
 
                 if (marketEntitySubwindowVolumeDirections[0] == VolumeDirection.Buy) // for now only first subwindow
                 {
-                    if (activeBuyVolume > activeSellVolume)
-                    {
-                        if (activeBuyVolume + passiveBuyVolume > passiveSellVolume)
+                    //if (marketEntitySubwindowPriceChangeDirections[0] == PriceChangeDirection.Up)
+                    //{
+                        if (activeBuyVolume > activeSellVolume)
                         {
-                            return MarketDirection.Uptrend;
+                            if (activeBuyVolume + passiveBuyVolume > passiveSellVolume)
+                            {
+                                return MarketDirection.Uptrend;
+                            }
                         }
-                    }
+                    //}
                 }
 
             }
@@ -51,13 +62,16 @@ namespace CryptoBot.Models
             {
                 if (marketEntitySubwindowVolumeDirections[0] == VolumeDirection.Sell)
                 {
-                    if (activeSellVolume > activeBuyVolume)
-                    {
-                        if (activeSellVolume + passiveSellVolume > passiveBuyVolume)
+                    //if (marketEntitySubwindowPriceChangeDirections[0] == PriceChangeDirection.Down)
+                    //{
+                        if (activeSellVolume > activeBuyVolume)
                         {
-                            return MarketDirection.Downtrend;
+                            if (activeSellVolume + passiveSellVolume > passiveBuyVolume)
+                            {
+                                return MarketDirection.Downtrend;
+                            }
                         }
-                    }
+                   // }
                 }
             }
 
@@ -73,7 +87,7 @@ namespace CryptoBot.Models
 
         public override string ToString()
         {
-            return $"{this.Symbol} MARKET INFORMATION. D: {this.PreferedMarketDirection}.";
+            return $"\n{this.Symbol} MARKET INFORMATION. D: {this.PreferedMarketDirection}.\n{this.MarketVolumeComponent}\n{this.MarketPriceComponent}\n";
         }
     }
 
