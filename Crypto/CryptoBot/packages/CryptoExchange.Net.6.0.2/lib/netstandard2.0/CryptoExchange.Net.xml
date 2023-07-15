@@ -4702,6 +4702,11 @@
             Tag for identificaion
             </summary>
         </member>
+        <member name="P:CryptoExchange.Net.Sockets.SocketConnection.Properties">
+            <summary>
+            Additional properties for this connection
+            </summary>
+        </member>
         <member name="P:CryptoExchange.Net.Sockets.SocketConnection.PausedActivity">
             <summary>
             If activity is paused

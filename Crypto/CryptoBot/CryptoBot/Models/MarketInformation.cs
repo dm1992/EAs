@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bybit.Net.Objects.Models.V5;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,32 +12,42 @@ namespace CryptoBot.Models
         public string Id { get; private set; }
         public string Symbol { get; set; }
         public DateTime CreatedAt { get; private set; }
-        public MarketVolumeComponent MarketVolumeComponent { get; set; }
-        public MarketPriceComponent MarketPriceComponent { get; set; }
+        public Volume Volume { get; set; }
+        public Price Price { get; set; }
 
-        public MarketDirection PreferedMarketDirection { get { return GetPreferedMarketDirection(); } }
-        private MarketDirection GetPreferedMarketDirection()
+        public MarketInformation(string symbol)
         {
-            if (this.MarketVolumeComponent == null || this.MarketPriceComponent == null)
-                return MarketDirection.Unknown;
+            this.Symbol = symbol;
+            this.Id = Guid.NewGuid().ToString();
+            this.CreatedAt = DateTime.Now;
+        }
 
-            Dictionary<int, VolumeDirection> marketEntitySubwindowVolumeDirections = this.MarketVolumeComponent.GetMarketEntitySubwindowVolumeDirections();
+        public MarketDirection GetMarketDirection()
+        {
+            if (this.Volume == null || this.Price == null)
+            {
+                return MarketDirection.Unknown;
+            }
+
+            Dictionary<int, VolumeDirection> marketEntitySubwindowVolumeDirections = this.Volume.GetMarketEntitySubwindowVolumeDirections();
 
             if (marketEntitySubwindowVolumeDirections.IsNullOrEmpty())
+            {
                 return MarketDirection.Unknown;
+            }
 
-            Dictionary<int, PriceChangeDirection> marketEntitySubwindowPriceChangeDirections = this.MarketPriceComponent.GetMarketEntitySubwindowPriceChangeDirections();
+            Dictionary<int, PriceDirection> marketEntitySubwindowPriceDirections = this.Price.GetMarketEntitySubwindowPriceDirections();
 
-            if (marketEntitySubwindowPriceChangeDirections.IsNullOrEmpty())
+            if (marketEntitySubwindowPriceDirections.IsNullOrEmpty())
+            {
                 return MarketDirection.Unknown;
+            }
 
-
-            VolumeDirection marketEntityWindowVolumeDirection = this.MarketVolumeComponent.GetMarketEntityWindowVolumeDirection();
-            decimal activeBuyVolume = this.MarketVolumeComponent.GetActiveBuyVolume();
-            decimal activeSellVolume = this.MarketVolumeComponent.GetActiveSellVolume();
-            decimal passiveBuyVolume = this.MarketVolumeComponent.GetPassiveBuyVolume();
-            decimal passiveSellVolume = this.MarketVolumeComponent.GetPassiveSellVolume();
-
+            VolumeDirection marketEntityWindowVolumeDirection = this.Volume.GetMarketEntityWindowVolumeDirection();
+            decimal activeBuyVolume = this.Volume.GetMarketEntityWindowActiveBuyVolume();
+            decimal activeSellVolume = this.Volume.GetMarketEntityWindowActiveSellVolume();
+            decimal passiveBuyVolume = this.Volume.GetMarketEntityWindowPassiveBuyVolume();
+            decimal passiveSellVolume = this.Volume.GetMarketEntityWindowPassiveSellVolume();
 
             if (marketEntityWindowVolumeDirection == VolumeDirection.Buy)
             {
@@ -78,64 +89,56 @@ namespace CryptoBot.Models
             return MarketDirection.Unknown;
         }
 
-        public MarketInformation(string symbol)
+        public string Dump()
         {
-            this.Symbol = symbol;
-            this.Id = Guid.NewGuid().ToString();
-            this.CreatedAt = DateTime.Now;
-        }
-
-        public override string ToString()
-        {
-            return $"\n{this.Symbol} MARKET INFORMATION. D: {this.PreferedMarketDirection}.\n{this.MarketVolumeComponent}\n{this.MarketPriceComponent}\n";
+            return $"\n---------------------------------------\n" +
+                   $"{this.Symbol} MARKET INFORMATION\n" +
+                   $"---------------------------------------\n" +
+                   $"D: {this.GetMarketDirection()}\n" +
+                   $"{this.Volume.Dump()}\n" +
+                   $"{this.Price.Dump()}\n" +
+                   $"---------------------------------------\n";
         }
     }
 
-    public class MarketVolumeComponent
+    public class Volume
     {
         public string Symbol { get; set; }
-
-        /// <summary>
-        /// Source of market volume component data.
-        /// </summary>
+        public BybitOrderbook Orderbook { get; set; }
         public List<MarketEntity> MarketEntityWindow { get; set; }
 
-        public MarketEntityWindowVolumeSetting VolumeSetting { get; set; }
-
-        public MarketVolumeComponent(string symbol, MarketEntityWindowVolumeSetting volumeSetting)
+        public Volume(string symbol)
         {
             this.Symbol = symbol;
-            this.VolumeSetting = volumeSetting;
         }
 
         public VolumeDirection GetMarketEntityWindowVolumeDirection()
         {
-            return this.MarketEntityWindow.GetMarketEntityWindowVolumeDirection(this.VolumeSetting);
+            return Helpers.GetMarketEntityWindowVolumeDirection(this.MarketEntityWindow);
         }
 
-        public Dictionary<int, VolumeDirection> GetMarketEntitySubwindowVolumeDirections()
+        public Dictionary<int, VolumeDirection> GetMarketEntitySubwindowVolumeDirections(int subwindows = 3)
         {
-            if (this.VolumeSetting == null || this.MarketEntityWindow.IsNullOrEmpty())
-            {
-                return null;
-            }
-
             Dictionary<int, VolumeDirection> volumeDirections = new Dictionary<int, VolumeDirection>();
 
-            int marketEntitiesPerSubwindow = this.MarketEntityWindow.Count() / this.VolumeSetting.Subwindows ?? 1;
+            if (this.MarketEntityWindow.IsNullOrEmpty())
+            {
+                return volumeDirections;
+            }
+
+            int marketEntitiesPerSubwindow = this.MarketEntityWindow.Count() / subwindows;
             int subwindowIndex = 0;
 
             for (int i = 0; i < this.MarketEntityWindow.Count(); i+= marketEntitiesPerSubwindow)
             {
-                VolumeDirection volumeDirection = this.MarketEntityWindow.Skip(i).Take(marketEntitiesPerSubwindow).GetMarketEntityWindowVolumeDirection(this.VolumeSetting);
-
+                VolumeDirection volumeDirection = Helpers.GetMarketEntityWindowVolumeDirection(this.MarketEntityWindow.Skip(i).Take(marketEntitiesPerSubwindow));
                 volumeDirections.Add(subwindowIndex++, volumeDirection);
             }
 
             return volumeDirections;
         }
 
-        public decimal GetActiveBuyVolume()
+        public decimal GetMarketEntityWindowActiveBuyVolume()
         {
             if (this.MarketEntityWindow.IsNullOrEmpty())
                 return 0;
@@ -143,7 +146,7 @@ namespace CryptoBot.Models
             return this.MarketEntityWindow.Sum(x => x.GetActiveBuyVolume());
         }
 
-        public decimal GetActiveSellVolume()
+        public decimal GetMarketEntityWindowActiveSellVolume()
         {
             if (this.MarketEntityWindow.IsNullOrEmpty())
                 return 0;
@@ -151,94 +154,76 @@ namespace CryptoBot.Models
             return this.MarketEntityWindow.Sum(x => x.GetActiveSellVolume());
         }
 
-        public decimal GetPassiveBuyVolume(int? orderbookDepth = null)
+        public decimal GetMarketEntityWindowPassiveBuyVolume()
         {
             if (this.MarketEntityWindow.IsNullOrEmpty())
                 return 0;
 
-            return this.MarketEntityWindow.Sum(x => x.GetPassiveBuyVolume(orderbookDepth));
+            return this.MarketEntityWindow.Sum(x => x.GetPassiveBuyVolume());
         }
 
-        public decimal GetPassiveSellVolume(int? orderbookDepth = null)
+        public decimal GetMarketEntityWindowPassiveSellVolume()
         {
             if (this.MarketEntityWindow.IsNullOrEmpty())
                 return 0;
 
-            return this.MarketEntityWindow.Sum(x => x.GetPassiveSellVolume(orderbookDepth));
+            return this.MarketEntityWindow.Sum(x => x.GetPassiveSellVolume());
         }
 
-        public override string ToString()
+        public string Dump()
         {
-            return $"AB: {this.GetActiveBuyVolume()}, AS: {this.GetActiveSellVolume()}, PB: {this.GetPassiveBuyVolume()}, PS: {this.GetPassiveSellVolume()}. " +
-                   $"MWVD: {this.GetMarketEntityWindowVolumeDirection()}. " +
-                   $"SWVD: {this.GetMarketEntitySubwindowVolumeDirections().DictionaryToString()}.";
+            return $"\n----------VOLUME--------------\n" +
+                   $"WAB: {this.GetMarketEntityWindowActiveBuyVolume()}, WAS: {this.GetMarketEntityWindowActiveSellVolume()}, WPB: {this.GetMarketEntityWindowPassiveBuyVolume()}, WPS: {this.GetMarketEntityWindowPassiveSellVolume()}\n" +
+                   $"WVD: {this.GetMarketEntityWindowVolumeDirection()}, SWVD: {this.GetMarketEntitySubwindowVolumeDirections().DictionaryToString()}\n" +
+                   $"--------------------------------\n" +
+                   $"----------ORDERBOOK-------------\n" +
+                   $"Bids: {Helpers.OrderbookToString(this.Orderbook?.Bids)}\n" +
+                   $"Asks: {Helpers.OrderbookToString(this.Orderbook?.Asks)}\n" +
+                   $"--------------------------------";
         }
     }
 
-    public class MarketEntityWindowVolumeSetting
-    {
-        public int? Subwindows { get; set; }
-        public int? OrderbookDepth { get; set; }
-        public decimal BuyVolumesPercentageLimit { get; set; }
-        public decimal SellVolumesPercentageLimit { get; set; }
-
-    }
-
-    public class MarketPriceComponent
+    public class Price
     {
         public string Symbol { get; set; }
-
-        /// <summary>
-        /// Source of market price component data.
-        /// </summary>
         public List<MarketEntity> MarketEntityWindow { get; set; }
 
-        public MarketEntityWindowPriceChangeSetting PriceChangeSetting { get; set; }
-
-        public MarketPriceComponent(string symbol, MarketEntityWindowPriceChangeSetting priceChangeSetting)
+        public Price(string symbol)
         {
             this.Symbol = symbol;
-            this.PriceChangeSetting = priceChangeSetting;
         }
 
-        public PriceChangeDirection GetMarketEntityWindowPriceChangeDirection()
+        public PriceDirection GetMarketEntityWindowPriceDirection()
         {
-            return this.MarketEntityWindow.GetMarketEntityWindowPriceChangeDirection(this.PriceChangeSetting);
+            return Helpers.GetMarketEntityWindowPriceDirection(this.MarketEntityWindow);
         }
 
-        public Dictionary<int, PriceChangeDirection> GetMarketEntitySubwindowPriceChangeDirections()
+        public Dictionary<int, PriceDirection> GetMarketEntitySubwindowPriceDirections(int subwindows = 3)
         {
-            if (this.PriceChangeSetting == null || this.MarketEntityWindow.IsNullOrEmpty())
+            Dictionary<int, PriceDirection> priceDirections = new Dictionary<int, PriceDirection>();
+
+            if (this.MarketEntityWindow.IsNullOrEmpty())
             {
-                return null;
+                return priceDirections;
             }
 
-            Dictionary<int, PriceChangeDirection> priceChangeDirections = new Dictionary<int, PriceChangeDirection>();
-            int marketEntitiesPerSubwindow = this.MarketEntityWindow.Count() / this.PriceChangeSetting.Subwindows ?? 1;
+            int marketEntitiesPerSubwindow = this.MarketEntityWindow.Count() / subwindows;
             int subwindowIndex = 0;
 
             for (int i = 0; i < this.MarketEntityWindow.Count(); i += marketEntitiesPerSubwindow)
             {
-                PriceChangeDirection priceChangeDirection = this.MarketEntityWindow.Skip(i).Take(marketEntitiesPerSubwindow).GetMarketEntityWindowPriceChangeDirection(this.PriceChangeSetting);
-
-                priceChangeDirections.Add(subwindowIndex++, priceChangeDirection);
+                PriceDirection priceDirection = Helpers.GetMarketEntityWindowPriceDirection(this.MarketEntityWindow.Skip(i).Take(marketEntitiesPerSubwindow));
+                priceDirections.Add(subwindowIndex++, priceDirection);
             }
 
-            return priceChangeDirections;
+            return priceDirections;
         }
 
-        public override string ToString()
+        public string Dump()
         {
-            return $"WPCD: {this.GetMarketEntityWindowPriceChangeDirection()}. " +
-                   $"SWPCD: {this.GetMarketEntitySubwindowPriceChangeDirections().DictionaryToString()}.";
+            return  $"\n----------PRICE--------------\n" +
+                    $"WPD: {this.GetMarketEntityWindowPriceDirection()}, SWPD: {this.GetMarketEntitySubwindowPriceDirections().DictionaryToString()}\n" +
+                    $"--------------------------------";
         }
-    }
-
-    public class MarketEntityWindowPriceChangeSetting
-    {
-        public int? Subwindows { get; set; }
-        public decimal UpPriceChangePercentageLimit { get; set; }
-        public decimal DownPriceChangePercentageLimit { get; set; }
-
     }
 }

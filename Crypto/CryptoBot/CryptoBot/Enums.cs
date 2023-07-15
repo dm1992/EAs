@@ -23,7 +23,7 @@ namespace CryptoBot
         Neutral = 3
     }
 
-    public enum PriceChangeDirection
+    public enum PriceDirection
     {
         Unknown = 0,
         Up = 1,

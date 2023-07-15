@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Interfaces.Events
 {
-    public interface IWebSocketEvent : IApplicationEvent
+    public interface IWebSocketEvent
     {
         void InvokeWebSocketEventSubscription();
         void CloseWebSocketEventSubscription();

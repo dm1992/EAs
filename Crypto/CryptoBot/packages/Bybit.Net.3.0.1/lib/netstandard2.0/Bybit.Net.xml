@@ -9536,26 +9536,6 @@
             <param name="ct">Cancellation token. Cancelling will cancel the subscription</param>
             <returns></returns>
         </member>
-        <member name="M:Bybit.Net.Interfaces.Clients.V5.IBybitSocketClientBaseApi.SubscribeToLiquidationUpdatesAsync(System.Collections.Generic.IEnumerable{System.String},System.Action{CryptoExchange.Net.Sockets.DataEvent{System.Collections.Generic.IEnumerable{Bybit.Net.Objects.Models.V5.BybitLiquidation}}},System.Threading.CancellationToken)">
-            <summary>
-            Subscribe to liquidation updates
-            <para><a href="https://bybit-exchange.github.io/docs/v5/websocket/public/liquidation" /></para>
-            </summary>
-            <param name="symbols">The symbols to subscribe</param>
-            <param name="handler">Data handler</param>
-            <param name="ct">Cancellation token. Cancelling will cancel the subscription</param>
-            <returns></returns>
-        </member>
-        <member name="M:Bybit.Net.Interfaces.Clients.V5.IBybitSocketClientBaseApi.SubscribeToLiquidationUpdatesAsync(System.String,System.Action{CryptoExchange.Net.Sockets.DataEvent{System.Collections.Generic.IEnumerable{Bybit.Net.Objects.Models.V5.BybitLiquidation}}},System.Threading.CancellationToken)">
-            <summary>
-            Subscribe to liquidation updates
-            <para><a href="https://bybit-exchange.github.io/docs/v5/websocket/public/liquidation" /></para>
-            </summary>
-            <param name="symbol">The symbol to subscribe</param>
-            <param name="handler">Data handler</param>
-            <param name="ct">Cancellation token. Cancelling will cancel the subscription</param>
-            <returns></returns>
-        </member>
         <member name="M:Bybit.Net.Interfaces.Clients.V5.IBybitSocketClientBaseApi.SubscribeToOrderbookUpdatesAsync(System.Collections.Generic.IEnumerable{System.String},System.Int32,System.Action{CryptoExchange.Net.Sockets.DataEvent{Bybit.Net.Objects.Models.V5.BybitOrderbook}},System.Action{CryptoExchange.Net.Sockets.DataEvent{Bybit.Net.Objects.Models.V5.BybitOrderbook}},System.Threading.CancellationToken)">
             <summary>
             Subscribe to order book updates
@@ -9625,6 +9605,26 @@
             <param name="ct">Cancellation token. Cancelling will cancel the subscription</param>
             <returns></returns>
         </member>
+        <member name="M:Bybit.Net.Interfaces.Clients.V5.IBybitSocketClientLinearApi.SubscribeToLiquidationUpdatesAsync(System.Collections.Generic.IEnumerable{System.String},System.Action{CryptoExchange.Net.Sockets.DataEvent{System.Collections.Generic.IEnumerable{Bybit.Net.Objects.Models.V5.BybitLiquidation}}},System.Threading.CancellationToken)">
+            <summary>
+            Subscribe to liquidation updates
+            <para><a href="https://bybit-exchange.github.io/docs/v5/websocket/public/liquidation" /></para>
+            </summary>
+            <param name="symbols">The symbols to subscribe</param>
+            <param name="handler">Data handler</param>
+            <param name="ct">Cancellation token. Cancelling will cancel the subscription</param>
+            <returns></returns>
+        </member>
+        <member name="M:Bybit.Net.Interfaces.Clients.V5.IBybitSocketClientLinearApi.SubscribeToLiquidationUpdatesAsync(System.String,System.Action{CryptoExchange.Net.Sockets.DataEvent{System.Collections.Generic.IEnumerable{Bybit.Net.Objects.Models.V5.BybitLiquidation}}},System.Threading.CancellationToken)">
+            <summary>
+            Subscribe to liquidation updates
+            <para><a href="https://bybit-exchange.github.io/docs/v5/websocket/public/liquidation" /></para>
+            </summary>
+            <param name="symbol">The symbol to subscribe</param>
+            <param name="handler">Data handler</param>
+            <param name="ct">Cancellation token. Cancelling will cancel the subscription</param>
+            <returns></returns>
+        </member>
         <member name="T:Bybit.Net.Interfaces.Clients.V5.IBybitSocketClientOptionApi">
             <summary>
             Bybit option data streams
@@ -9644,6 +9644,26 @@
             <summary>
             Subscribe to ticker updates
             <para><a href="https://bybit-exchange.github.io/docs/v5/websocket/public/ticker" /></para>
+            </summary>
+            <param name="symbol">The symbol to subscribe</param>
+            <param name="handler">Data handler</param>
+            <param name="ct">Cancellation token. Cancelling will cancel the subscription</param>
+            <returns></returns>
+        </member>
+        <member name="M:Bybit.Net.Interfaces.Clients.V5.IBybitSocketClientOptionApi.SubscribeToLiquidationUpdatesAsync(System.Collections.Generic.IEnumerable{System.String},System.Action{CryptoExchange.Net.Sockets.DataEvent{System.Collections.Generic.IEnumerable{Bybit.Net.Objects.Models.V5.BybitLiquidation}}},System.Threading.CancellationToken)">
+            <summary>
+            Subscribe to liquidation updates
+            <para><a href="https://bybit-exchange.github.io/docs/v5/websocket/public/liquidation" /></para>
+            </summary>
+            <param name="symbols">The symbols to subscribe</param>
+            <param name="handler">Data handler</param>
+            <param name="ct">Cancellation token. Cancelling will cancel the subscription</param>
+            <returns></returns>
+        </member>
+        <member name="M:Bybit.Net.Interfaces.Clients.V5.IBybitSocketClientOptionApi.SubscribeToLiquidationUpdatesAsync(System.String,System.Action{CryptoExchange.Net.Sockets.DataEvent{System.Collections.Generic.IEnumerable{Bybit.Net.Objects.Models.V5.BybitLiquidation}}},System.Threading.CancellationToken)">
+            <summary>
+            Subscribe to liquidation updates
+            <para><a href="https://bybit-exchange.github.io/docs/v5/websocket/public/liquidation" /></para>
             </summary>
             <param name="symbol">The symbol to subscribe</param>
             <param name="handler">Data handler</param>

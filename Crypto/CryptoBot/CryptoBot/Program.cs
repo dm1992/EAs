@@ -76,7 +76,7 @@ namespace CryptoBot
                 }
 
                 IMarketManager marketManager = new MarketManager(logFactory, config);
-                marketManager.ApplicationEvent += ApplicationEventHandler;
+                //marketManager.ApplicationEvent += ApplicationEventHandler;
                 marketManager.Initialize();
                 marketManager.InvokeWebSocketEventSubscription();
 
@@ -93,23 +93,11 @@ namespace CryptoBot
             try
             {
                 Config config = new Config();
-
                 config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
                 config.ApiSecret = ConfigurationManager.AppSettings["apiSecret"];
-                config.ApiEndpoint = ConfigurationManager.AppSettings["apiEndpoint"];
-                config.SpotStreamEndpoint = ConfigurationManager.AppSettings["spotStreamEndpoint"];
                 config.Symbols = ConfigurationManager.AppSettings["symbols"].ParseCsv<string>();
-                config.MaxActiveSymbolOrders = int.Parse(ConfigurationManager.AppSettings["maxActiveSymbolOrders"]);
-                config.BuyVolume = decimal.Parse(ConfigurationManager.AppSettings["buyVolume"]);
-                config.SellVolume = decimal.Parse(ConfigurationManager.AppSettings["sellVolume"]);
                 config.MarketEntityWindowSize = int.Parse(ConfigurationManager.AppSettings["marketEntityWindowSize"]);
                 config.MarketInformationWindowSize = int.Parse(ConfigurationManager.AppSettings["marketInformationWindowSize"]);
-                config.OrderbookDepth = int.Parse(ConfigurationManager.AppSettings["orderbookDepth"]);
-                config.Subwindows = int.Parse(ConfigurationManager.AppSettings["subwindows"]);
-                config.BuyVolumesPercentageLimit = decimal.Parse(ConfigurationManager.AppSettings["buyVolumesPercentageLimit"]);
-                config.SellVolumesPercentageLimit = decimal.Parse(ConfigurationManager.AppSettings["sellVolumesPercentageLimit"]);
-                config.UpPriceChangePercentageLimit = decimal.Parse(ConfigurationManager.AppSettings["upPriceChangePercentageLimit"]);
-                config.DownPriceChangePercentageLimit = decimal.Parse(ConfigurationManager.AppSettings["downPriceChangePercentageLimit"]);
 
                 return config;
             }

@@ -1,69 +1,91 @@
-﻿using System;
+﻿using Bybit.Net.Objects.Models.V5;
+using CryptoBot.Models;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace CryptoBot
 {
-    /// <summary>
-    /// Common helper methods.
-    /// </summary>
     public static class Helpers
     {
-        private static object _fileLocker = new object();
-
-        public static bool DeleteDirectoryFiles(string path)
+        public static string OrderbookToString(IEnumerable<BybitOrderbookEntry> orderbook, int depth = 10)
         {
-            try
-            {
-                string directoryPath = Path.GetDirectoryName(path);
-                if (!Directory.Exists(directoryPath))
-                {
-                    return false;
-                }
+            if (orderbook.IsNullOrEmpty())
+                return String.Empty;
 
-                DirectoryInfo directoryInfo = new DirectoryInfo(path);
-                foreach (FileInfo file in directoryInfo.GetFiles())
-                {
-                    file.Delete();
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return true;
+            return "{" + string.Join(", ", orderbook.Take(depth).Select(x => x.Quantity).ToArray()) + "}";
         }
 
-        public static bool SaveToFile(string content, string path)
+        public static VolumeDirection GetMarketEntityWindowVolumeDirection(IEnumerable<MarketEntity> marketEntityWindow, decimal buyVolumesPercentageLimit = 60, decimal sellVolumesPercentageLimit = 60)
         {
-            lock (_fileLocker)
+            if (marketEntityWindow.IsNullOrEmpty())
             {
-                try
-                {
-                    string directoryPath = Path.GetDirectoryName(path);
-                    if (!Directory.Exists(directoryPath))
-                    {
-                        Directory.CreateDirectory(directoryPath);
-                    }
-
-                    if (File.Exists(path))
-                    {
-                        content += File.ReadAllText(path);
-                    }
-
-                    string tempPath = Path.Combine(Path.GetTempPath(), "TEMP_FILE");
-                    File.WriteAllText(tempPath, content);
-
-                    File.Delete(path);
-                    File.Move(tempPath, path);
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-
-                return true;
+                return VolumeDirection.Unknown;
             }
+
+            int buyVolumes = 0;
+            int sellVolumes = 0;
+            int unknownVolumes = 0;
+
+            foreach (var marketEntity in marketEntityWindow)
+            {
+                VolumeDirection volumeDirection = marketEntity.GetVolumeDirection();
+
+                switch (volumeDirection)
+                {
+                    case VolumeDirection.Buy:
+                        buyVolumes++;
+                        break;
+
+                    case VolumeDirection.Sell:
+                        sellVolumes++;
+                        break;
+
+                    default:
+                        unknownVolumes++;
+                        break;
+                }
+            }
+
+            decimal buyVolumesPercentage = (buyVolumes / (decimal)(buyVolumes + sellVolumes + unknownVolumes)) * 100.0m;
+            decimal sellVolumesPercentage = (sellVolumes / (decimal)(buyVolumes + sellVolumes + unknownVolumes)) * 100.0m;
+
+            if (buyVolumesPercentage > buyVolumesPercentageLimit)
+            {
+                return VolumeDirection.Buy;
+            }
+            else if (sellVolumesPercentage > sellVolumesPercentageLimit)
+            {
+                return VolumeDirection.Sell;
+            }
+
+            return VolumeDirection.Unknown;
+        }
+
+        public static PriceDirection GetMarketEntityWindowPriceDirection(IEnumerable<MarketEntity> marketEntityWindow, decimal priceUpPercentageLimit = 0, decimal priceDownPercentageLimit = 0)
+        {
+            if (marketEntityWindow.IsNullOrEmpty())
+            {
+                return PriceDirection.Unknown;
+            }
+
+            List<MarketEntity> orderedMarketEntityWindow = marketEntityWindow.OrderBy(x => x.CreatedAt).ToList();
+            decimal firstMarketEntityPrice = orderedMarketEntityWindow.First().Price;
+            decimal lastMarketEntityPrice = orderedMarketEntityWindow.Last().Price;
+
+            decimal priceChangePercentage = ((lastMarketEntityPrice - firstMarketEntityPrice) / Math.Abs(firstMarketEntityPrice)) * 100.0m;
+
+            if (priceChangePercentage > priceUpPercentageLimit)
+            {
+                return PriceDirection.Up;
+            }
+            else if (priceChangePercentage < priceDownPercentageLimit)
+            {
+                return PriceDirection.Down;
+            }
+
+            return PriceDirection.Unknown;
         }
     }
 }

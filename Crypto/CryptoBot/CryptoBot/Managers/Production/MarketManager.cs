@@ -21,6 +21,7 @@ namespace CryptoBot.Managers.Production
     public class MarketManager : IMarketManager
     {
         private const int TEST_BALANCE_DELAY = 5000;
+        private const int TEST_SUBSCRIPTION_DELAY = 5000;
 
         private readonly Config _config;
         private readonly SemaphoreSlim _tickerSemaphore;
@@ -46,13 +47,6 @@ namespace CryptoBot.Managers.Production
         private Dictionary<string, MarketSignal> _marketSignalBuffer;
         private Dictionary<string, List<MarketEntity>> _marketEntityCollection;
         private Dictionary<string, List<MarketInformation>> _marketInformationCollection;
-        private MarketEntityWindowVolumeSetting _volumeSetting;
-        private MarketEntityWindowPriceChangeSetting _priceChangeSetting;
-
-        /// <summary>
-        /// For triggering special application events to outside world.
-        /// </summary>
-        public event EventHandler<ApplicationEventArgs> ApplicationEvent;
 
         public MarketManager(LogFactory logFactory, Config config)
         {
@@ -60,12 +54,17 @@ namespace CryptoBot.Managers.Production
 
             _logger = logFactory.GetCurrentClassLogger();
             _verboseLogger = logFactory.GetLogger("verbose");
+
             _tickerSemaphore = new SemaphoreSlim(1, 1);
             _marketTradeSemaphore = new SemaphoreSlim(1, 1);
             _orderbookSnapshotSemaphore = new SemaphoreSlim(1, 1);
             _orderbookUpdateSemaphore = new SemaphoreSlim(1, 1);
 
-            _webSocket = new BybitSocketClient(optionsDelegate => { optionsDelegate.Environment = BybitEnvironment.Live; });
+            _webSocket = new BybitSocketClient(optionsDelegate => 
+            {
+                optionsDelegate.AutoReconnect = true;
+                optionsDelegate.Environment = BybitEnvironment.Live; 
+            });
 
             _isInitialized = false;
             _orderbookBuffer = new Dictionary<string, BybitOrderbook>();
@@ -76,8 +75,6 @@ namespace CryptoBot.Managers.Production
             _marketSignalBuffer = new Dictionary<string, MarketSignal>();
             _marketEntityCollection = new Dictionary<string, List<MarketEntity>>();
             _marketInformationCollection = new Dictionary<string, List<MarketInformation>>();
-
-            CreateMarketEntityWindowSettings();
         }
 
         public bool Initialize()
@@ -90,6 +87,7 @@ namespace CryptoBot.Managers.Production
                 Task.Run(() => { HandleMarketEntitesInThread(); });
                 Task.Run(() => { HandleMarketInformationsInThread(); });
                 Task.Run(() => { MonitorTestBalanceInThread(); });
+                Task.Run(() => { MonitorWebSocketSubscriptionStates(); });
 
                 _logger.Info("Initialized.");
 
@@ -174,25 +172,6 @@ namespace CryptoBot.Managers.Production
             updateSubscription.ConnectionClosed += WebSocketEventSubscription_OrderbookUpdatesConnectionClosed;
         }
 
-        private void CreateMarketEntityWindowSettings()
-        {
-            if (_config == null)
-            {
-                _logger.Error("Failed to create market entity window instructions. Missing configuration.");
-                return;
-            }
-
-            _volumeSetting = new MarketEntityWindowVolumeSetting();
-            _volumeSetting.Subwindows = _config.Subwindows;
-            _volumeSetting.OrderbookDepth = _config.OrderbookDepth;
-            _volumeSetting.BuyVolumesPercentageLimit = _config.BuyVolumesPercentageLimit;
-            _volumeSetting.SellVolumesPercentageLimit = _config.SellVolumesPercentageLimit;
-
-            _priceChangeSetting = new MarketEntityWindowPriceChangeSetting();
-            _priceChangeSetting.Subwindows = _config.Subwindows;
-            _priceChangeSetting.UpPriceChangePercentageLimit = _config.UpPriceChangePercentageLimit;
-            _priceChangeSetting.DownPriceChangePercentageLimit = _config.DownPriceChangePercentageLimit;
-        }
 
         #region Workers
 
@@ -209,7 +188,7 @@ namespace CryptoBot.Managers.Production
                         if (!IsNewMarketEntityAvailable(symbol))
                             continue;
 
-                        if (!CreateMarketInformationInstance(symbol, out MarketInformation marketInformation))
+                        if (!CreateMarketInformation(symbol, out MarketInformation marketInformation))
                             continue;
 
                         UpdateMarketInformationCollection(marketInformation);
@@ -261,6 +240,25 @@ namespace CryptoBot.Managers.Production
             catch (Exception e)
             {
                 _logger.Error($"Failed MonitorTestBalanceInThread. {e}");
+            }
+        }
+        
+        private void MonitorWebSocketSubscriptionStates()
+        {
+            _logger.Debug("MonitorWebSocketSubscriptionStates started.");
+
+            try
+            {
+                while (true)
+                {
+                    _verboseLogger.Debug($"SubscriptionsState: {_webSocket.V5SpotApi.GetSubscriptionsState()}");
+
+                    Task.Delay(TEST_SUBSCRIPTION_DELAY).Wait();
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"Failed MonitorWebSocketSubscriptionStates. {e}");
             }
         }
 
@@ -336,14 +334,15 @@ namespace CryptoBot.Managers.Production
         {
             try
             {
-                if (!CrosscheckMarketInformationComponents(symbol, out MarketDirection marketDirection))
+                if (!CrosscheckMarketInformations(symbol, out MarketDirection marketDirection))
                     return;
 
                 MarketSignal latestMarketSignal = GetLatestMarketSignal(symbol);
+
                 if (latestMarketSignal != null)
                 {
                     if (latestMarketSignal.MarketDirection == marketDirection)
-                        return;
+                        return; // same direction, continue market signal
 
                     RemoveMarketSignalEntry(symbol);
                 }
@@ -359,10 +358,8 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private bool CrosscheckMarketInformationComponents(string symbol, out MarketDirection marketDirection)
+        private bool CrosscheckMarketInformations(string symbol, out MarketDirection marketDirection)
         {
-            // for now only volume component is crosschecked 
-
             marketDirection = MarketDirection.Unknown;
 
             if (!IsMarketInformationWindowReady(symbol))
@@ -372,7 +369,7 @@ namespace CryptoBot.Managers.Production
             if (referenceMarketInformation == null)
                 return false;
 
-            MarketDirection referenceMarketDirection = referenceMarketInformation.PreferedMarketDirection;
+            MarketDirection referenceMarketDirection = referenceMarketInformation.GetMarketDirection();
 
             if (referenceMarketDirection == MarketDirection.Unknown)
             {
@@ -404,58 +401,59 @@ namespace CryptoBot.Managers.Production
 
         private void HandleLatestMarketSignal(string symbol)
         {
-            //xxxx
-            MarketInformation latestMarketInformation = GetLatestMarketInformationEntry(symbol);
-
-            if (latestMarketInformation == null)
-            {
-                return;
-            }
-
-            _verboseLogger.Debug(latestMarketInformation);
-
             MarketSignal latestMarketSignal = GetLatestMarketSignal(symbol);
 
             if (latestMarketSignal == null)
-            {
                 return;
-            }
 
-            if (latestMarketInformation.MarketVolumeComponent != null)
+            MarketInformation latestMarketInformation = GetLatestMarketInformationEntry(symbol);
+
+            if (latestMarketInformation == null)
+                return;
+
+            if (latestMarketInformation.Volume != null)
             {
-                decimal activeBuyVolume = latestMarketInformation.MarketVolumeComponent.GetActiveBuyVolume();
-                decimal activeSellVolume = latestMarketInformation.MarketVolumeComponent.GetActiveSellVolume();
-                decimal passiveBuyVolume = latestMarketInformation.MarketVolumeComponent.GetPassiveBuyVolume();
-                decimal passiveSellVolume = latestMarketInformation.MarketVolumeComponent.GetPassiveSellVolume();
+                decimal activeBuyVolume = latestMarketInformation.Volume.GetMarketEntityWindowActiveBuyVolume();
+                decimal activeSellVolume = latestMarketInformation.Volume.GetMarketEntityWindowActiveSellVolume();
+                decimal passiveBuyVolume = latestMarketInformation.Volume.GetMarketEntityWindowPassiveBuyVolume();
+                decimal passiveSellVolume = latestMarketInformation.Volume.GetMarketEntityWindowPassiveSellVolume();
 
-                if (latestMarketInformation.MarketPriceComponent != null)
+                if (latestMarketInformation.Price != null)
                 {
-                    var volumeDirections = latestMarketInformation.MarketVolumeComponent.GetMarketEntitySubwindowVolumeDirections();
+                    var volumeDirections = latestMarketInformation.Volume.GetMarketEntitySubwindowVolumeDirections();
 
                     if (!volumeDirections.IsNullOrEmpty() && volumeDirections.TryGetValue(0, out VolumeDirection firstSubwindowVolumeDirection))
                     {
                         if (firstSubwindowVolumeDirection == VolumeDirection.Unknown)
                             return;
 
-                        var priceChangeDirections = latestMarketInformation.MarketPriceComponent.GetMarketEntitySubwindowPriceChangeDirections();
+                        var priceChangeDirections = latestMarketInformation.Price.GetMarketEntitySubwindowPriceDirections();
 
-                        if (!priceChangeDirections.IsNullOrEmpty() && priceChangeDirections.TryGetValue(0, out PriceChangeDirection firstSubwindowPriceChangeDirection))
+                        if (!priceChangeDirections.IsNullOrEmpty() && priceChangeDirections.TryGetValue(0, out PriceDirection firstSubwindowPriceChangeDirection))
                         {
-                            if (firstSubwindowPriceChangeDirection == PriceChangeDirection.Unknown)
+                            if (firstSubwindowPriceChangeDirection == PriceDirection.Unknown)
                                 return;
 
                             bool removeMarketSignal = false;
 
                             if (latestMarketSignal.MarketDirection == MarketDirection.Uptrend)
                             {
-                                if (firstSubwindowVolumeDirection == VolumeDirection.Sell && firstSubwindowPriceChangeDirection == PriceChangeDirection.Down)
+                                if (firstSubwindowVolumeDirection == VolumeDirection.Sell && firstSubwindowPriceChangeDirection == PriceDirection.Down)
+                                {
+                                    removeMarketSignal = true;
+                                }
+                                else if (activeSellVolume > activeBuyVolume * 2 || passiveSellVolume > passiveBuyVolume * 10) // testing exit
                                 {
                                     removeMarketSignal = true;
                                 }
                             }
                             else if (latestMarketSignal.MarketDirection == MarketDirection.Downtrend)
                             {
-                                if (firstSubwindowVolumeDirection == VolumeDirection.Buy && firstSubwindowPriceChangeDirection == PriceChangeDirection.Up)
+                                if (firstSubwindowVolumeDirection == VolumeDirection.Buy && firstSubwindowPriceChangeDirection == PriceDirection.Up)
+                                {
+                                    removeMarketSignal = true;
+                                }
+                                else if (activeBuyVolume > activeSellVolume * 2 || passiveBuyVolume > passiveSellVolume * 10) //xxx testing exit 
                                 {
                                     removeMarketSignal = true;
                                 }
@@ -488,7 +486,7 @@ namespace CryptoBot.Managers.Production
 
             marketEntity = new MarketEntity(symbol);
             marketEntity.Price = marketTrades.First().Price;
-            marketEntity.MarketTrades = marketTrades;
+            marketEntity.ActiveTrades = marketTrades;
             marketEntity.Orderbook = orderBook;
 
             return true;
@@ -512,49 +510,24 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private bool CreateMarketInformationInstance(string symbol, out MarketInformation marketInformation)
+        private bool CreateMarketInformation(string symbol, out MarketInformation marketInformation)
         {
             marketInformation = null;
 
             if (!CreateMarketEntityWindow(symbol, out List<MarketEntity> marketEntityWindow))
                 return false;
 
-            if (!CreateMarketVolumeComponent(symbol, marketEntityWindow, out MarketVolumeComponent marketVolumeComponent))
-                return false;
-
-            if (!CreateMarketPriceComponent(symbol, marketEntityWindow, out MarketPriceComponent marketPriceComponent))
-                return false;
-
-            // both component should be pointing at the same thing. BUY volume -> price increases totally and partially on same levels or with delay???
-
             marketInformation = new MarketInformation(symbol);
-            marketInformation.MarketVolumeComponent = marketVolumeComponent;
-            marketInformation.MarketPriceComponent = marketPriceComponent;
 
-            return true;
-        }
+            marketInformation.Volume = new Volume(symbol);
+            marketInformation.Volume.MarketEntityWindow = marketEntityWindow;
+            marketInformation.Volume.Orderbook = GetLatestOrderbookEntry(symbol);
 
-        private bool CreateMarketVolumeComponent(string symbol, List<MarketEntity> marketEntityWindow, out MarketVolumeComponent marketVolumeComponent)
-        {
-            marketVolumeComponent = null;
+            marketInformation.Price = new Price(symbol);
+            marketInformation.Price.MarketEntityWindow = marketEntityWindow;
 
-            if (marketEntityWindow.IsNullOrEmpty())
-                return false;
+            _verboseLogger.Debug(marketInformation.Dump());
 
-            marketVolumeComponent = new MarketVolumeComponent(symbol, _volumeSetting);
-            marketVolumeComponent.MarketEntityWindow = marketEntityWindow;
-            return true;
-        }
-
-        private bool CreateMarketPriceComponent(string symbol, List<MarketEntity> marketEntityWindow, out MarketPriceComponent marketPriceComponent)
-        {
-            marketPriceComponent = null;
-
-            if (marketEntityWindow.IsNullOrEmpty())
-                return false;
-
-            marketPriceComponent = new MarketPriceComponent(symbol, _priceChangeSetting);
-            marketPriceComponent.MarketEntityWindow = marketEntityWindow;
             return true;
         }
 
@@ -676,6 +649,7 @@ namespace CryptoBot.Managers.Production
         private List<MarketInformation> GetHistoricMarketInformationCollection(string symbol)
         {
             var marketInformations = GetOrderedMarketInformationCollection(symbol);
+
             if (marketInformations.IsNullOrEmpty())
             {
                 return Enumerable.Empty<MarketInformation>().ToList();
@@ -819,6 +793,7 @@ namespace CryptoBot.Managers.Production
         private void RemoveHistoricMarketInformationCollection(string symbol)
         {
             var historicMarketInformations = GetHistoricMarketInformationCollection(symbol);
+
             if (historicMarketInformations.IsNullOrEmpty())
                 return;
 

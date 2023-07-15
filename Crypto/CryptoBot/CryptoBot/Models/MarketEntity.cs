@@ -17,7 +17,7 @@ namespace CryptoBot.Models
         public string Symbol { get; set; }
         public decimal Price { get; set; }
         public DateTime CreatedAt { get; set; }
-        public IEnumerable<BybitTrade> MarketTrades { get; set; }
+        public IEnumerable<BybitTrade> ActiveTrades { get; set; }
         public BybitOrderbook Orderbook { get; set; }
 
         public MarketEntity(string symbol)
@@ -27,12 +27,12 @@ namespace CryptoBot.Models
             this.CreatedAt = DateTime.Now;
         }
 
-        public VolumeDirection GetVolumeDirection(int? orderbookDepth = null)
+        public VolumeDirection GetVolumeDirection()
         {
             decimal activeBuyVolume = GetActiveBuyVolume();
             decimal activeSellVolume = GetActiveSellVolume();
-            decimal passiveBuyVolume = GetPassiveBuyVolume(orderbookDepth);
-            decimal passiveSellVolume = GetPassiveSellVolume(orderbookDepth);
+            decimal passiveBuyVolume = GetPassiveBuyVolume();
+            decimal passiveSellVolume = GetPassiveSellVolume();
 
             if (activeBuyVolume > activeSellVolume)
             {
@@ -56,10 +56,10 @@ namespace CryptoBot.Models
         {
             lock (this)
             {
-                if (this.MarketTrades.IsNullOrEmpty())
+                if (this.ActiveTrades.IsNullOrEmpty())
                     return 0;
 
-                return this.MarketTrades.Where(x => x.Side == OrderSide.Buy).Sum(x => x.Quantity);
+                return this.ActiveTrades.Where(x => x.Side == OrderSide.Buy).Sum(x => x.Quantity);
             }
         }
 
@@ -67,62 +67,38 @@ namespace CryptoBot.Models
         {
             lock (this)
             {
-                if (this.MarketTrades.IsNullOrEmpty())
+                if (this.ActiveTrades.IsNullOrEmpty())
                     return 0;
 
-                return this.MarketTrades.Where(x => x.Side == OrderSide.Sell).Sum(x => x.Quantity);
+                return this.ActiveTrades.Where(x => x.Side == OrderSide.Sell).Sum(x => x.Quantity);
             }
         }
 
-        public decimal GetPassiveBuyVolume(int? orderbookDepth = null)
-        {
-            lock (this)
-            {
-                IEnumerable<BybitOrderbookEntry> bids = GetBids(orderbookDepth);
-                if (bids.IsNullOrEmpty())
-                    return 0;
-
-                return bids.Sum(x => x.Quantity);
-            }
-        }
-
-        public decimal GetPassiveSellVolume(int? orderbookDepth = null)
-        {
-            lock (this)
-            {
-                IEnumerable<BybitOrderbookEntry> asks = GetAsks(orderbookDepth);
-                if (asks.IsNullOrEmpty())
-                    return 0;
-
-                return asks.Sum(x => x.Quantity);
-            }
-        }
-
-        private IEnumerable<BybitOrderbookEntry> GetBids(int? orderbookDepth = null)
+        public decimal GetPassiveBuyVolume(int orderbookDepth = 50)
         {
             lock (this)
             {
                 if (this.Orderbook == null)
-                    return null;
+                    return 0;
 
-                if (!orderbookDepth.HasValue || orderbookDepth.Value > this.Orderbook.Bids.Count())
-                    return this.Orderbook.Bids;
+                if (orderbookDepth > this.Orderbook.Bids.Count())
+                    return this.Orderbook.Bids.Sum(x => x.Quantity);
 
-                return this.Orderbook.Bids.Take(orderbookDepth.Value);
+                return this.Orderbook.Bids.Take(orderbookDepth).Sum(x => x.Quantity);
             }
         }
 
-        private IEnumerable<BybitOrderbookEntry> GetAsks(int? orderbookDepth = null)
+        public decimal GetPassiveSellVolume(int orderbookDepth = 50)
         {
             lock (this)
             {
                 if (this.Orderbook == null)
-                    return null;
+                    return 0;
 
-                if (!orderbookDepth.HasValue || orderbookDepth.Value > this.Orderbook.Asks.Count())
-                    return this.Orderbook.Asks;
+                if (orderbookDepth > this.Orderbook.Asks.Count())
+                    return this.Orderbook.Asks.Sum(x => x.Quantity);
 
-                return this.Orderbook.Asks.Take(orderbookDepth.Value);
+                return this.Orderbook.Asks.Take(orderbookDepth).Sum(x => x.Quantity);
             }
         }
     }
