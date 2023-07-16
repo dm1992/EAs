@@ -1,5 +1,6 @@
 ﻿using Bybit.Net.Enums;
-using Bybit.Net.Objects.Models.V5;
+using Bybit.Net.Objects.Models;
+using Bybit.Net.Objects.Models.Socket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +18,8 @@ namespace CryptoBot.Models
         public string Symbol { get; set; }
         public decimal Price { get; set; }
         public DateTime CreatedAt { get; set; }
-        public IEnumerable<BybitTrade> ActiveTrades { get; set; }
-        public BybitOrderbook Orderbook { get; set; }
+        public IEnumerable<BybitTradeUpdate> ActiveTrades { get; set; }
+        public Orderbook Orderbook { get; set; }
 
         public MarketEntity(string symbol)
         {

@@ -1,6 +1,9 @@
 ﻿using Bybit.Net;
 using Bybit.Net.Clients;
+using Bybit.Net.Enums;
 using Bybit.Net.Objects;
+using Bybit.Net.Objects.Models;
+using Bybit.Net.Objects.Models.Socket;
 using Bybit.Net.Objects.Models.V5;
 using Bybit.Net.Objects.Options;
 using CryptoBot.EventArgs;
@@ -39,11 +42,11 @@ namespace CryptoBot.Managers.Production
         private ILogger _logger;
         private ILogger _verboseLogger;
         private bool _isInitialized;
-        private Dictionary<string, List<BybitTrade>> _marketTradeBuffer;
-        private Dictionary<string, BybitOrderbook> _orderbookBuffer;
+        private Dictionary<string, List<BybitTradeUpdate>> _marketTradeBuffer;
+        private Dictionary<string, Orderbook> _orderbookBuffer;
         private Dictionary<string, AutoResetEvent> _marketEntityPendingStateBuffer;
         private Dictionary<string, AutoResetEvent> _marketInformationPendingStateBuffer;
-        private Dictionary<string, BybitSpotTickerUpdate> _marketTickerBuffer;
+        private Dictionary<string, BybitTickerUpdate> _marketTickerBuffer;
         private Dictionary<string, MarketSignal> _marketSignalBuffer;
         private Dictionary<string, List<MarketEntity>> _marketEntityCollection;
         private Dictionary<string, List<MarketInformation>> _marketInformationCollection;
@@ -67,11 +70,11 @@ namespace CryptoBot.Managers.Production
             });
 
             _isInitialized = false;
-            _orderbookBuffer = new Dictionary<string, BybitOrderbook>();
-            _marketTradeBuffer = new Dictionary<string, List<BybitTrade>>();
+            _orderbookBuffer = new Dictionary<string, Orderbook>();
+            _marketTradeBuffer = new Dictionary<string, List<BybitTradeUpdate>>();
             _marketEntityPendingStateBuffer = new Dictionary<string, AutoResetEvent>();
             _marketInformationPendingStateBuffer = new Dictionary<string, AutoResetEvent>();
-            _marketTickerBuffer = new Dictionary<string, BybitSpotTickerUpdate>();
+            _marketTickerBuffer = new Dictionary<string, BybitTickerUpdate>();
             _marketSignalBuffer = new Dictionary<string, MarketSignal>();
             _marketEntityCollection = new Dictionary<string, List<MarketEntity>>();
             _marketInformationCollection = new Dictionary<string, List<MarketInformation>>();
@@ -121,14 +124,14 @@ namespace CryptoBot.Managers.Production
         {
             _logger.Info("Closing web socket event subscription.");
 
-            await _webSocket.V5SpotApi.UnsubscribeAllAsync();
+            await _webSocket.UsdPerpetualApi.UnsubscribeAllAsync();
         }
 
         private async void SubscribeToTickerUpdatesAsync()
         {
             _logger.Info("Subscribing to ticker updates.");
 
-            CallResult<UpdateSubscription> response = await _webSocket.V5SpotApi.SubscribeToTickerUpdatesAsync(_config.Symbols, HandleTicker);
+            CallResult<UpdateSubscription> response = await _webSocket.UsdPerpetualApi.SubscribeToTickerUpdatesAsync(_config.Symbols, HandleTicker);
 
             if (!response.GetResultOrError(out UpdateSubscription updateSubscription, out Error error))
             {
@@ -144,7 +147,7 @@ namespace CryptoBot.Managers.Production
         {
             _logger.Info("Subscribing to trade updates.");
 
-            CallResult<UpdateSubscription> response = await _webSocket.V5SpotApi.SubscribeToTradeUpdatesAsync(_config.Symbols, HandleMarketTrades);
+            CallResult<UpdateSubscription> response = await _webSocket.UsdPerpetualApi.SubscribeToTradeUpdatesAsync(_config.Symbols, HandleMarketTrades);
 
             if (!response.GetResultOrError(out UpdateSubscription updateSubscription, out Error error))
             {
@@ -160,7 +163,7 @@ namespace CryptoBot.Managers.Production
         {
             _logger.Info("Subscribing to orderbook updates.");
 
-            CallResult<UpdateSubscription> response = await _webSocket.V5SpotApi.SubscribeToOrderbookUpdatesAsync(_config.Symbols, 50, HandleOrderbookSnapshot, HandleOrderbookUpdate);
+            CallResult<UpdateSubscription> response = await _webSocket.UsdPerpetualApi.SubscribeToOrderBookUpdatesAsync(_config.Symbols, 50, HandleOrderbookSnapshot, HandleOrderbookUpdate);
 
             if (!response.GetResultOrError(out UpdateSubscription updateSubscription, out Error error))
             {
@@ -251,7 +254,17 @@ namespace CryptoBot.Managers.Production
             {
                 while (true)
                 {
-                    _verboseLogger.Debug($"SubscriptionsState: {_webSocket.V5SpotApi.GetSubscriptionsState()}");
+                    _verboseLogger.Debug($"SubscriptionsState: {_webSocket.UsdPerpetualApi.GetSubscriptionsState()}");
+
+                    if (_webSocket.UsdPerpetualApi.IncomingKbps == 0)
+                    {
+                        if (_webSocket.UsdPerpetualApi.CurrentSubscriptions > 0)
+                        {
+                            _logger.Warn("There are active web socket subscriptions, but now network traffic. Performing web socket reconnect.");
+
+                            _webSocket.UsdPerpetualApi.ReconnectAsync();
+                        }
+                    }
 
                     Task.Delay(TEST_SUBSCRIPTION_DELAY).Wait();
                 }
@@ -476,18 +489,18 @@ namespace CryptoBot.Managers.Production
         {
             marketEntity = null;
 
-            List<BybitTrade> marketTrades = GetLatestMarketTradesEntry(symbol);
+            List<BybitTradeUpdate> marketTrades = GetLatestMarketTradesEntry(symbol);
             if (marketTrades.IsNullOrEmpty())
                 return false;
 
-            BybitOrderbook orderBook = GetLatestOrderbookEntry(symbol);
-            if (orderBook == null)
+            Orderbook orderbook = GetLatestOrderbook(symbol);
+            if (orderbook == null)
                 return false;
 
             marketEntity = new MarketEntity(symbol);
             marketEntity.Price = marketTrades.First().Price;
             marketEntity.ActiveTrades = marketTrades;
-            marketEntity.Orderbook = orderBook;
+            marketEntity.Orderbook = orderbook;
 
             return true;
         }
@@ -521,7 +534,7 @@ namespace CryptoBot.Managers.Production
 
             marketInformation.Volume = new Volume(symbol);
             marketInformation.Volume.MarketEntityWindow = marketEntityWindow;
-            marketInformation.Volume.Orderbook = GetLatestOrderbookEntry(symbol);
+            marketInformation.Volume.Orderbook = GetLatestOrderbook(symbol);
 
             marketInformation.Price = new Price(symbol);
             marketInformation.Price.MarketEntityWindow = marketEntityWindow;
@@ -552,24 +565,24 @@ namespace CryptoBot.Managers.Production
 
         #region Get data model
 
-        private List<BybitTrade> GetLatestMarketTradesEntry(string symbol)
+        private List<BybitTradeUpdate> GetLatestMarketTradesEntry(string symbol)
         {
             lock (_marketTradeBuffer)
             {
-                if (!_marketTradeBuffer.TryGetValue(symbol, out List<BybitTrade> marketTrades))
+                if (!_marketTradeBuffer.TryGetValue(symbol, out List<BybitTradeUpdate> marketTrades))
                 {
-                    return Enumerable.Empty<BybitTrade>().ToList();
+                    return Enumerable.Empty<BybitTradeUpdate>().ToList();
                 }
 
                 return marketTrades;
             }
         }
 
-        private BybitOrderbook GetLatestOrderbookEntry(string symbol)
+        private Orderbook GetLatestOrderbook(string symbol)
         {
             lock (_orderbookBuffer)
             {
-                if (!_orderbookBuffer.TryGetValue(symbol, out BybitOrderbook orderbook))
+                if (!_orderbookBuffer.TryGetValue(symbol, out Orderbook orderbook))
                 {
                     return null;
                 }
@@ -578,11 +591,11 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private BybitSpotTickerUpdate GetLatestTickerEntry(string symbol)
+        private BybitTickerUpdate GetLatestTickerEntry(string symbol)
         {
             lock (_marketTickerBuffer)
             {
-                if (!_marketTickerBuffer.TryGetValue(symbol, out BybitSpotTickerUpdate ticker))
+                if (!_marketTickerBuffer.TryGetValue(symbol, out BybitTickerUpdate ticker))
                 {
                     return null;
                 }
@@ -663,15 +676,13 @@ namespace CryptoBot.Managers.Production
 
         #region Update data model
 
-        private void UpdateMarketTradesEntry(List<BybitTrade> marketTrades)
+        private void UpdateMarketTradesEntry(string symbol, List<BybitTradeUpdate> marketTrades)
         {
             if (marketTrades.IsNullOrEmpty())
                 return;
 
             lock (_marketTradeBuffer)
             {
-                string symbol = marketTrades.First().Symbol;
-
                 if (!_marketTradeBuffer.TryGetValue(symbol, out _))
                 {
                     _marketTradeBuffer.Add(symbol, marketTrades);
@@ -683,52 +694,68 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private void UpdateOrderbookEntry(BybitOrderbook orderbook)
+        private void HandleOrderbook(string symbol, List<BybitOrderBookEntry> orderbookEntries, OrderbookEventType orderbookEventType)
         {
-            if (orderbook == null) return;
+            if (orderbookEntries.IsNullOrEmpty()) 
+                return;
 
             lock (_orderbookBuffer)
             {
-                if (!_orderbookBuffer.TryGetValue(orderbook.Symbol, out BybitOrderbook orderbookEntry))
+                Orderbook orderbook;
+
+                if (orderbookEventType == OrderbookEventType.Create)
                 {
-                    _orderbookBuffer.Add(orderbook.Symbol, orderbook);
+                    if (_orderbookBuffer.TryGetValue(symbol, out orderbook))
+                    {
+                        // remove old local orderbook and replace it with new one
+                        _orderbookBuffer.Remove(symbol);
+                    }
+
+                    orderbook = new Orderbook();
+                    orderbook.Bids = orderbookEntries.Where(x => x.Side == OrderSide.Buy).ToList();
+                    orderbook.Asks = orderbookEntries.Where(x => x.Side == OrderSide.Sell).ToList();
+
+                    _orderbookBuffer.Add(symbol, orderbook);
                     return;
                 }
 
-                if (!orderbook.Bids.IsNullOrEmpty())
+                if (!_orderbookBuffer.TryGetValue(symbol, out orderbook))
                 {
-                    List<BybitOrderbookEntry> bids = orderbookEntry.Bids.ToList();
-
-                    for (int i = 0; i < orderbook.Bids.Count(); i++)
-                    {
-                        if (i >= bids.Count())
-                        {
-                            // overhead detected
-                            break;
-                        }
-
-                        bids[i] = orderbook.Bids.ElementAt(i);
-                    }
-
-                    orderbookEntry.Bids = bids;
+                    _logger.Error($"Failed to perform orderbook event type {orderbookEventType}. Missing orderbook for symbol {symbol}.");
+                    return;
                 }
 
-                if (!orderbook.Asks.IsNullOrEmpty())
+                if (orderbookEventType == OrderbookEventType.Insert)
                 {
-                    List<BybitOrderbookEntry> asks = orderbookEntry.Asks.ToList();
-
-                    for (int i = 0; i < orderbook.Asks.Count(); i++)
+                    orderbook.Bids = orderbook.Bids.Concat(orderbookEntries.Where(x => x.Side == OrderSide.Buy)).ToList();
+                    orderbook.Asks = orderbook.Asks.Concat(orderbookEntries.Where(x => x.Side == OrderSide.Sell)).ToList();
+                }
+                else if (orderbookEventType == OrderbookEventType.Delete)
+                {
+                    orderbook.Bids.RemoveAll(x => orderbookEntries.Where(y => y.Side == OrderSide.Buy).Equals(x.Price));
+                    orderbook.Asks.RemoveAll(x => orderbookEntries.Where(y => y.Side == OrderSide.Sell).Equals(x.Price));
+                }
+                else if (orderbookEventType == OrderbookEventType.Update)
+                {
+                    foreach (var bidEntry in orderbookEntries.Where(x => x.Side == OrderSide.Buy))
                     {
-                        if (i >= asks.Count())
-                        {
-                            // overhead detected
-                            break;
-                        }
+                        var orderbookBidEntry = orderbook.Bids.FirstOrDefault(x => x.Price == bidEntry.Price);
 
-                        asks[i] = orderbook.Asks.ElementAt(i);
+                        if (orderbookBidEntry != null)
+                        {
+                            orderbookBidEntry.Price = bidEntry.Price;
+                        }
                     }
 
-                    orderbookEntry.Asks = asks;
+                    foreach (var askEntry in orderbookEntries.Where(x => x.Side == OrderSide.Sell))
+                    {
+                        var orderbookAskEntry = orderbook.Asks.FirstOrDefault(x => x.Price == askEntry.Price);
+
+                        if (orderbookAskEntry != null)
+                        {
+                            orderbookAskEntry.Price = askEntry.Price;
+                        }
+                    }
                 }
             }
         }
@@ -806,7 +833,7 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private void UpdateMarketTickerBuffer(BybitSpotTickerUpdate ticker)
+        private void UpdateMarketTickerBuffer(BybitTickerUpdate ticker)
         {
             if (ticker == null) return;
 
@@ -879,7 +906,7 @@ namespace CryptoBot.Managers.Production
 
         #region Subscription handlers
 
-        private void HandleTicker(DataEvent<BybitSpotTickerUpdate> ticker)
+        private void HandleTicker(DataEvent<BybitTickerUpdate> ticker)
         {
             try
             {
@@ -901,13 +928,13 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private void HandleMarketTrades(DataEvent<IEnumerable<BybitTrade>> marketTrades)
+        private void HandleMarketTrades(DataEvent<IEnumerable<BybitTradeUpdate>> marketTrades)
         {
             try
             {
                 _marketTradeSemaphore.WaitAsync();
 
-                UpdateMarketTradesEntry(marketTrades.Data.ToList());
+                UpdateMarketTradesEntry(marketTrades.Topic, marketTrades.Data.ToList());
 
                 if (CreateMarketEntity(marketTrades.Topic, out MarketEntity marketEntity))
                 {
@@ -924,13 +951,13 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private void HandleOrderbookSnapshot(DataEvent<BybitOrderbook> orderbook)
+        private void HandleOrderbookSnapshot(DataEvent<IEnumerable<BybitOrderBookEntry>> orderbook)
         {
             try
             {
                 _orderbookSnapshotSemaphore.WaitAsync();
 
-                UpdateOrderbookEntry(orderbook.Data);
+                HandleOrderbook(orderbook.Topic, orderbook.Data.ToList(), OrderbookEventType.Create);
             }
             catch (Exception e)
             {
@@ -942,13 +969,17 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private void HandleOrderbookUpdate(DataEvent<BybitOrderbook> orderbook)
+        private void HandleOrderbookUpdate(DataEvent<BybitDeltaUpdate<BybitOrderBookEntry>> orderbook)
         {
             try
             {
                 _orderbookUpdateSemaphore.WaitAsync();
 
-                UpdateOrderbookEntry(orderbook.Data);
+                HandleOrderbook(orderbook.Topic, orderbook.Data.Delete.ToList(), OrderbookEventType.Delete);
+
+                HandleOrderbook(orderbook.Topic, orderbook.Data.Update.ToList(), OrderbookEventType.Update);
+
+                HandleOrderbook(orderbook.Topic, orderbook.Data.Insert.ToList(), OrderbookEventType.Insert);
             }
             catch (Exception e)
             {

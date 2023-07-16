@@ -1,4 +1,5 @@
-﻿using Bybit.Net.Objects.Models.V5;
+﻿using Bybit.Net.Objects.Models;
+using Bybit.Net.Objects.Models.V5;
 using CryptoBot.Models;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ namespace CryptoBot
 {
     public static class Helpers
     {
-        public static string OrderbookToString(IEnumerable<BybitOrderbookEntry> orderbook, int depth = 10)
+        public static string OrderbookToString(IEnumerable<BybitOrderBookEntry> orderbook, int depth = 10)
         {
             if (orderbook.IsNullOrEmpty())
                 return String.Empty;

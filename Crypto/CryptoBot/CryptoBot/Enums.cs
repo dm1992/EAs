@@ -15,6 +15,15 @@ namespace CryptoBot
         TerminateApplication = 4
     }
 
+    public enum OrderbookEventType
+    {
+        Unknown = 0,
+        Create = 1,
+        Insert = 2,
+        Update = 3,
+        Delete = 4
+    }
+
     public enum MarketDirection
     {
         Unknown = 0,
