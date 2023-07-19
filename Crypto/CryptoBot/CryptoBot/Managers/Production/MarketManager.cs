@@ -233,6 +233,16 @@ namespace CryptoBot.Managers.Production
                 while (true)
                 {
                     _verboseLogger.Debug($"BALANCE: {_testBalance}$ (+BALANCE: {_testPositiveBalance}$, -BALANCE: {_testNegativeBalance}$). Wins: {_wins}, losses: {_losses}, TOTAL: {_wins + _losses}");
+
+                    foreach (var symbol in _config.Symbols)
+                    {
+                        var marketSignal = GetLatestMarketSignal(symbol);
+
+                        if (marketSignal != null)
+                        {
+                            _verboseLogger.Debug(">>> " + marketSignal.Dump());
+                        }
+                    }
                         
                     Task.Delay(TEST_BALANCE_DELAY).Wait();
                 }
@@ -252,6 +262,16 @@ namespace CryptoBot.Managers.Production
                 while (true)
                 {
                     _verboseLogger.Debug($"SubscriptionsState: {_webSocket.V5SpotApi.GetSubscriptionsState()}");
+
+                    if (_webSocket.V5SpotApi.CurrentSubscriptions > 0)
+                    {
+                        if (_webSocket.V5SpotApi.IncomingKbps == 0)
+                        {
+                            _logger.Warn("!!!RECONNECTING TO WEB SOCKET!!!");
+
+                            _webSocket.V5SpotApi.ReconnectAsync();
+                        }
+                    }
 
                     Task.Delay(TEST_SUBSCRIPTION_DELAY).Wait();
                 }
@@ -366,8 +386,11 @@ namespace CryptoBot.Managers.Production
                 return false;
 
             MarketInformation referenceMarketInformation = GetLatestMarketInformationEntry(symbol);
+
             if (referenceMarketInformation == null)
                 return false;
+
+            _verboseLogger.Debug(">>> LATEST >>> " + referenceMarketInformation.Dump());
 
             MarketDirection referenceMarketDirection = referenceMarketInformation.GetMarketDirection();
 
@@ -526,7 +549,7 @@ namespace CryptoBot.Managers.Production
             marketInformation.Price = new Price(symbol);
             marketInformation.Price.MarketEntityWindow = marketEntityWindow;
 
-            _verboseLogger.Debug(marketInformation.Dump());
+            _verboseLogger.Debug(">>> CREATED >>> " + marketInformation.Dump());
 
             return true;
         }

@@ -30,20 +30,26 @@ namespace CryptoBot.Models
 
         public MarketDirection MarketDirection { get; set; }
         public MarketInformation MarketInformation { get; set; }
-
+                                                               
         public MarketSignal(string symbol)
         {
             this.Symbol = symbol;
         }
 
+        public string Dump()
+        {
+            return $"CURRENT {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.EntryPrice}$";
+        }
+
+
         public string DumpOnCreate()
         {
-            return $"!!! CREATED {(this.IsCounter ? "COUNTER" : "")} {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.EntryPrice}$ !!!";
+            return $"!!! CREATED {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.EntryPrice}$ !!!";
         }
 
         public string DumpOnRemove()
         {
-            return $"!!! REMOVED {(this.IsCounter ? "COUNTER" : "")} {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.ExitPrice}$ with ROI {this.ROI}$ !!!";
+            return $"!!! [{(this.ROI > 0 ? "PROFIT" : "LOSS")}] {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.ExitPrice}$ with ROI {this.ROI}$ !!!";
         }
     }
 }
