@@ -12,44 +12,41 @@ namespace CryptoBot.Models
         public bool IsCounter { get; set; }
         public decimal EntryPrice { get; set; }
         public decimal ExitPrice { get; set; }
-
-        private decimal CalculateROI()
-        {
-            if (this.MarketDirection == MarketDirection.Uptrend)
-            {
-                return this.ExitPrice - this.EntryPrice;
-            }
-            else if (this.MarketDirection == MarketDirection.Downtrend)
-            {
-                return this.EntryPrice - this.ExitPrice;
-            }
-
-            return 0;
-        }
-        public decimal ROI { get { return CalculateROI(); } }
-
+        public decimal? CloseQuantity { get; set; }
         public MarketDirection MarketDirection { get; set; }
         public MarketInformation MarketInformation { get; set; }
-                                                               
+        public decimal ROI
+        {
+            get
+            {
+                if (this.MarketDirection == MarketDirection.Uptrend)
+                {
+                    return this.ExitPrice - this.EntryPrice;
+                }
+                else if (this.MarketDirection == MarketDirection.Downtrend)
+                {
+                    return this.EntryPrice - this.ExitPrice;
+                }
+
+                return 0;
+            }
+        }
+        public string OrderId { get; set; }
+        public string ClientOrderId { get; set; }
+
         public MarketSignal(string symbol)
         {
             this.Symbol = symbol;
         }
 
-        public string Dump()
+        public string DumpCreated()
         {
-            return $"CURRENT {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.EntryPrice}$";
-        }
-
-
-        public string DumpOnCreate()
-        {
-            return $"!!! CREATED {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.EntryPrice}$ !!!";
+            return $"{this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.EntryPrice}$, CloseQuantity: {this.CloseQuantity}, OrderId: {this.OrderId}, ClientOrderId: {this.ClientOrderId}";
         }
 
         public string DumpOnRemove()
         {
-            return $"!!! [{(this.ROI > 0 ? "PROFIT" : "LOSS")}] {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.ExitPrice}$ with ROI {this.ROI}$ !!!";
+            return $"!!! [{(this.ROI > 0 ? "PROFIT" : "LOSS")}] {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.ExitPrice}$ with ROI {this.ROI}$, OrderId: {this.OrderId}, ClientOrderId: {this.ClientOrderId} !!!";
         }
     }
 }

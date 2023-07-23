@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Interfaces.Managers
 {
-    public interface IMarketManager : IManager, IWebSocketEvent
+    public interface IMarketManager : IManager, IWebSocket
     {
     }
 }
