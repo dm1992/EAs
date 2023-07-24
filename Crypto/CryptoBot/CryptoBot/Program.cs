@@ -79,7 +79,7 @@ namespace CryptoBot
                 ITradingManager tradingManager = new TradingManager(logFactory, config);
                 tradingManager.Initialize();
 
-                IMarketManager marketManager = new MarketManager(logFactory, tradingManager, config);
+                MarketManager marketManager = new MarketManager(logFactory, tradingManager, config);
                 marketManager.Initialize();
                 marketManager.InvokeWebSocketSubscription();
             }

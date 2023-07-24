@@ -2,10 +2,14 @@
 using Bybit.Net.Clients;
 using Bybit.Net.Clients.V5;
 using Bybit.Net.Enums;
+using Bybit.Net.Objects.Models.Spot;
+using Bybit.Net.Objects.Models.Spot.v3;
 using Bybit.Net.Objects.Models.V5;
 using CryptoBot.Interfaces.Managers;
 using CryptoBot.Models;
 using CryptoExchange.Net.Authentication;
+using CryptoExchange.Net.Objects;
+using CryptoExchange.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
@@ -35,17 +39,16 @@ namespace CryptoBot.Managers.Production
         {
             _config = config;
             _logger = logFactory.GetCurrentClassLogger();
+            _tradingServerSemaphore = new SemaphoreSlim(1, 1);
+            _balanceSemaphore = new SemaphoreSlim(1, 1);
 
             _client = new BybitRestClient(null, new NLogLoggerFactory(), optionsDelegate => 
-                                          { 
+                                          {
                                               optionsDelegate.Environment = BybitEnvironment.Testnet; 
                                               optionsDelegate.AutoTimestamp = true; 
                                           });
 
             _client.SetApiCredentials(new ApiCredentials(_config.ApiKey, _config.ApiSecret));
-
-            _tradingServerSemaphore = new SemaphoreSlim(1, 1);
-            _balanceSemaphore = new SemaphoreSlim(1, 1);
 
             _isInitialized = false;
         }
@@ -57,7 +60,7 @@ namespace CryptoBot.Managers.Production
                 if (_isInitialized) return true;
 
                 Task.Run(() => { PingTradingServer(); });
-                Task.Run(() => { MonitorAssetBalances(); });
+                Task.Run(() => { MonitorBalances(); });
 
                 _logger.Info("Initialized.");
 
@@ -93,21 +96,21 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        public async Task<IEnumerable<BybitAssetBalance>> GetAssetBalances()
+        public async Task<IEnumerable<BybitSpotBalance>> GetBalances()
         {
             try
             {
                 await _balanceSemaphore.WaitAsync();
 
-                var response = await _client.V5Api.Account.GetBalancesAsync(AccountType.Spot);
+                var response = await _client.SpotApiV3.Account.GetBalancesAsync();
 
                 if (!response.Success)
                 {
-                    _logger.Error($"Failed to get asset balances. Error code: {response.Error.Code}. Error message: {response.Error.Message}.");
+                    _logger.Error($"Failed to get balances. Error code: {response.Error.Code}. Error message: {response.Error.Message}.");
                     return null;
                 }
 
-                return response.Data.List.First().Assets;
+                return response.Data;
             }
             finally
             {
@@ -115,12 +118,12 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        public async Task<bool> PlaceOrder(BybitOrder order)
+        public async Task<bool> PlaceOrder(BybitSpotOrderV3 order)
         {
             if (order == null)
                 return false;
 
-            var response = await _client.V5Api.Trading.PlaceOrderAsync(Category.Spot, order.Symbol, order.Side, NewOrderType.Market, Math.Round(order.Quantity, 4), null, null, null);
+            var response = await _client.SpotApiV3.Trading.PlaceOrderAsync(order.Symbol, order.Side, OrderType.Market, Math.Round(order.Quantity, 8), null, TimeInForce.GoodTillCanceled);
 
             if (!response.Success)
             {
@@ -129,8 +132,25 @@ namespace CryptoBot.Managers.Production
             }
 
             order.ClientOrderId = response.Data.ClientOrderId;
-            order.OrderId = response.Data.OrderId;
+            order.Id = response.Data.Id;
+
             return true;
+        }
+
+        public async Task<BybitSpotOrderV3> GetOrder(string orderId)
+        {
+            if (String.IsNullOrEmpty(orderId))
+                return null;
+
+            var response = await _client.SpotApiV3.Trading.GetOrderAsync(Convert.ToInt64(orderId));
+
+            if (!response.Success)
+            {
+                _logger.Error($"Failed to get order for order id {orderId}. Error code: {response.Error.Code}. Error message: {response.Error.Message}.");
+                return null;
+            }
+
+            return response.Data;
         }
 
         #region Workers
@@ -165,21 +185,21 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private async void MonitorAssetBalances()
+        private async void MonitorBalances()
         {
-            _logger.Debug("MonitorAssetBalances started.");
+            _logger.Debug("MonitorBalances started.");
 
             try
             {
                 while (true)
                 {
-                    var assetBalances = await GetAssetBalances();
+                    var balances = await GetBalances();
 
-                    if (!assetBalances.IsNullOrEmpty())
+                    if (!balances.IsNullOrEmpty())
                     {
-                        foreach (var asset in assetBalances)
+                        foreach (var balance in balances)
                         {
-                            _logger.Info($"{asset.Asset} balance. Total: {asset.WalletBalance}$, Locked: {asset.Locked}$, Free: {asset.Free}$.");
+                            _logger.Info($"{balance.Asset} balance. Total: {balance.Total}$, Locked: {balance.Locked}$, Available: {balance.Available}$.");
                         }
                     }
                   
@@ -188,7 +208,7 @@ namespace CryptoBot.Managers.Production
             }
             catch (Exception e)
             {
-                _logger.Error($"Failed MonitorAssetBalances. {e}");
+                _logger.Error($"Failed MonitorBalances. {e}");
             }
         }
 

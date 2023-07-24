@@ -2,6 +2,7 @@
 using Bybit.Net.Clients;
 using Bybit.Net.Enums;
 using Bybit.Net.Objects;
+using Bybit.Net.Objects.Models.Spot.v3;
 using Bybit.Net.Objects.Models.V5;
 using Bybit.Net.Objects.Options;
 using CryptoBot.EventArgs;
@@ -9,7 +10,6 @@ using CryptoBot.Interfaces.Managers;
 using CryptoBot.Models;
 using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
-using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
 using System;
@@ -26,7 +26,6 @@ namespace CryptoBot.Managers.Production
     {
         private const int SUBSCRIPTION_STATE_DELAY = 5000;
         private const int MARKETSIGNAL_MONITOR_DELAY = 30000;
-        private const int MARKETSIGNAL_ORDER_TIMEOUT = 60000;
 
         private readonly Config _config;
         private readonly ITradingManager _tradingManager;
@@ -299,12 +298,10 @@ namespace CryptoBot.Managers.Production
             if (marketSignal.MarketDirection == MarketDirection.Unknown)
                 return false;
 
-            BybitOrder order = new BybitOrder();
+            BybitSpotOrderV3 order = new BybitSpotOrderV3();
             order.Symbol = marketSignal.Symbol;
             order.Quantity = marketSignal.MarketDirection == MarketDirection.Uptrend ? _config.BuyQuantity : _config.SellQuantity;
             order.Side = marketSignal.MarketDirection == MarketDirection.Uptrend ? OrderSide.Buy : OrderSide.Sell;
-
-            var assetBalancesPreOrder = await _tradingManager.GetAssetBalances();
 
             if (!await _tradingManager.PlaceOrder(order))
             {
@@ -312,35 +309,28 @@ namespace CryptoBot.Managers.Production
                 return false;
             }
 
-            Tuple<bool, IEnumerable<BybitAssetBalance>> result = await IsMarketSignalOrderOnMarket();
+            BybitSpotOrderV3 placedOrder = await _tradingManager.GetOrder(order.Id);
 
-            if (!result.Item1)
+            if (placedOrder == null)
             {
-                _logger.Error($"Failed to fully place market signal order for symbol {marketSignal.Symbol}.");
+                _logger.Error($"Failed to get created market signal order for symbol {marketSignal.Symbol}.");
                 return false;
             }
 
-            SetMarketSignalOrderReference(marketSignal, order.OrderId, order.ClientOrderId);
+            marketSignal.OrderReference = placedOrder;
 
-            SetMarketSignalOrderCloseQuantity(marketSignal, assetBalancesPreOrder, result.Item2);
-
+            _logger.Debug("PLACED ORDER >>> " + placedOrder.ObjectToString());
             return true;
         }
         
         private async Task<bool> RemoveMarketSignalOrder(MarketSignal marketSignal)
         {
-            if (marketSignal == null)
+            if (marketSignal == null || marketSignal.OrderReference == null)
                 return false;
 
-            if (!marketSignal.CloseQuantity.HasValue)
-            {
-                _logger.Error("Failed to remove market signal order. No close order quantity.");
-                return false;
-            }
-
-            BybitOrder order = new BybitOrder();
+            BybitSpotOrderV3 order = new BybitSpotOrderV3();
             order.Symbol = marketSignal.Symbol;
-            order.Quantity = marketSignal.CloseQuantity.Value;
+            order.Quantity = marketSignal.MarketDirection == MarketDirection.Uptrend ? marketSignal.OrderReference.QuantityFilled : marketSignal.OrderReference.QuoteQuantity;
             order.Side = marketSignal.MarketDirection == MarketDirection.Uptrend ? OrderSide.Sell : OrderSide.Buy;
 
             if (!await _tradingManager.PlaceOrder(order))
@@ -349,37 +339,16 @@ namespace CryptoBot.Managers.Production
                 return false;
             }
 
-            Tuple<bool, IEnumerable<BybitAssetBalance>> result = await IsMarketSignalOrderOnMarket();
+            BybitSpotOrderV3 removedOrder = await _tradingManager.GetOrder(order.Id);
 
-            if (!result.Item1)
+            if (removedOrder == null)
             {
-                _logger.Error($"Failed to fully remove market signal order for symbol {marketSignal.Symbol}.");
+                _logger.Error($"Failed to get removed market signal order for symbol {marketSignal.Symbol}.");
                 return false;
             }
 
+            _logger.Debug("REMOVED ORDER >>> " + removedOrder.ObjectToString());
             return true;
-        }
-
-        private async Task<Tuple<bool, IEnumerable<BybitAssetBalance>>> IsMarketSignalOrderOnMarket()
-        {
-            var assetBalancesPostOrder = await _tradingManager.GetAssetBalances();
-
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
-            while (assetBalancesPostOrder.Any(x => x.Locked > 0))
-            {
-                if (sw.ElapsedMilliseconds > MARKETSIGNAL_ORDER_TIMEOUT)
-                {
-                    _logger.Warn("Timeout reached while ensuring if market signal order is on market.");
-
-                    return new Tuple<bool, IEnumerable<BybitAssetBalance>>(false, assetBalancesPostOrder);
-                }
-
-                assetBalancesPostOrder = await _tradingManager.GetAssetBalances();
-            }
-
-            return new Tuple<bool, IEnumerable<BybitAssetBalance>>(true, assetBalancesPostOrder);
         }
 
         private async void HandleLatestMarketSignal(string symbol)
@@ -444,46 +413,6 @@ namespace CryptoBot.Managers.Production
                     }
                 }
             }
-        }
-
-        private void SetMarketSignalOrderCloseQuantity(MarketSignal marketSignal, IEnumerable<BybitAssetBalance> assetBalancesPreOrder, IEnumerable<BybitAssetBalance> assetBalancesPostOrder)
-        {
-            if (marketSignal == null)
-                return;
-
-            if (assetBalancesPreOrder.IsNullOrEmpty() || assetBalancesPostOrder.IsNullOrEmpty())
-                return;
-
-            string quoteAsset = "USDT";
-            string baseAsset = marketSignal.Symbol.Replace(quoteAsset, string.Empty);
-
-            if (marketSignal.MarketDirection == MarketDirection.Uptrend)
-            {
-                var baseAssetFreeBalance1 = assetBalancesPreOrder.First(x => x.Asset == baseAsset).Free ?? 0;
-                var baseAssetFreeBalance2 = assetBalancesPostOrder.First(x => x.Asset == baseAsset).Free ?? 0;
-
-                marketSignal.CloseQuantity = Math.Abs(baseAssetFreeBalance1 - baseAssetFreeBalance2);
-
-                _logger.Debug($"{baseAsset} asset.\nAVAILABLE balance BEFORE: {baseAssetFreeBalance1}.\nAVAILABLE balance AFTER: {baseAssetFreeBalance2}.\nWill close {marketSignal.CloseQuantity} of {baseAsset} asset.");
-            }
-            else if (marketSignal.MarketDirection == MarketDirection.Downtrend)
-            {
-                var quoteAssetFreeBalance1 = assetBalancesPreOrder.First(x => x.Asset == quoteAsset).Free ?? 0;
-                var quoteAssetFreeBalance2 = assetBalancesPostOrder.First(x => x.Asset == quoteAsset).Free ?? 0;
-
-                marketSignal.CloseQuantity = Math.Abs(quoteAssetFreeBalance1 - quoteAssetFreeBalance2);
-
-                _logger.Debug($"{quoteAsset} asset.\nAVAILABLE balance BEFORE: {quoteAssetFreeBalance1}.\nAVAILABLE balance AFTER: {quoteAssetFreeBalance2}.\nWill close {marketSignal.CloseQuantity} of {quoteAsset} asset.");
-            }
-        }
-
-        private void SetMarketSignalOrderReference(MarketSignal marketSignal, string orderId, string clientOrderId = null)
-        {
-            if (marketSignal == null)
-                return;
-
-            marketSignal.OrderId = orderId;
-            marketSignal.ClientOrderId = clientOrderId;
         }
 
 

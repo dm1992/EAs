@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Bybit.Net.Objects.Models.Spot.v3;
+using Bybit.Net.Objects.Models.V5;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,9 +14,9 @@ namespace CryptoBot.Models
         public bool IsCounter { get; set; }
         public decimal EntryPrice { get; set; }
         public decimal ExitPrice { get; set; }
-        public decimal? CloseQuantity { get; set; }
         public MarketDirection MarketDirection { get; set; }
         public MarketInformation MarketInformation { get; set; }
+        public BybitSpotOrderV3 OrderReference { get; set; }
         public decimal ROI
         {
             get
@@ -31,8 +33,6 @@ namespace CryptoBot.Models
                 return 0;
             }
         }
-        public string OrderId { get; set; }
-        public string ClientOrderId { get; set; }
 
         public MarketSignal(string symbol)
         {
@@ -41,12 +41,12 @@ namespace CryptoBot.Models
 
         public string DumpCreated()
         {
-            return $"{this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.EntryPrice}$, CloseQuantity: {this.CloseQuantity}, OrderId: {this.OrderId}, ClientOrderId: {this.ClientOrderId}";
+            return $"{this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.EntryPrice}$";
         }
 
         public string DumpOnRemove()
         {
-            return $"!!! [{(this.ROI > 0 ? "PROFIT" : "LOSS")}] {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.ExitPrice}$ with ROI {this.ROI}$, OrderId: {this.OrderId}, ClientOrderId: {this.ClientOrderId} !!!";
+            return $"!!! [{(this.ROI > 0 ? "PROFIT" : "LOSS")}] {this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.ExitPrice}$ with ROI {this.ROI}$ !!!";
         }
     }
 }
