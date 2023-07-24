@@ -1,5 +1,4 @@
 ﻿using Bybit.Net.Enums;
-using Bybit.Net.Objects.Models;
 using Bybit.Net.Objects.Models.Socket;
 using System;
 using System.Collections.Generic;

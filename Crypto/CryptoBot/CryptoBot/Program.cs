@@ -24,17 +24,6 @@ namespace CryptoBot
 
         private static ManualResetEvent _terminateApplication = new ManualResetEvent(initialState: false);
 
-        private static void ApplicationEventHandler(object sender, ApplicationEventArgs e)
-        {
-            _logger.Debug(e.Dump()); // remove this later!
-
-            // for now only this one is for here
-            if (e.EventType == EventType.TerminateApplication)
-            {
-                _terminateApplication.Set();
-            }
-        }
-
         public static void Main(string[] args)
         {
             try
@@ -77,10 +66,21 @@ namespace CryptoBot
                 }
 
                 ITradingManager tradingManager = new TradingManager(logFactory, config);
-                tradingManager.Initialize();
+                
+                if (!tradingManager.Initialize())
+                {
+                    _logger.Error("Failed to initialize trading manager.");
+                    return;
+                }
 
                 MarketManager marketManager = new MarketManager(logFactory, tradingManager, config);
-                marketManager.Initialize();
+
+                if (!marketManager.Initialize())
+                {
+                    _logger.Error("Failed to initialize market manager.");
+                    return;
+                }
+
                 marketManager.InvokeWebSocketSubscription();
             }
             catch (Exception e)
@@ -99,6 +99,8 @@ namespace CryptoBot
                 config.Symbols = ConfigurationManager.AppSettings["symbols"].ParseCsv<string>();
                 config.BuyQuantity = decimal.Parse(ConfigurationManager.AppSettings["buyQuantity"]);
                 config.SellQuantity = decimal.Parse(ConfigurationManager.AppSettings["sellQuantity"]);
+                config.BuyLeverage = decimal.Parse(ConfigurationManager.AppSettings["buyLeverage"]);
+                config.SellLeverage = decimal.Parse(ConfigurationManager.AppSettings["sellLeverage"]);
                 config.MarketEntityWindowSize = int.Parse(ConfigurationManager.AppSettings["marketEntityWindowSize"]);
                 config.MarketInformationWindowSize = int.Parse(ConfigurationManager.AppSettings["marketInformationWindowSize"]);
 

@@ -1,4 +1,5 @@
-﻿using Bybit.Net.Objects.Models.Spot.v3;
+﻿using Bybit.Net.Objects.Models;
+using Bybit.Net.Objects.Models.Spot.v3;
 using Bybit.Net.Objects.Models.V5;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace CryptoBot.Models
         public decimal ExitPrice { get; set; }
         public MarketDirection MarketDirection { get; set; }
         public MarketInformation MarketInformation { get; set; }
-        public BybitSpotOrderV3 OrderReference { get; set; }
+        public string OrderId { get; set; }
         public decimal ROI
         {
             get

@@ -1,6 +1,4 @@
-﻿using Bybit.Net.Objects.Models.Spot;
-using Bybit.Net.Objects.Models.Spot.v3;
-using Bybit.Net.Objects.Models.V5;
+﻿using Bybit.Net.Objects.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +10,9 @@ namespace CryptoBot.Interfaces.Managers
     public interface ITradingManager : IManager
     {
         Task<bool> TradingServerAvailable();
-        Task<IEnumerable<BybitSpotBalance>> GetBalances();
-        Task<bool> PlaceOrder(BybitSpotOrderV3 order);
-        Task<BybitSpotOrderV3> GetOrder(string orderId);
+        Task<IDictionary<string, BybitBalance>> GetBalances();
+        Task<bool> PlaceOrder(BybitUsdPerpetualOrder order);
+        Task<bool> RemoveOrder(string symbol, string orderId);
+        Task<BybitUsdPerpetualOrder> GetOrder(string symbol, string orderId);
     }
 }

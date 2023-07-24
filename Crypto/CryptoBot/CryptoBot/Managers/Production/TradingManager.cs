@@ -2,9 +2,8 @@
 using Bybit.Net.Clients;
 using Bybit.Net.Clients.V5;
 using Bybit.Net.Enums;
+using Bybit.Net.Objects.Models;
 using Bybit.Net.Objects.Models.Spot;
-using Bybit.Net.Objects.Models.Spot.v3;
-using Bybit.Net.Objects.Models.V5;
 using CryptoBot.Interfaces.Managers;
 using CryptoBot.Models;
 using CryptoExchange.Net.Authentication;
@@ -57,15 +56,18 @@ namespace CryptoBot.Managers.Production
         {
             try
             {
-                if (_isInitialized) return true;
+                if (_isInitialized) 
+                    return true;
+
+                //if (!SetLeverage().Result)
+                //    return false;
 
                 Task.Run(() => { PingTradingServer(); });
                 Task.Run(() => { MonitorBalances(); });
 
                 _logger.Info("Initialized.");
 
-                _isInitialized = true;
-                return true;
+                return _isInitialized = true;
             }
             catch (Exception e)
             {
@@ -80,7 +82,7 @@ namespace CryptoBot.Managers.Production
             {
                 await _tradingServerSemaphore.WaitAsync();
 
-                var response = await _client.V5Api.ExchangeData.GetServerTimeAsync();
+                var response = await _client.UsdPerpetualApi.ExchangeData.GetServerTimeAsync();
 
                 if (!response.Success)
                 {
@@ -96,13 +98,13 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        public async Task<IEnumerable<BybitSpotBalance>> GetBalances()
+        public async Task<IDictionary<string, BybitBalance>> GetBalances()
         {
             try
             {
                 await _balanceSemaphore.WaitAsync();
 
-                var response = await _client.SpotApiV3.Account.GetBalancesAsync();
+                var response = await _client.UsdPerpetualApi.Account.GetBalancesAsync();
 
                 if (!response.Success)
                 {
@@ -118,12 +120,12 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        public async Task<bool> PlaceOrder(BybitSpotOrderV3 order)
+        public async Task<bool> PlaceOrder(BybitUsdPerpetualOrder order)
         {
             if (order == null)
                 return false;
 
-            var response = await _client.SpotApiV3.Trading.PlaceOrderAsync(order.Symbol, order.Side, OrderType.Market, Math.Round(order.Quantity, 8), null, TimeInForce.GoodTillCanceled);
+            var response = await _client.UsdPerpetualApi.Trading.PlaceOrderAsync(order.Symbol, order.Side, OrderType.Market, order.Quantity, TimeInForce.GoodTillCanceled, false, false);
 
             if (!response.Success)
             {
@@ -137,21 +139,59 @@ namespace CryptoBot.Managers.Production
             return true;
         }
 
-        public async Task<BybitSpotOrderV3> GetOrder(string orderId)
+        public async Task<bool> RemoveOrder(string symbol, string orderId)
         {
-            if (String.IsNullOrEmpty(orderId))
-                return null;
+            if (String.IsNullOrEmpty(symbol) || String.IsNullOrEmpty(orderId))
+                return false;
 
-            var response = await _client.SpotApiV3.Trading.GetOrderAsync(Convert.ToInt64(orderId));
+            var response = await _client.UsdPerpetualApi.Trading.CancelOrderAsync(symbol, orderId);
 
             if (!response.Success)
             {
-                _logger.Error($"Failed to get order for order id {orderId}. Error code: {response.Error.Code}. Error message: {response.Error.Message}.");
+                _logger.Error($"Failed to cancel order for symbol {symbol} and order id {orderId}. Error code: {response.Error.Code}. Error message: {response.Error.Message}.");
+                return false;
+            }
+
+            return true;
+        }
+
+        public async Task<BybitUsdPerpetualOrder> GetOrder(string symbol, string orderId)
+        {
+            if (String.IsNullOrEmpty(symbol) || String.IsNullOrEmpty(orderId))
+                return null;
+
+            var response = await _client.UsdPerpetualApi.Trading.GetOpenOrderRealTimeAsync(symbol, orderId);
+
+            if (!response.Success)
+            {
+                _logger.Error($"Failed to get order for symbol {symbol} and order id {orderId}. Error code: {response.Error.Code}. Error message: {response.Error.Message}.");
                 return null;
             }
 
             return response.Data;
         }
+
+
+        #region Settings
+
+        private async Task<bool> SetLeverage()
+        {
+            foreach (var symbol in _config.Symbols)
+            {
+                var response = await _client.UsdPerpetualApi.Account.SetLeverageAsync(symbol, _config.BuyLeverage, _config.SellLeverage);
+
+                if (!response.Success)
+                {
+                    _logger.Error($"Failed to set leverage for symbol {symbol}. Error code: {response.Error.Code}. Error message: {response.Error.Message}.");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        #endregion
+
 
         #region Workers
 
@@ -199,7 +239,7 @@ namespace CryptoBot.Managers.Production
                     {
                         foreach (var balance in balances)
                         {
-                            _logger.Info($"{balance.Asset} balance. Total: {balance.Total}$, Locked: {balance.Locked}$, Available: {balance.Available}$.");
+                            _logger.Info($"{balance.Key} balance. Total: {balance.Value.WalletBalance}$, Available: {balance.Value.AvailableBalance}$.");
                         }
                     }
                   
