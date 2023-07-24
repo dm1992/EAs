@@ -42,9 +42,9 @@ namespace CryptoBot.Managers.Production
             _tradingServerSemaphore = new SemaphoreSlim(1, 1);
             _balanceSemaphore = new SemaphoreSlim(1, 1);
 
-            _client = new BybitRestClient(null, new NLogLoggerFactory(), optionsDelegate => 
+            _client = new BybitRestClient(optionsDelegate => 
                                           {
-                                              optionsDelegate.Environment = BybitEnvironment.Testnet; 
+                                              optionsDelegate.Environment = BybitEnvironment.Live; 
                                               optionsDelegate.AutoTimestamp = true; 
                                           });
 
@@ -152,6 +152,7 @@ namespace CryptoBot.Managers.Production
 
             return response.Data;
         }
+
 
         #region Workers
 

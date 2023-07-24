@@ -67,7 +67,7 @@ namespace CryptoBot.Managers.Production
             {
                 optionsDelegate.AutoReconnect = true;
                 optionsDelegate.Environment = BybitEnvironment.Live;
-            }, new NLogLoggerFactory());
+            });
 
             _isInitialized = false;
             _orderbookBuffer = new Dictionary<string, BybitOrderbook>();
