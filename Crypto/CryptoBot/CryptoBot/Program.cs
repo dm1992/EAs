@@ -69,18 +69,19 @@ namespace CryptoBot
             try
             {
                 Config config = ParseConfiguration();
+
                 if (config == null)
                 {
                     _logger.Error("Failed to setup managers.");
                     return;
                 }
 
-                IMarketManager marketManager = new MarketManager(logFactory, config);
-                //marketManager.ApplicationEvent += ApplicationEventHandler;
-                marketManager.Initialize();
-                marketManager.InvokeWebSocketEventSubscription();
+                ITradingManager tradingManager = new TradingManager(logFactory, config);
+                tradingManager.Initialize();
 
-                //xxx add other managers here
+                MarketManager marketManager = new MarketManager(logFactory, tradingManager, config);
+                marketManager.Initialize();
+                marketManager.InvokeWebSocketSubscription();
             }
             catch (Exception e)
             {
@@ -96,6 +97,8 @@ namespace CryptoBot
                 config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
                 config.ApiSecret = ConfigurationManager.AppSettings["apiSecret"];
                 config.Symbols = ConfigurationManager.AppSettings["symbols"].ParseCsv<string>();
+                config.BuyQuantity = decimal.Parse(ConfigurationManager.AppSettings["buyQuantity"]);
+                config.SellQuantity = decimal.Parse(ConfigurationManager.AppSettings["sellQuantity"]);
                 config.MarketEntityWindowSize = int.Parse(ConfigurationManager.AppSettings["marketEntityWindowSize"]);
                 config.MarketInformationWindowSize = int.Parse(ConfigurationManager.AppSettings["marketInformationWindowSize"]);
 

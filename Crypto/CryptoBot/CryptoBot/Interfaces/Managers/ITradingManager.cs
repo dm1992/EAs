@@ -1,19 +1,19 @@
-﻿using CryptoBot.Models;
-using CryptoBot.Interfaces.Events;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using Bybit.Net.Objects.Models.Spot;
+using Bybit.Net.Objects.Models.Spot.v3;
 using Bybit.Net.Objects.Models.V5;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace CryptoBot.Interfaces.Managers
 {
-    public interface ITradingManager : IManager, IApplicationEvent
+    public interface ITradingManager : IManager
     {
         Task<bool> TradingServerAvailable();
-        Task<IEnumerable<BybitBalance>> GetBalances();
-        Task<IEnumerable<string>> GetAvailableSymbols();
-        Task<decimal?> GetPrice(string symbol);
-        //Task<Order> GetOrder(string clientOrderId);
-        //Task<bool> CancelOrder(string symbol, string clientOrderId);
-        //Task<bool> PlaceOrder(Order order);
+        Task<IEnumerable<BybitSpotBalance>> GetBalances();
+        Task<bool> PlaceOrder(BybitSpotOrderV3 order);
+        Task<BybitSpotOrderV3> GetOrder(string orderId);
     }
 }

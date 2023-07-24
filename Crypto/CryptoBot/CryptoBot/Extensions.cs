@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace CryptoBot
 {
@@ -30,6 +31,18 @@ namespace CryptoBot
         public static string DictionaryToString<TKey, TValue>(this IDictionary<TKey, TValue> dictionary)
         {
             return "{" + string.Join(",", dictionary.Select(kv => kv.Key + "=" + kv.Value).ToArray()) + "}";
+        }
+
+        public static string ObjectToString(this object o)
+        {
+            string result = String.Empty;
+
+            foreach (PropertyInfo prop in o.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+            {
+                result += $"{prop.Name} : {prop.GetValue(o, new object[] { })}\n";
+            }
+
+            return result;
         }
     }
 }
