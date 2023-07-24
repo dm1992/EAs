@@ -2171,7 +2171,7 @@
         <member name="T:Bybit.Net.Clients.V5.BybitRestClientApiTrading">
             <inheritdoc />
         </member>
-        <member name="M:Bybit.Net.Clients.V5.BybitRestClientApiTrading.PlaceOrderAsync(Bybit.Net.Enums.Category,System.String,Bybit.Net.Enums.OrderSide,Bybit.Net.Enums.NewOrderType,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Boolean},System.Nullable{Bybit.Net.Enums.TriggerDirection},System.Nullable{Bybit.Net.Enums.OrderFilter},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TimeInForce},System.Nullable{Bybit.Net.Enums.V5.PositionIdx},System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Threading.CancellationToken)">
+        <member name="M:Bybit.Net.Clients.V5.BybitRestClientApiTrading.PlaceOrderAsync(Bybit.Net.Enums.Category,System.String,Bybit.Net.Enums.OrderSide,Bybit.Net.Enums.NewOrderType,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Boolean},System.Nullable{Bybit.Net.Enums.TriggerDirection},System.Nullable{Bybit.Net.Enums.OrderFilter},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TimeInForce},System.Nullable{Bybit.Net.Enums.V5.PositionIdx},System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{Bybit.Net.Enums.StopLossTakeProfitMode},System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
         <member name="M:Bybit.Net.Clients.V5.BybitRestClientApiTrading.EditOrderAsync(Bybit.Net.Enums.Category,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{Bybit.Net.Enums.TriggerType},System.Threading.CancellationToken)">
@@ -9432,7 +9432,7 @@
             <param name="ct">Cancellation token</param>
             <returns></returns>
         </member>
-        <member name="M:Bybit.Net.Interfaces.Clients.V5.IBybitRestClientApiTrading.PlaceOrderAsync(Bybit.Net.Enums.Category,System.String,Bybit.Net.Enums.OrderSide,Bybit.Net.Enums.NewOrderType,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Boolean},System.Nullable{Bybit.Net.Enums.TriggerDirection},System.Nullable{Bybit.Net.Enums.OrderFilter},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TimeInForce},System.Nullable{Bybit.Net.Enums.V5.PositionIdx},System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Threading.CancellationToken)">
+        <member name="M:Bybit.Net.Interfaces.Clients.V5.IBybitRestClientApiTrading.PlaceOrderAsync(Bybit.Net.Enums.Category,System.String,Bybit.Net.Enums.OrderSide,Bybit.Net.Enums.NewOrderType,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Boolean},System.Nullable{Bybit.Net.Enums.TriggerDirection},System.Nullable{Bybit.Net.Enums.OrderFilter},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TimeInForce},System.Nullable{Bybit.Net.Enums.V5.PositionIdx},System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{Bybit.Net.Enums.TriggerType},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{Bybit.Net.Enums.StopLossTakeProfitMode},System.Threading.CancellationToken)">
             <summary>
             Place an order
             <para><a href="https://bybit-exchange.github.io/docs/v5/order/create-order" /></para>
@@ -9459,6 +9459,7 @@
             <param name="reduceOnly">Is reduce only</param>
             <param name="closeOnTrigger">Close on trigger</param>
             <param name="marketMakerProtection">Market maker protection</param>
+            <param name="stopLossTakeProfitMode">StopLoss / TakeProfit mode</param>
             <param name="ct">Cancellation token</param>
             <returns></returns>
         </member>
@@ -20469,7 +20470,7 @@
             Symbol status
             </summary>
         </member>
-        <member name="P:Bybit.Net.Objects.Models.V5.BybitSpotSymbol.MarginTading">
+        <member name="P:Bybit.Net.Objects.Models.V5.BybitSpotSymbol.MarginTrading">
             <summary>
             Marging trade status
             </summary>

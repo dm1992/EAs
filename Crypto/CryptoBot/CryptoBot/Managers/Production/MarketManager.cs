@@ -65,8 +65,8 @@ namespace CryptoBot.Managers.Production
 
             _webSocket = new BybitSocketClient(optionsDelegate =>
             {
-                optionsDelegate.AutoReconnect = true;
                 optionsDelegate.Environment = BybitEnvironment.Live;
+                optionsDelegate.AutoReconnect = true;
             });
 
             _isInitialized = false;

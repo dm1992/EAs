@@ -43,10 +43,10 @@ namespace CryptoBot.Managers.Production
             _balanceSemaphore = new SemaphoreSlim(1, 1);
 
             _client = new BybitRestClient(optionsDelegate => 
-                                          {
-                                              optionsDelegate.Environment = BybitEnvironment.Live; 
-                                              optionsDelegate.AutoTimestamp = true; 
-                                          });
+            {
+                optionsDelegate.Environment = BybitEnvironment.Testnet; 
+                optionsDelegate.AutoTimestamp = true; 
+            });
 
             _client.SetApiCredentials(new ApiCredentials(_config.ApiKey, _config.ApiSecret));
 

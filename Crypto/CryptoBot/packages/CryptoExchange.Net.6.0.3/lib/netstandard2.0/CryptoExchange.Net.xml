@@ -2241,12 +2241,13 @@
             <param name="requestId"></param>
             <returns></returns>
         </member>
-        <member name="M:CryptoExchange.Net.Interfaces.IRequestFactory.Configure(System.TimeSpan,System.Net.Http.HttpClient)">
+        <member name="M:CryptoExchange.Net.Interfaces.IRequestFactory.Configure(CryptoExchange.Net.Objects.ApiProxy,System.TimeSpan,System.Net.Http.HttpClient)">
             <summary>
             Configure the requests created by this factory
             </summary>
             <param name="requestTimeout">Request timeout to use</param>
             <param name="httpClient">Optional shared http client instance</param>
+            <param name="proxy">Optional proxy to use when no http client is provided</param>
         </member>
         <member name="T:CryptoExchange.Net.Interfaces.IResponse">
             <summary>
@@ -4153,7 +4154,7 @@
             Request factory
             </summary>
         </member>
-        <member name="M:CryptoExchange.Net.Requests.RequestFactory.Configure(System.TimeSpan,System.Net.Http.HttpClient)">
+        <member name="M:CryptoExchange.Net.Requests.RequestFactory.Configure(CryptoExchange.Net.Objects.ApiProxy,System.TimeSpan,System.Net.Http.HttpClient)">
             <inheritdoc />
         </member>
         <member name="M:CryptoExchange.Net.Requests.RequestFactory.Create(System.Net.Http.HttpMethod,System.Uri,System.Int32)">
