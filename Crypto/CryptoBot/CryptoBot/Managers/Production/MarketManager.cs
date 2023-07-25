@@ -35,12 +35,8 @@ namespace CryptoBot.Managers.Production
         private readonly SemaphoreSlim _orderbookUpdateSemaphore;
         private readonly BybitSocketClient _webSocket;
 
-        private decimal _totalROI = 0;
-        private decimal _maxROI = decimal.MinValue;
-        private decimal _minROI = decimal.MaxValue;
-
-        private NLog.ILogger _logger;
-        private NLog.ILogger _verboseLogger;
+        private ILogger _logger;
+        private ILogger _verboseLogger;
         private bool _isInitialized;
         private Dictionary<string, List<BybitTrade>> _marketTradeBuffer;
         private Dictionary<string, BybitOrderbook> _orderbookBuffer;
@@ -50,6 +46,7 @@ namespace CryptoBot.Managers.Production
         private Dictionary<string, MarketSignal> _marketSignalBuffer;
         private Dictionary<string, List<MarketEntity>> _marketEntityCollection;
         private Dictionary<string, List<MarketInformation>> _marketInformationCollection;
+        private MarketSignalStats _marketSignalStats;
 
         public MarketManager(LogFactory logFactory, ITradingManager tradingManager, Config config)
         {
@@ -78,6 +75,7 @@ namespace CryptoBot.Managers.Production
             _marketSignalBuffer = new Dictionary<string, MarketSignal>();
             _marketEntityCollection = new Dictionary<string, List<MarketEntity>>();
             _marketInformationCollection = new Dictionary<string, List<MarketInformation>>();
+            _marketSignalStats = new MarketSignalStats();
         }
 
         public bool Initialize()
@@ -248,7 +246,7 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private async Task EvaluateMarketInformations(string symbol)
+        private void EvaluateMarketInformations(string symbol)
         {
             try
             {
@@ -264,10 +262,10 @@ namespace CryptoBot.Managers.Production
                     if (latestMarketSignal.MarketDirection == marketDirection)
                         return;
 
-                    await RemoveMarketSignal(symbol);
+                    RemoveMarketSignal(symbol);
                 }
 
-                MarketSignal marketSignal = await CreateMarketSignal(symbol, marketDirection);
+                MarketSignal marketSignal = CreateMarketSignal(symbol, marketDirection);
 
                 if (marketSignal != null)
                 {
@@ -287,7 +285,14 @@ namespace CryptoBot.Managers.Production
             if (!IsMarketInformationWindowReady(symbol))
                 return MarketDirection.Unknown;
 
-            return GetLatestMarketInformation(symbol)?.GetMarketDirection() ?? MarketDirection.Unknown;
+            MarketInformation latestMarketInformation = GetLatestMarketInformation(symbol);
+
+            if (latestMarketInformation == null)
+                return MarketDirection.Unknown;
+
+            _verboseLogger.Debug("LATEST >>> " + latestMarketInformation.Dump());
+
+            return latestMarketInformation.GetMarketDirection();
         }
 
         private async Task<bool> CreateMarketSignalOrder(MarketSignal marketSignal)
@@ -322,7 +327,7 @@ namespace CryptoBot.Managers.Production
             _logger.Debug("PLACED ORDER >>> " + placedOrder.ObjectToString());
             return true;
         }
-        
+
         private async Task<bool> RemoveMarketSignalOrder(MarketSignal marketSignal)
         {
             if (marketSignal == null || marketSignal.OrderReference == null)
@@ -351,7 +356,7 @@ namespace CryptoBot.Managers.Production
             return true;
         }
 
-        private async void HandleLatestMarketSignal(string symbol)
+        private void HandleLatestMarketSignal(string symbol)
         {
             MarketSignal latestMarketSignal = GetLatestMarketSignal(symbol);
 
@@ -409,7 +414,7 @@ namespace CryptoBot.Managers.Production
 
                     if (removeMarketSignal)
                     {
-                        await RemoveMarketSignal(symbol);
+                        RemoveMarketSignal(symbol);
                     }
                 }
             }
@@ -444,7 +449,7 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private async void HandleMarketInformationsInThread()
+        private void HandleMarketInformationsInThread()
         {
             _logger.Debug("HandleMarketInformationsInThread started.");
 
@@ -456,7 +461,7 @@ namespace CryptoBot.Managers.Production
                     {
                         if (IsNewMarketInformationAvailable(symbol))
                         {
-                            await EvaluateMarketInformations(symbol);
+                            EvaluateMarketInformations(symbol);
                         }
                     }
                 }
@@ -484,7 +489,7 @@ namespace CryptoBot.Managers.Production
                             _verboseLogger.Debug(marketSignal.DumpCreated());
                         }
 
-                        _verboseLogger.Debug($">>> TOTAL_ROI: {_totalROI}$, MIN_ROI: {_minROI}$, MAX_ROI: {_maxROI}$.");
+                        _verboseLogger.Debug(_marketSignalStats.Dump());
 
                         Task.Delay(MARKETSIGNAL_MONITOR_DELAY).Wait();
                     }
@@ -495,7 +500,7 @@ namespace CryptoBot.Managers.Production
                 _logger.Error($"Failed MonitorMarketSignalsInThread. {e}");
             }
         }
-        
+
         private void MonitorWebSocketSubscriptionStates()
         {
             _logger.Debug("MonitorWebSocketSubscriptionStates started.");
@@ -616,10 +621,11 @@ namespace CryptoBot.Managers.Production
             marketInformation.Price = new Price(symbol);
             marketInformation.Price.MarketEntityWindow = marketEntityWindow;
 
+            _verboseLogger.Debug("CREATED >>> " + marketInformation.Dump());
             return true;
         }
 
-        private async Task<MarketSignal> CreateMarketSignal(string symbol, MarketDirection marketDirection)
+        private MarketSignal CreateMarketSignal(string symbol, MarketDirection marketDirection)
         {
             if (marketDirection == MarketDirection.Unknown)
                 return null;
@@ -629,8 +635,8 @@ namespace CryptoBot.Managers.Production
             marketSignal.EntryPrice = GetLatestTicker(symbol)?.LastPrice ?? decimal.MinValue;
             marketSignal.MarketInformation = GetLatestMarketInformation(symbol);
 
-            if (!await CreateMarketSignalOrder(marketSignal))
-                return null;
+            //if (!await CreateMarketSignalOrder(marketSignal))
+            //    return null;
 
             return marketSignal;
         }
@@ -774,7 +780,7 @@ namespace CryptoBot.Managers.Production
 
         private void UpdateOrderbook(BybitOrderbook orderbook)
         {
-            if (orderbook == null) 
+            if (orderbook == null)
                 return;
 
             lock (_orderbookBuffer)
@@ -825,7 +831,7 @@ namespace CryptoBot.Managers.Production
 
         private void UpdateMarketEntity(MarketEntity marketEntity)
         {
-            if (marketEntity == null) 
+            if (marketEntity == null)
                 return;
 
             lock (_marketEntityCollection)
@@ -863,7 +869,7 @@ namespace CryptoBot.Managers.Production
 
         private void UpdateMarketInformation(MarketInformation marketInformation)
         {
-            if (marketInformation == null) 
+            if (marketInformation == null)
                 return;
 
             lock (_marketInformationCollection)
@@ -937,11 +943,11 @@ namespace CryptoBot.Managers.Production
             }
         }
 
-        private async Task RemoveMarketSignal(string symbol)
+        private void RemoveMarketSignal(string symbol)
         {
             MarketSignal marketSignal;
 
-            lock(_marketSignalBuffer)
+            lock (_marketSignalBuffer)
             {
                 if (_marketSignalBuffer.TryGetValue(symbol, out marketSignal))
                 {
@@ -949,24 +955,37 @@ namespace CryptoBot.Managers.Production
 
                     _verboseLogger.Debug(marketSignal.DumpOnRemove());
 
-                    //xxx delete
-                    _totalROI += marketSignal.ROI;
-
-                    if (marketSignal.ROI > _maxROI)
-                    {
-                        _maxROI = marketSignal.ROI;
-                    }
-                    
-                    if (marketSignal.ROI < _minROI)
-                    {
-                        _minROI = marketSignal.ROI;
-                    }
-
+                    HandleMarketSignalStats(marketSignal.ROI);
+                   
                     _marketSignalBuffer.Remove(symbol);
                 }
             }
 
-            await RemoveMarketSignalOrder(marketSignal);
+            //await RemoveMarketSignalOrder(marketSignal);
+        }
+
+        private void HandleMarketSignalStats(decimal marketSignalROI)
+        {
+            if (_marketSignalStats == null)
+                return;
+
+            _marketSignalStats.TotalROI += marketSignalROI;
+            _marketSignalStats.TotalMarketSignals++;
+
+            if (marketSignalROI > 0)
+            {
+                _marketSignalStats.TotalProfitROI += marketSignalROI;
+                _marketSignalStats.ProfitMarketSignals++;
+            }
+            else if (marketSignalROI < 0)
+            {
+                _marketSignalStats.TotalLossROI += marketSignalROI;
+                _marketSignalStats.LossMarketSignals++;
+            }
+            else
+            {
+                _marketSignalStats.NeutralMarketSignals++;
+            }
         }
 
         #endregion

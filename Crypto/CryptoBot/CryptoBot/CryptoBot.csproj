@@ -191,6 +191,7 @@
     <Compile Include="Interfaces\Events\IApplicationEvent.cs" />
     <Compile Include="Interfaces\Managers\IMarketManager.cs" />
     <Compile Include="Models\MarketSignal.cs" />
+    <Compile Include="Models\MarketSignalStats.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

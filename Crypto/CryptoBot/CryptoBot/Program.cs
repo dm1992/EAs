@@ -76,10 +76,10 @@ namespace CryptoBot
                     return;
                 }
 
-                ITradingManager tradingManager = new TradingManager(logFactory, config);
-                tradingManager.Initialize();
+                //ITradingManager tradingManager = new TradingManager(logFactory, config);
+                //tradingManager.Initialize();
 
-                MarketManager marketManager = new MarketManager(logFactory, tradingManager, config);
+                MarketManager marketManager = new MarketManager(logFactory, null, config);
                 marketManager.Initialize();
                 marketManager.InvokeWebSocketSubscription();
             }
