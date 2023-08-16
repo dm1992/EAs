@@ -1,5 +1,7 @@
 ﻿using Bybit.Net.Enums;
+using Bybit.Net.Objects.Models.Derivatives;
 using Bybit.Net.Objects.Models.Socket;
+using Bybit.Net.Objects.Models.Socket.Derivatives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,98 +10,58 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Models
 {
-    /// <summary>
-    /// Base market entity model.
-    /// </summary>
     public class MarketEntity
     {
         public string Id { get; private set; }
         public string Symbol { get; set; }
-        public decimal Price { get; set; }
         public DateTime CreatedAt { get; set; }
-        public IEnumerable<BybitTradeUpdate> ActiveTrades { get; set; }
-        public Orderbook Orderbook { get; set; }
+        public decimal Price { get; set; }
+        public List<BybitDerivativesTradeUpdate> MarketTrades { get; set; }
+        public BybitDerivativesOrderBookEntry Orderbook { get; set; }
 
         public MarketEntity(string symbol)
         {
-            this.Symbol = symbol;
             this.Id = Guid.NewGuid().ToString();
+            this.Symbol = symbol;
             this.CreatedAt = DateTime.Now;
-        }
-
-        public VolumeDirection GetVolumeDirection()
-        {
-            decimal activeBuyVolume = GetActiveBuyVolume();
-            decimal activeSellVolume = GetActiveSellVolume();
-            decimal passiveBuyVolume = GetPassiveBuyVolume();
-            decimal passiveSellVolume = GetPassiveSellVolume();
-
-            if (activeBuyVolume > activeSellVolume)
-            {
-                if (activeBuyVolume + passiveBuyVolume > passiveSellVolume)
-                {
-                    return VolumeDirection.Buy;
-                }
-            }
-            else if (activeSellVolume > activeBuyVolume)
-            {
-                if (activeSellVolume + passiveSellVolume > passiveBuyVolume)
-                {
-                    return VolumeDirection.Sell;
-                }
-            }
-
-            return VolumeDirection.Unknown;
         }
 
         public decimal GetActiveBuyVolume()
         {
-            lock (this)
-            {
-                if (this.ActiveTrades.IsNullOrEmpty())
-                    return 0;
+            if (this.MarketTrades.IsNullOrEmpty())
+                return 0;
 
-                return this.ActiveTrades.Where(x => x.Side == OrderSide.Buy).Sum(x => x.Quantity);
-            }
+            return this.MarketTrades.Where(x => x.Side == OrderSide.Buy).Sum(x => x.Quantity);
+        }
+
+        public decimal GetPassiveBuyVolume(int orderbookLevel)
+        {
+            if (this.Orderbook == null || this.Orderbook.Bids.IsNullOrEmpty())
+                return 0;
+
+            if (orderbookLevel >= this.Orderbook.Bids.Count())
+                return 0;
+
+            return this.Orderbook.Bids.ElementAt(orderbookLevel).Quantity;
         }
 
         public decimal GetActiveSellVolume()
         {
-            lock (this)
-            {
-                if (this.ActiveTrades.IsNullOrEmpty())
-                    return 0;
+            if (this.MarketTrades.IsNullOrEmpty())
+                return 0;
 
-                return this.ActiveTrades.Where(x => x.Side == OrderSide.Sell).Sum(x => x.Quantity);
-            }
+            return this.MarketTrades.Where(x => x.Side == OrderSide.Sell).Sum(x => x.Quantity);
         }
 
-        public decimal GetPassiveBuyVolume(int orderbookDepth = 50)
+        public decimal GetPassiveSellVolume(int orderbookLevel)
         {
-            lock (this)
-            {
-                if (this.Orderbook == null)
-                    return 0;
+            if (this.Orderbook == null || this.Orderbook.Asks.IsNullOrEmpty())
+                return 0;
 
-                if (orderbookDepth > this.Orderbook.Bids.Count())
-                    return this.Orderbook.Bids.Sum(x => x.Quantity);
+            if (orderbookLevel >= this.Orderbook.Asks.Count())
+                return 0;
 
-                return this.Orderbook.Bids.Take(orderbookDepth).Sum(x => x.Quantity);
-            }
-        }
-
-        public decimal GetPassiveSellVolume(int orderbookDepth = 50)
-        {
-            lock (this)
-            {
-                if (this.Orderbook == null)
-                    return 0;
-
-                if (orderbookDepth > this.Orderbook.Asks.Count())
-                    return this.Orderbook.Asks.Sum(x => x.Quantity);
-
-                return this.Orderbook.Asks.Take(orderbookDepth).Sum(x => x.Quantity);
-            }
+            return this.Orderbook.Asks.ElementAt(orderbookLevel).Quantity;
         }
     }
 }

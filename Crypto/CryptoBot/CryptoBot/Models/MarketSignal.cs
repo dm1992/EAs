@@ -13,22 +13,52 @@ namespace CryptoBot.Models
     {
         public string Symbol { get; set; }
         public bool IsCounter { get; set; }
-        public decimal EntryPrice { get; set; }
-        public decimal ExitPrice { get; set; }
         public MarketDirection MarketDirection { get; set; }
-        public MarketInformation MarketInformation { get; set; }
-        public string OrderId { get; set; }
+        public decimal ExitPrice { get; set; }
+        public decimal EntryPrice { get; set; }
+        public decimal TakeProfit
+        {
+            get
+            {
+                if (this.MarketDirection == MarketDirection.Uptrend)
+                {
+                    return this.EntryPrice + 32.5m;
+                }
+                else if (this.MarketDirection == MarketDirection.Downtrend)
+                {
+                    return this.EntryPrice - 32.5m;
+                }
+
+                return 0;
+            }
+        }
+        public decimal StopLoss
+        {
+            get
+            {
+                if (this.MarketDirection == MarketDirection.Uptrend)
+                {
+                    return this.EntryPrice - 32.5m;
+                }
+                else if (this.MarketDirection == MarketDirection.Downtrend)
+                {
+                    return this.EntryPrice + 32.5m;
+                }
+
+                return 0;
+            }
+        }
         public decimal ROI
         {
             get
             {
                 if (this.MarketDirection == MarketDirection.Uptrend)
                 {
-                    return this.ExitPrice - this.EntryPrice;
+                    return this.ExitPrice - this.EntryPrice - 22.5m; //fee
                 }
                 else if (this.MarketDirection == MarketDirection.Downtrend)
                 {
-                    return this.EntryPrice - this.ExitPrice;
+                    return this.EntryPrice - this.ExitPrice - 22.5m; // fee
                 }
 
                 return 0;
@@ -42,7 +72,7 @@ namespace CryptoBot.Models
 
         public string DumpCreated()
         {
-            return $"{this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.EntryPrice}$";
+            return $"{this.Symbol} MARKET SIGNAL {(this.MarketDirection == MarketDirection.Uptrend ? "BUY" : "SELL")} @ {this.EntryPrice}$, TP = {this.TakeProfit}$, SL = {this.StopLoss}$.";
         }
 
         public string DumpOnRemove()
@@ -51,3 +81,4 @@ namespace CryptoBot.Models
         }
     }
 }
+

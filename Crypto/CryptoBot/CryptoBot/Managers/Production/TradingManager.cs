@@ -174,21 +174,21 @@ namespace CryptoBot.Managers.Production
 
         #region Settings
 
-        private async Task<bool> SetLeverage()
-        {
-            foreach (var symbol in _config.Symbols)
-            {
-                var response = await _client.UsdPerpetualApi.Account.SetLeverageAsync(symbol, _config.BuyLeverage, _config.SellLeverage);
+        //private async Task<bool> SetLeverage()
+        //{
+        //    foreach (var symbol in _config.Symbols)
+        //    {
+        //        var response = await _client.UsdPerpetualApi.Account.SetLeverageAsync(symbol, _config.BuyLeverage, _config.SellLeverage);
 
-                if (!response.Success)
-                {
-                    _logger.Error($"Failed to set leverage for symbol {symbol}. Error code: {response.Error.Code}. Error message: {response.Error.Message}.");
-                    return false;
-                }
-            }
+        //        if (!response.Success)
+        //        {
+        //            _logger.Error($"Failed to set leverage for symbol {symbol}. Error code: {response.Error.Code}. Error message: {response.Error.Message}.");
+        //            return false;
+        //        }
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
         #endregion
 

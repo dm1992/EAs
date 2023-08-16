@@ -65,15 +65,7 @@ namespace CryptoBot
                     return;
                 }
 
-                ITradingManager tradingManager = new TradingManager(logFactory, config);
-                
-                if (!tradingManager.Initialize())
-                {
-                    _logger.Error("Failed to initialize trading manager.");
-                    return;
-                }
-
-                MarketManager marketManager = new MarketManager(logFactory, tradingManager, config);
+                MarketManager marketManager = new MarketManager(logFactory, config);
 
                 if (!marketManager.Initialize())
                 {
@@ -97,12 +89,8 @@ namespace CryptoBot
                 config.ApiKey = ConfigurationManager.AppSettings["apiKey"];
                 config.ApiSecret = ConfigurationManager.AppSettings["apiSecret"];
                 config.Symbols = ConfigurationManager.AppSettings["symbols"].ParseCsv<string>();
-                config.BuyQuantity = decimal.Parse(ConfigurationManager.AppSettings["buyQuantity"]);
-                config.SellQuantity = decimal.Parse(ConfigurationManager.AppSettings["sellQuantity"]);
-                config.BuyLeverage = decimal.Parse(ConfigurationManager.AppSettings["buyLeverage"]);
-                config.SellLeverage = decimal.Parse(ConfigurationManager.AppSettings["sellLeverage"]);
-                config.MarketEntityWindowSize = int.Parse(ConfigurationManager.AppSettings["marketEntityWindowSize"]);
-                config.MarketInformationWindowSize = int.Parse(ConfigurationManager.AppSettings["marketInformationWindowSize"]);
+                config.MarketEvaluationWindowSize = int.Parse(ConfigurationManager.AppSettings["marketEvaluationWindowSize"]);
+                config.MarketConfirmationWindowSize = int.Parse(ConfigurationManager.AppSettings["marketConfirmationWindowSize"]);
 
                 return config;
             }

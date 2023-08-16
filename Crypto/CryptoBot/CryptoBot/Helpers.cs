@@ -1,4 +1,5 @@
 ﻿using Bybit.Net.Objects.Models;
+using Bybit.Net.Objects.Models.Derivatives;
 using Bybit.Net.Objects.Models.V5;
 using CryptoBot.Models;
 using System;
@@ -10,83 +11,58 @@ namespace CryptoBot
 {
     public static class Helpers
     {
-        public static string OrderbookToString(IEnumerable<BybitOrderBookEntry> orderbook, int depth = 10)
+        public static MarketDirection GetOrderbookMarketDirection(List<decimal> passiveBuyVolumes, List<decimal> passiveSellVolumes)
         {
-            if (orderbook.IsNullOrEmpty())
-                return String.Empty;
+            if (passiveBuyVolumes.IsNullOrEmpty() || passiveSellVolumes.IsNullOrEmpty())
+                return MarketDirection.Unknown;
 
-            return "{" + string.Join(", ", orderbook.Take(depth).Select(x => x.Quantity).ToArray()) + "}";
-        }
+            int orderbookDepth = passiveBuyVolumes.Count();
 
-        public static VolumeDirection GetMarketEntityWindowVolumeDirection(IEnumerable<MarketEntity> marketEntityWindow, decimal buyVolumesPercentageLimit = 60, decimal sellVolumesPercentageLimit = 60)
-        {
-            if (marketEntityWindow.IsNullOrEmpty())
+            if (passiveBuyVolumes.Count() < passiveSellVolumes.Count())
             {
-                return VolumeDirection.Unknown;
+                orderbookDepth = passiveBuyVolumes.Count();
+            }
+            else if (passiveBuyVolumes.Count() > passiveSellVolumes.Count())
+            {
+                orderbookDepth = passiveSellVolumes.Count();
             }
 
-            int buyVolumes = 0;
-            int sellVolumes = 0;
-            int unknownVolumes = 0;
+            int buys = 0;
+            int sells = 0;
+            int unknowns = 0;
 
-            foreach (var marketEntity in marketEntityWindow)
+            for (int i = 0; i < orderbookDepth; i++)
             {
-                VolumeDirection volumeDirection = marketEntity.GetVolumeDirection();
+                decimal passiveBuyVolume = passiveBuyVolumes.ElementAt(i);
+                decimal passiveSellVolume = passiveSellVolumes.ElementAt(i);
 
-                switch (volumeDirection)
+                if (passiveBuyVolume > passiveSellVolume)
                 {
-                    case VolumeDirection.Buy:
-                        buyVolumes++;
-                        break;
-
-                    case VolumeDirection.Sell:
-                        sellVolumes++;
-                        break;
-
-                    default:
-                        unknownVolumes++;
-                        break;
+                    buys++;
+                }
+                else if (passiveBuyVolume < passiveSellVolume)
+                {
+                    sells++;
+                }
+                else
+                {
+                    unknowns++;
                 }
             }
 
-            decimal buyVolumesPercentage = (buyVolumes / (decimal)(buyVolumes + sellVolumes + unknownVolumes)) * 100.0m;
-            decimal sellVolumesPercentage = (sellVolumes / (decimal)(buyVolumes + sellVolumes + unknownVolumes)) * 100.0m;
+            decimal buysPercentage = (buys / (decimal)(buys + sells + unknowns)) * 100.0m;
+            decimal sellsPercentage = (sells / (decimal)(buys + sells + unknowns)) * 100.0m;
 
-            if (buyVolumesPercentage > buyVolumesPercentageLimit)
+            if (buysPercentage > 50)
             {
-                return VolumeDirection.Buy;
+                return MarketDirection.Uptrend;
             }
-            else if (sellVolumesPercentage > sellVolumesPercentageLimit)
+            else if (sellsPercentage > 50)
             {
-                return VolumeDirection.Sell;
-            }
-
-            return VolumeDirection.Unknown;
-        }
-
-        public static PriceDirection GetMarketEntityWindowPriceDirection(IEnumerable<MarketEntity> marketEntityWindow, decimal priceUpPercentageLimit = 0, decimal priceDownPercentageLimit = 0)
-        {
-            if (marketEntityWindow.IsNullOrEmpty())
-            {
-                return PriceDirection.Unknown;
+                return MarketDirection.Downtrend;
             }
 
-            List<MarketEntity> orderedMarketEntityWindow = marketEntityWindow.OrderBy(x => x.CreatedAt).ToList();
-            decimal firstMarketEntityPrice = orderedMarketEntityWindow.First().Price;
-            decimal lastMarketEntityPrice = orderedMarketEntityWindow.Last().Price;
-
-            decimal priceChangePercentage = ((lastMarketEntityPrice - firstMarketEntityPrice) / Math.Abs(firstMarketEntityPrice)) * 100.0m;
-
-            if (priceChangePercentage > priceUpPercentageLimit)
-            {
-                return PriceDirection.Up;
-            }
-            else if (priceChangePercentage < priceDownPercentageLimit)
-            {
-                return PriceDirection.Down;
-            }
-
-            return PriceDirection.Unknown;
+            return MarketDirection.Unknown;
         }
     }
 }

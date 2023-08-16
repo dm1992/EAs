@@ -1,4 +1,5 @@
 ﻿using Bybit.Net.Objects.Models;
+using Bybit.Net.Objects.Models.Derivatives;
 using Bybit.Net.Objects.Models.V5;
 using System;
 using System.Collections.Generic;
@@ -105,7 +106,7 @@ namespace CryptoBot.Models
     public class Volume
     {
         public string Symbol { get; set; }
-        public Orderbook Orderbook { get; set; }
+        public BybitDerivativesOrderBookEntry Orderbook { get; set; }
         public List<MarketEntity> MarketEntityWindow { get; set; }
 
         public Volume(string symbol)

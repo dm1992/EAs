@@ -33,6 +33,14 @@ namespace CryptoBot
             return "{" + string.Join(",", dictionary.Select(kv => kv.Key + "=" + kv.Value).ToArray()) + "}";
         }
 
+        public static string ListToString<T>(this IList<T> list)
+        {
+            if (list.IsNullOrEmpty())
+                return String.Empty;
+
+            return "{" + string.Join(", ", list.ToArray()) + "}";
+        }
+
         public static string ObjectToString(this object o)
         {
             string result = String.Empty;
