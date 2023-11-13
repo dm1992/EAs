@@ -6,3 +6,8 @@ Crypto/CryptoBot/.vs/
 Crypto/CryptoBot/CryptoBot/obj/
 Crypto/CryptoBot/CryptoBot/bin/
 Crypto/CryptoBot/CryptoBot/App.config
+*.htm
+Crypto/CryptoBot/Common/obj/
+Crypto/CryptoBot/DataAnalyzer/obj/
+Crypto/CryptoBot/MarketPlotter/obj/
+Crypto/CryptoBot/MarketProxy/obj/

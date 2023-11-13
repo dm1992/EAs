@@ -37,13 +37,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-<<<<<<< HEAD:Crypto/CryptoBot/CryptoBot/CryptoBot.csproj
-    <Reference Include="Bybit.Net, Version=3.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bybit.Net.3.0.2\lib\netstandard2.0\Bybit.Net.dll</HintPath>
-    </Reference>
-    <Reference Include="CryptoExchange.Net, Version=6.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CryptoExchange.Net.6.0.3\lib\netstandard2.0\CryptoExchange.Net.dll</HintPath>
-=======
     <Reference Include="Bybit.Net, Version=3.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Bybit.Net.3.1.0\lib\netstandard2.0\Bybit.Net.dll</HintPath>
     </Reference>
@@ -55,7 +48,6 @@
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
->>>>>>> usd_perpetual:Crypto/CryptoBot/MarketProxyClient/MarketProxyClient.csproj
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNetCore.Hosting.Abstractions.2.1.1\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
@@ -218,27 +210,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-<<<<<<< HEAD:Crypto/CryptoBot/CryptoBot/CryptoBot.csproj
-    <Compile Include="EventArgs\MarketManagerEventArgs.cs" />
-    <Compile Include="EventArgs\OrderManagerEventArgs.cs" />
-    <Compile Include="EventArgs\TradingManagerEventArgs.cs" />
-    <Compile Include="Interfaces\Managers\ITradingManager.cs" />
-    <Compile Include="Managers\Production\MarketManager.cs" />
-    <Compile Include="Managers\Production\TradingManager.cs" />
-    <Compile Include="Models\Config.cs" />
-    <Compile Include="Models\MarketInformation.cs" />
-    <Compile Include="Models\MarketEntity.cs" />
-    <Compile Include="Enums.cs" />
-    <Compile Include="EventArgs\ApplicationEventArgs.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="Helpers.cs" />
-    <Compile Include="Interfaces\Managers\IManager.cs" />
-    <Compile Include="Interfaces\Events\IWebSocketEvent.cs" />
-    <Compile Include="Interfaces\Events\IApplicationEvent.cs" />
-    <Compile Include="Interfaces\Managers\IMarketManager.cs" />
-    <Compile Include="Models\MarketSignal.cs" />
-    <Compile Include="Models\MarketSignalStats.cs" />
-=======
     <Compile Include="Config.cs" />
     <Compile Include="Events\MarketEvaluationEventArgs.cs" />
     <Compile Include="Events\MarketSignalEventArgs.cs" />
@@ -256,7 +227,6 @@
     <Compile Include="Providers\MarketSignalProvider.cs" />
     <Compile Include="Providers\MarketEvaluationProvider.cs" />
     <Compile Include="Models\MarketEvaluation.cs" />
->>>>>>> usd_perpetual:Crypto/CryptoBot/MarketProxyClient/MarketProxyClient.csproj
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
