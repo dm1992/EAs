@@ -364,16 +364,6 @@
             Output the original string data along with the deserialized object
             </summary>
         </member>
-        <member name="F:CryptoExchange.Net.BaseApiClient._lastId">
-            <summary>
-            The last used id, use NextId() to get the next id and up this
-            </summary>
-        </member>
-        <member name="F:CryptoExchange.Net.BaseApiClient._idLock">
-            <summary>
-            Lock for id generating
-            </summary>
-        </member>
         <member name="F:CryptoExchange.Net.BaseApiClient._defaultSerializer">
             <summary>
             A default serializer
@@ -446,12 +436,6 @@
             <param name="serializer">A specific serializer to use</param>
             <param name="requestId">Id of the request the data is returned from (used for grouping logging by request)</param>
             <param name="elapsedMilliseconds">Milliseconds response time for the request this stream is a response for</param>
-            <returns></returns>
-        </member>
-        <member name="M:CryptoExchange.Net.BaseApiClient.NextId">
-            <summary>
-            Generate a new unique id. The id is staticly stored so it is guarenteed to be unique across different client instances
-            </summary>
             <returns></returns>
         </member>
         <member name="M:CryptoExchange.Net.BaseApiClient.Dispose">
@@ -733,11 +717,22 @@
             <param name="parameters">The parameters to set</param>
             <param name="contentType">The content type of the data</param>
         </member>
-        <member name="M:CryptoExchange.Net.RestApiClient.ParseErrorResponse(Newtonsoft.Json.Linq.JToken)">
+        <member name="M:CryptoExchange.Net.RestApiClient.ParseErrorResponse(System.Int32,System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.Collections.Generic.IEnumerable{System.String}}},System.String)">
             <summary>
-            Parse an error response from the server. Only used when server returns a status other than Success(200)
+            Parse an error response from the server. Only used when server returns a status other than Success(200) or ratelimit error (429 or 418)
             </summary>
-            <param name="error">The string the request returned</param>
+            <param name="httpStatusCode">The response status code</param>
+            <param name="responseHeaders">The response headers</param>
+            <param name="data">The response data</param>
+            <returns></returns>
+        </member>
+        <member name="M:CryptoExchange.Net.RestApiClient.ParseRateLimitResponse(System.Int32,System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.Collections.Generic.IEnumerable{System.String}}},System.String)">
+            <summary>
+            Parse a rate limit error response from the server. Only used when server returns http status 429 or 418
+            </summary>
+            <param name="httpStatusCode">The response status code</param>
+            <param name="responseHeaders">The response headers</param>
+            <param name="data">The response data</param>
             <returns></returns>
         </member>
         <member name="M:CryptoExchange.Net.RestApiClient.GetServerTimestampAsync">
@@ -805,9 +800,9 @@
             If a message is received on the socket which is not handled by a handler this boolean determines whether this logs an error message
             </summary>
         </member>
-        <member name="P:CryptoExchange.Net.SocketApiClient.RateLimitPerSocketPerSecond">
+        <member name="P:CryptoExchange.Net.SocketApiClient.RateLimiters">
             <summary>
-            The max amount of outgoing messages per socket per second
+            The rate limiters 
             </summary>
         </member>
         <member name="P:CryptoExchange.Net.SocketApiClient.IncomingKbps">
@@ -875,16 +870,17 @@
             <param name="subscription">The subscription the request is for</param>
             <returns></returns>
         </member>
-        <member name="M:CryptoExchange.Net.SocketApiClient.QueryAsync``1(System.Object,System.Boolean)">
+        <member name="M:CryptoExchange.Net.SocketApiClient.QueryAsync``1(System.Object,System.Boolean,System.Int32)">
             <summary>
             Send a query on a socket connection to the BaseAddress and wait for the response
             </summary>
             <typeparam name="T">Expected result type</typeparam>
             <param name="request">The request to send, will be serialized to json</param>
             <param name="authenticated">If the query is to an authenticated endpoint</param>
+            <param name="weight">Weight of the request</param>
             <returns></returns>
         </member>
-        <member name="M:CryptoExchange.Net.SocketApiClient.QueryAsync``1(System.String,System.Object,System.Boolean)">
+        <member name="M:CryptoExchange.Net.SocketApiClient.QueryAsync``1(System.String,System.Object,System.Boolean,System.Int32)">
             <summary>
             Send a query on a socket connection and wait for the response
             </summary>
@@ -892,15 +888,17 @@
             <param name="url">The url for the request</param>
             <param name="request">The request to send</param>
             <param name="authenticated">Whether the socket should be authenticated</param>
+            <param name="weight">Weight of the request</param>
             <returns></returns>
         </member>
-        <member name="M:CryptoExchange.Net.SocketApiClient.QueryAndWaitAsync``1(CryptoExchange.Net.Sockets.SocketConnection,System.Object)">
+        <member name="M:CryptoExchange.Net.SocketApiClient.QueryAndWaitAsync``1(CryptoExchange.Net.Sockets.SocketConnection,System.Object,System.Int32)">
             <summary>
             Sends the query request and waits for the result
             </summary>
             <typeparam name="T">The expected result type</typeparam>
             <param name="socket">The connection to send and wait on</param>
             <param name="request">The request to send</param>
+            <param name="weight">The weight of the query</param>
             <returns></returns>
         </member>
         <member name="M:CryptoExchange.Net.SocketApiClient.ConnectIfNeededAsync(CryptoExchange.Net.Sockets.SocketConnection,System.Boolean)">
@@ -1690,6 +1688,16 @@
             General helpers functions
             </summary>
         </member>
+        <member name="F:CryptoExchange.Net.ExchangeHelpers._lastId">
+            <summary>
+            The last used id, use NextId() to get the next id and up this
+            </summary>
+        </member>
+        <member name="F:CryptoExchange.Net.ExchangeHelpers._idLock">
+            <summary>
+            Lock for id generating
+            </summary>
+        </member>
         <member name="M:CryptoExchange.Net.ExchangeHelpers.ClampValue(System.Decimal,System.Decimal,System.Decimal)">
             <summary>
             Clamp a value between a min and max
@@ -1743,6 +1751,12 @@
             Strips any trailing zero's of a decimal value, useful when converting the value to string.
             </summary>
             <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CryptoExchange.Net.ExchangeHelpers.NextId">
+            <summary>
+            Generate a new unique id. The id is staticly stored so it is guarenteed to be unique
+            </summary>
             <returns></returns>
         </member>
         <member name="T:CryptoExchange.Net.ExtensionMethods">
@@ -2599,7 +2613,7 @@
         </member>
         <member name="T:CryptoExchange.Net.Interfaces.IWebsocket">
             <summary>
-            Webscoket connection interface
+            Websocket connection interface
             </summary>
         </member>
         <member name="E:CryptoExchange.Net.Interfaces.IWebsocket.OnClose">
@@ -2610,6 +2624,11 @@
         <member name="E:CryptoExchange.Net.Interfaces.IWebsocket.OnMessage">
             <summary>
             Websocket message received event
+            </summary>
+        </member>
+        <member name="E:CryptoExchange.Net.Interfaces.IWebsocket.OnRequestSent">
+            <summary>
+            Websocket sent event, RequestId as parameter
             </summary>
         </member>
         <member name="E:CryptoExchange.Net.Interfaces.IWebsocket.OnError">
@@ -2668,11 +2687,13 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:CryptoExchange.Net.Interfaces.IWebsocket.Send(System.String)">
+        <member name="M:CryptoExchange.Net.Interfaces.IWebsocket.Send(System.Int32,System.String,System.Int32)">
             <summary>
             Send data
             </summary>
+            <param name="id"></param>
             <param name="data"></param>
+            <param name="weight"></param>
         </member>
         <member name="M:CryptoExchange.Net.Interfaces.IWebsocket.ReconnectAsync">
             <summary>
@@ -3259,6 +3280,14 @@
             ctor
             </summary>
         </member>
+        <member name="M:CryptoExchange.Net.Objects.CantConnectError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
+        </member>
         <member name="T:CryptoExchange.Net.Objects.NoApiCredentialsError">
             <summary>
             No api credentials provided while trying to access a private endpoint
@@ -3268,6 +3297,14 @@
             <summary>
             ctor
             </summary>
+        </member>
+        <member name="M:CryptoExchange.Net.Objects.NoApiCredentialsError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
         </member>
         <member name="T:CryptoExchange.Net.Objects.ServerError">
             <summary>
@@ -3282,6 +3319,14 @@
             <param name="data"></param>
         </member>
         <member name="M:CryptoExchange.Net.Objects.ServerError.#ctor(System.Int32,System.String,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
+        </member>
+        <member name="M:CryptoExchange.Net.Objects.ServerError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
             <summary>
             ctor
             </summary>
@@ -3309,6 +3354,14 @@
             <param name="message"></param>
             <param name="data"></param>
         </member>
+        <member name="M:CryptoExchange.Net.Objects.WebError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
+        </member>
         <member name="T:CryptoExchange.Net.Objects.DeserializeError">
             <summary>
             Error while deserializing data
@@ -3320,6 +3373,14 @@
             </summary>
             <param name="message">The error message</param>
             <param name="data">The data which caused the error</param>
+        </member>
+        <member name="M:CryptoExchange.Net.Objects.DeserializeError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
         </member>
         <member name="T:CryptoExchange.Net.Objects.UnknownError">
             <summary>
@@ -3333,6 +3394,14 @@
             <param name="message">Error message</param>
             <param name="data">Error data</param>
         </member>
+        <member name="M:CryptoExchange.Net.Objects.UnknownError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
+        </member>
         <member name="T:CryptoExchange.Net.Objects.ArgumentError">
             <summary>
             An invalid parameter has been provided
@@ -3344,16 +3413,69 @@
             </summary>
             <param name="message"></param>
         </member>
-        <member name="T:CryptoExchange.Net.Objects.RateLimitError">
+        <member name="M:CryptoExchange.Net.Objects.ArgumentError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
             <summary>
-            Rate limit exceeded
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
+        </member>
+        <member name="T:CryptoExchange.Net.Objects.BaseRateLimitError">
+            <summary>
+            Rate limit exceeded (client side)
             </summary>
         </member>
-        <member name="M:CryptoExchange.Net.Objects.RateLimitError.#ctor(System.String)">
+        <member name="P:CryptoExchange.Net.Objects.BaseRateLimitError.RetryAfter">
+            <summary>
+            When the request can be retried
+            </summary>
+        </member>
+        <member name="M:CryptoExchange.Net.Objects.BaseRateLimitError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
+        </member>
+        <member name="T:CryptoExchange.Net.Objects.ClientRateLimitError">
+            <summary>
+            Rate limit exceeded (client side)
+            </summary>
+        </member>
+        <member name="M:CryptoExchange.Net.Objects.ClientRateLimitError.#ctor(System.String)">
             <summary>
             ctor
             </summary>
             <param name="message"></param>
+        </member>
+        <member name="M:CryptoExchange.Net.Objects.ClientRateLimitError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
+        </member>
+        <member name="T:CryptoExchange.Net.Objects.ServerRateLimitError">
+            <summary>
+            Rate limit exceeded (server side)
+            </summary>
+        </member>
+        <member name="M:CryptoExchange.Net.Objects.ServerRateLimitError.#ctor(System.String)">
+            <summary>
+            ctor
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:CryptoExchange.Net.Objects.ServerRateLimitError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
         </member>
         <member name="T:CryptoExchange.Net.Objects.CancellationRequestedError">
             <summary>
@@ -3365,6 +3487,14 @@
             ctor
             </summary>
         </member>
+        <member name="M:CryptoExchange.Net.Objects.CancellationRequestedError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
+        </member>
         <member name="T:CryptoExchange.Net.Objects.InvalidOperationError">
             <summary>
             Invalid operation requested
@@ -3375,6 +3505,14 @@
             ctor
             </summary>
             <param name="message"></param>
+        </member>
+        <member name="M:CryptoExchange.Net.Objects.InvalidOperationError.#ctor(System.Nullable{System.Int32},System.String,System.Object)">
+            <summary>
+            ctor
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="data"></param>
         </member>
         <member name="T:CryptoExchange.Net.Objects.Options.ApiOptions">
             <summary>
@@ -3535,6 +3673,11 @@
         <member name="T:CryptoExchange.Net.Objects.Options.SocketApiOptions">
             <summary>
             Socket api options
+            </summary>
+        </member>
+        <member name="P:CryptoExchange.Net.Objects.Options.SocketApiOptions.RateLimiters">
+            <summary>
+            List of rate limiters to use
             </summary>
         </member>
         <member name="P:CryptoExchange.Net.Objects.Options.SocketApiOptions.SocketNoDataTimeout">
@@ -3704,6 +3847,14 @@
             <param name="perTimePeriod">The time period the limit is for</param>
             <param name="onlyForSignedRequests">Only include calls that are signed in this limiter</param>
             <param name="excludeFromTotalRateLimit">Exclude requests with API key from the total rate limiter</param>
+        </member>
+        <member name="M:CryptoExchange.Net.Objects.RateLimiter.AddConnectionRateLimit(System.String,System.Int32,System.TimeSpan)">
+            <summary>
+            Add a rate limit for the amount of messages that can be send per connection
+            </summary>
+            <param name="endpoint">The endpoint that the limit is for</param>
+            <param name="limit">The limit per period. Note that this is weight, not single request, altough by default requests have a weight of 1</param>
+            <param name="perTimePeriod">The time period the limit is for</param>
         </member>
         <member name="M:CryptoExchange.Net.Objects.RateLimiter.LimitRequestAsync(Microsoft.Extensions.Logging.ILogger,System.String,System.Net.Http.HttpMethod,System.Boolean,System.Security.SecureString,CryptoExchange.Net.Objects.RateLimitingBehaviour,System.Int32,System.Threading.CancellationToken)">
             <inheritdoc />
@@ -4238,6 +4389,9 @@
         <member name="E:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.OnMessage">
             <inheritdoc />
         </member>
+        <member name="E:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.OnRequestSent">
+            <inheritdoc />
+        </member>
         <member name="E:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.OnError">
             <inheritdoc />
         </member>
@@ -4271,7 +4425,7 @@
         <member name="M:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.ProcessAsync">
             <inheritdoc />
         </member>
-        <member name="M:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.Send(System.String)">
+        <member name="M:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.Send(System.Int32,System.String,System.Int32)">
             <inheritdoc />
         </member>
         <member name="M:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.ReconnectAsync">
@@ -4312,38 +4466,6 @@
             <param name="count"></param>
             <param name="messageType"></param>
         </member>
-        <member name="M:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.TriggerOnMessage(System.String)">
-            <summary>
-            Trigger the OnMessage event
-            </summary>
-            <param name="data"></param>
-        </member>
-        <member name="M:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.TriggerOnError(System.Exception)">
-            <summary>
-            Trigger the OnError event
-            </summary>
-            <param name="ex"></param>
-        </member>
-        <member name="M:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.TriggerOnOpen">
-            <summary>
-            Trigger the OnError event
-            </summary>
-        </member>
-        <member name="M:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.TriggerOnClose">
-            <summary>
-            Trigger the OnError event
-            </summary>
-        </member>
-        <member name="M:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.TriggerOnReconnecting">
-            <summary>
-            Trigger the OnReconnecting event
-            </summary>
-        </member>
-        <member name="M:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.TriggerOnReconnected">
-            <summary>
-            Trigger the OnReconnected event
-            </summary>
-        </member>
         <member name="M:CryptoExchange.Net.Sockets.CryptoExchangeWebSocketClient.CheckTimeoutAsync">
             <summary>
             Checks if there is no data received for a period longer than the specified timeout
@@ -4368,6 +4490,31 @@
             <param name="socket"></param>
             <param name="proxy"></param>
             <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="T:CryptoExchange.Net.Sockets.SendItem">
+            <summary>
+            Message info
+            </summary>
+        </member>
+        <member name="P:CryptoExchange.Net.Sockets.SendItem.Id">
+            <summary>
+            The request id
+            </summary>
+        </member>
+        <member name="P:CryptoExchange.Net.Sockets.SendItem.Weight">
+            <summary>
+            The request id
+            </summary>
+        </member>
+        <member name="P:CryptoExchange.Net.Sockets.SendItem.SendTime">
+            <summary>
+            Timestamp the request was sent
+            </summary>
+        </member>
+        <member name="P:CryptoExchange.Net.Sockets.SendItem.Bytes">
+            <summary>
+            The bytes to send
+            </summary>
         </member>
         <member name="T:CryptoExchange.Net.Sockets.ReceiveItem">
             <summary>
@@ -4621,6 +4768,12 @@
             </summary>
             <param name="e">The exception</param>
         </member>
+        <member name="M:CryptoExchange.Net.Sockets.SocketConnection.HandleRequestSent(System.Int32)">
+            <summary>
+            Handler for whenever a request is sent over the websocket
+            </summary>
+            <param name="requestId">Id of the request sent</param>
+        </member>
         <member name="M:CryptoExchange.Net.Sockets.SocketConnection.HandleMessage(System.String)">
             <summary>
             Process a message received by the socket
@@ -4689,7 +4842,7 @@
             <param name="messageEvent"></param>
             <returns>True if the data was successfully handled</returns>
         </member>
-        <member name="M:CryptoExchange.Net.Sockets.SocketConnection.SendAndWaitAsync``1(``0,System.TimeSpan,CryptoExchange.Net.Sockets.SocketSubscription,System.Func{Newtonsoft.Json.Linq.JToken,System.Boolean})">
+        <member name="M:CryptoExchange.Net.Sockets.SocketConnection.SendAndWaitAsync``1(``0,System.TimeSpan,CryptoExchange.Net.Sockets.SocketSubscription,System.Int32,System.Func{Newtonsoft.Json.Linq.JToken,System.Boolean})">
             <summary>
             Send data and wait for an answer
             </summary>
@@ -4698,21 +4851,26 @@
             <param name="timeout">The timeout for response</param>
             <param name="subscription">Subscription if this is a subscribe request</param>
             <param name="handler">The response handler, should return true if the received JToken was the response to the request</param>
+            <param name="weight">The weight of the message</param>
             <returns></returns>
         </member>
-        <member name="M:CryptoExchange.Net.Sockets.SocketConnection.Send``1(``0,Newtonsoft.Json.NullValueHandling)">
+        <member name="M:CryptoExchange.Net.Sockets.SocketConnection.Send``1(System.Int32,``0,System.Int32,Newtonsoft.Json.NullValueHandling)">
             <summary>
             Send data over the websocket connection
             </summary>
             <typeparam name="T">The type of the object to send</typeparam>
+            <param name="requestId">The request id</param>
             <param name="obj">The object to send</param>
             <param name="nullValueHandling">How null values should be serialized</param>
+            <param name="weight">The weight of the message</param>
         </member>
-        <member name="M:CryptoExchange.Net.Sockets.SocketConnection.Send(System.String)">
+        <member name="M:CryptoExchange.Net.Sockets.SocketConnection.Send(System.Int32,System.String,System.Int32)">
             <summary>
             Send string data over the websocket connection
             </summary>
             <param name="data">The data to send</param>
+            <param name="weight">The weight of the message</param>
+            <param name="requestId">The id of the request</param>
         </member>
         <member name="T:CryptoExchange.Net.Sockets.SocketConnection.SocketStatus">
             <summary>
@@ -4969,9 +5127,9 @@
             Interval at which to send ping frames
             </summary>
         </member>
-        <member name="P:CryptoExchange.Net.Sockets.WebSocketParameters.RatelimitPerSecond">
+        <member name="P:CryptoExchange.Net.Sockets.WebSocketParameters.RateLimiters">
             <summary>
-            The max amount of messages to send per second
+            The rate limiters for the socket connection
             </summary>
         </member>
         <member name="P:CryptoExchange.Net.Sockets.WebSocketParameters.Origin">

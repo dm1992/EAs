@@ -1,0 +1,480 @@
+[OrderManager Information (24. 05. 2023 12:51:39)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:51:39)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:50:43)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:50:43)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:50:13)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:50:12)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:49:42)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:49:42)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:49:12)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:49:12)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:48:40)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:48:40)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:48:10)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:48:10)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:47:39)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:47:39)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:47:09)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:47:09)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:46:39)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:46:39)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:46:09)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:46:09)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:45:39)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:45:39)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:45:08)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:45:08)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:44:38)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:44:38)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:44:07)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:44:07)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:43:37)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:43:37)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:43:07)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:43:07)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:42:37)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:42:37)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:42:07)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:42:07)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:41:37)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:41:33)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:41:03)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:41:03)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:40:33)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:40:33)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:40:03)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:40:03)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:39:33)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:39:33)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:39:03)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:39:03)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:38:33)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:38:33)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:38:02)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:38:02)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:37:32)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:37:32)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:37:01)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:37:01)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:36:31)]: 
+------------------------
+TOTAL BALANCE: '0'
+------------------------
+
+[OrderManager Information (24. 05. 2023 12:36:31)]: 
+------------------------
+SYMBOL: 'BTCUSDT'
+------------------------
+ACTIVE orders: '0',
+PROFIT orders: '0',
+LOSS orders: '0'
+NEUTRAL orders: '0'
+SYMBOL BALANCE: '0'
+------------------------
+
