@@ -1,0 +1,7 @@
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketAnalyzer\bin\Debug\MarketAnalyzer.exe.config
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketAnalyzer\bin\Debug\MarketAnalyzer.exe
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketAnalyzer\bin\Debug\MarketAnalyzer.pdb
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketAnalyzer\obj\Debug\MarketAnalyzer.csproj.AssemblyReference.cache
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketAnalyzer\obj\Debug\MarketAnalyzer.csproj.CoreCompileInputs.cache
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketAnalyzer\obj\Debug\MarketAnalyzer.exe
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketAnalyzer\obj\Debug\MarketAnalyzer.pdb

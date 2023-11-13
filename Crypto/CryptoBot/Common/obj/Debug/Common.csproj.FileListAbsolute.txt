@@ -1,0 +1,6 @@
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\Common\bin\Debug\Common.dll
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\Common\bin\Debug\Common.pdb
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\Common\obj\Debug\Common.csproj.AssemblyReference.cache
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\Common\obj\Debug\Common.csproj.CoreCompileInputs.cache
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\Common\obj\Debug\Common.dll
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\Common\obj\Debug\Common.pdb

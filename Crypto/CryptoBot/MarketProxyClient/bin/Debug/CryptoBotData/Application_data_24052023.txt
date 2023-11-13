@@ -1,0 +1,8 @@
+Running application with username 'Davor'.
+Saving results to application directory 'C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\CryptoBot\bin\Debug\CryptoBotData'.
+[OrderManager Information (24. 05. 2023 12:36:31)]: Invoked web socket event subscription.
+[MarketManager Information (24. 05. 2023 12:36:31)]: Invoking web socket event subscription.
+[MarketManager Information (24. 05. 2023 12:36:31)]: Initialized.
+[TradingManager Information (24. 05. 2023 12:36:30)]: Initialized.
+[MarketManager Debug (24. 05. 2023 12:36:31)]: MonitorActiveTradingSignals started.
+[MarketManager Debug (24. 05. 2023 12:36:31)]: MonitorMarketEntities started.

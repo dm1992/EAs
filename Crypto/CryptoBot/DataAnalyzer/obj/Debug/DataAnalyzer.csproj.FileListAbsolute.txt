@@ -1,0 +1,9 @@
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DataAnalyzer\bin\Debug\MarketAnalyzer.exe
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DataAnalyzer\bin\Debug\MarketAnalyzer.pdb
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DataAnalyzer\bin\Debug\Common.dll
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DataAnalyzer\bin\Debug\Common.pdb
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DataAnalyzer\obj\Debug\DataAnalyzer.csproj.AssemblyReference.cache
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DataAnalyzer\obj\Debug\DataAnalyzer.csproj.CoreCompileInputs.cache
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DataAnalyzer\obj\Debug\DataAnalyzer.csproj.CopyComplete
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DataAnalyzer\obj\Debug\MarketAnalyzer.exe
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DataAnalyzer\obj\Debug\MarketAnalyzer.pdb
