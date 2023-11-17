@@ -39,10 +39,10 @@ namespace Common
         Sell = 1
     }
 
-    public enum LotteryResultFilter
+    public enum DrawingLookupType
     {
-        None = 0,
-        Year = 1,
-        Month = 2
+        Total = 0,
+        Month = 1,
+        CurrentYearMonth = 2
     }
 }

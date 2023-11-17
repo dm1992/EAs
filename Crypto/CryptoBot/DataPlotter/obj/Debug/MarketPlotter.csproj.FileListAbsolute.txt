@@ -1,0 +1,8 @@
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketPlotter\bin\Debug\MarketPlotter.exe.config
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketPlotter\bin\Debug\MarketPlotter.exe
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketPlotter\bin\Debug\MarketPlotter.pdb
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketPlotter\obj\Debug\MarketPlotter.Properties.Resources.resources
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketPlotter\obj\Debug\MarketPlotter.csproj.GenerateResource.cache
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketPlotter\obj\Debug\MarketPlotter.csproj.CoreCompileInputs.cache
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketPlotter\obj\Debug\MarketPlotter.exe
+C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\MarketPlotter\obj\Debug\MarketPlotter.pdb

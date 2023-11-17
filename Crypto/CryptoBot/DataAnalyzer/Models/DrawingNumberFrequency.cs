@@ -1,42 +1,32 @@
-﻿using Common;
+﻿
+using Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MarketAnalyzer.Models
 {
     public class DrawingNumberFrequency
     {
-        public LotteryResultFilter LotteryResultFilter { get; set; }
-        public int Value { get; set; }
-        public List<KeyValuePair<int, int>> NumberFrequency1 { get; set; }
-        public List<KeyValuePair<int, int>> NumberFrequency2 { get; set; }
+        public DrawingNumberFrequency(DrawingLookupType drawingLookupType)
+        {
+            this.DrawingLookupType = drawingLookupType;
+            this.DrawingNumberFrequencyField1 = new Dictionary<int, int>();
+            this.DrawingNumberFrequencyField2 = new Dictionary<int, int>();
+        }
+
+        public DrawingLookupType DrawingLookupType { get; set; }
+        public int? Value { get; set; }
+        public int TotalDrawings { get; set; }
+        public Dictionary<int, int> DrawingNumberFrequencyField1 { get; set; }
+        public Dictionary<int, int> DrawingNumberFrequencyField2 { get; set; }
 
         public string Dump()
         {
-            string result = "";
-
-            if (!this.NumberFrequency1.IsNullOrEmpty())
-            {
-                foreach (var nf in this.NumberFrequency1)
-                {
-                    result += $"{nf.Key} : {nf.Value}\n";
-                }
-            }
-
-            if (!this.NumberFrequency2.IsNullOrEmpty())
-            {
-                result += "-------------------\n";
-
-                foreach (var nf in this.NumberFrequency2)
-                {
-                    result += $"{nf.Key} : {nf.Value}\n";
-                }
-            }
-
-            return result;
+            return $"\n\n--------------{this.DrawingLookupType}/{this.Value}/FIELD1/{this.TotalDrawings}----------------\n\n" +
+                   String.Join("\n", this.DrawingNumberFrequencyField1.Select(x => $"{x.Key}:{x.Value} ({Math.Round((x.Value /(decimal)(this.TotalDrawings)) * 100.0m, 2)}%)")) +
+                   $"\n\n--------------{this.DrawingLookupType}/{this.Value}/FIELD2/{this.TotalDrawings}----------------\n\n" +
+                   String.Join("\n", this.DrawingNumberFrequencyField2.Select(x => $"{x.Key}:{x.Value} ({Math.Round((x.Value / (decimal)(this.TotalDrawings)) * 100.0m, 2)}%)"));
         }
     }
 }

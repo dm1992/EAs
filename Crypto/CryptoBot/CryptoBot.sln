@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarketProxyClient", "Market
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarketProxy", "MarketProxy\MarketProxy.csproj", "{E0B90901-69A7-4EFF-9F3B-88DF1FA0C4A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarketPlotter", "MarketPlotter\MarketPlotter.csproj", "{9D6E1347-4089-417E-B2DE-D9808B45D6EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPlotter", "DataPlotter\DataPlotter.csproj", "{9D6E1347-4089-417E-B2DE-D9808B45D6EC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAnalyzer", "DataAnalyzer\DataAnalyzer.csproj", "{9A4C336B-2EC7-44E2-B736-06B2492E25D6}"
 EndProject
