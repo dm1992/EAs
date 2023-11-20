@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DataAnalyzer.Managers
 {
-    public class MarketBacktestManager
+    public class TradingStrategyBacktestManager
     {
     }
 }

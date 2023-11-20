@@ -43,15 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Managers\MarketBacktestManager.cs" />
-    <Compile Include="Managers\LotteryManager.cs" />
-    <Compile Include="Models\DrawingNumberFrequency.cs" />
-    <Compile Include="Models\Drawing.cs" />
+    <Compile Include="Managers\TradingStrategyBacktestManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Data\results_ej.csv" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
