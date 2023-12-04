@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "symbolConfigs": 
+  [
+    {
+      "symbol": "BTCUSDT",
+      "historyTradesFilePath": "C:\\Users\\Davor\\Delo\\Projekti\\Lokalno\\EAs\\Crypto\\CryptoBot\\DATA\\test1",
+      "resultsFilePath": "C:\\Users\\Davor\\Delo\\Projekti\\Lokalno\\EAs\\Crypto\\CryptoBot\\DATA\\results",
+      "tradingFeeAmount": 22.5,
+      "takeProfitAmount": 30.0,
+      "stopLossAmount": 20.0,
+      "historyTradesBatchSize": 100,
+      "concurrentBuyMarketSignals": 1,
+      "concurrentSellMarketSignals": 1,
+      //"dateFrom": "12.11.2023",
+      //"dateTo": "12.11.2023",
+
+      "tradingVolume": {
+        "buyLimit": 15,
+        "sellLimit": 15,
+        "buyMarket": 20,
+        "sellMarket": 20
+      }
+    }
+  ]
+}

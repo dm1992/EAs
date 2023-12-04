@@ -117,6 +117,7 @@
     <Compile Include="Interfaces\Socket\ITradeSocket.cs" />
     <Compile Include="Interfaces\Socket\ISocket.cs" />
     <Compile Include="Models\Orderbook.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Socket\BybitSocket\BybitBaseSocket.cs" />
     <Compile Include="Models\Trade.cs" />
     <Compile Include="Socket\BybitSocket\BybitPriceSocket.cs" />

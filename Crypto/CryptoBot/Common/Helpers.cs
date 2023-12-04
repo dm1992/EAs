@@ -22,12 +22,17 @@ namespace Common
             }
         }
 
-        public static string[] ReadFromFile(string filePath)
+        public static string[] ReadAllLinesFromFile(string filePath)
         {
             lock (_fileReadLocker)
             {
                 return File.ReadAllLines(filePath);
             }
+        }
+
+        public static string ReadAllTextFromFile(string filePath)
+        {
+            return File.ReadAllText(filePath);
         }
     }
 }

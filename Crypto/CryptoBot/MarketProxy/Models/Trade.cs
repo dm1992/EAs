@@ -29,7 +29,7 @@ namespace MarketProxy.Models
 
         public string DumpV2()
         {
-            return $"{this.Symbol};{this.Time:dd.MM.yyyy HH:mm:ss};{this.Price};{this.Volume};{this.TradeDirection};";
+            return $"{this.Symbol};{this.Time:dd.MM.yyyy HH:mm:ss};{this.Price};{this.Volume};{this.TradeDirection}";
         }
     }
 }

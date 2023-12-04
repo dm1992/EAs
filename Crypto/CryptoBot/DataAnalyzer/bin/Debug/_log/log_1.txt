@@ -1,0 +1,40 @@
+2023-12-04 07:41:42.1531 [ INFO] (1) [BacktestManager] Parsing BTCUSDT history trades from 'C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\test1\BTCUSDT_receivedTrades_18112023.txt'. 
+2023-12-04 07:41:46.2961 [ INFO] (1) [BacktestManager] Initialized. 
+2023-12-04 07:41:46.2961 [ INFO] (1) [BacktestManager] Executing BTCUSDT backtest with total 245916 history trades and 100 history trades batch size. 
+2023-12-04 07:43:00.7571 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36388,90 (TP = 36338,90, SL = 36438,90, fee = 22,5)$ 
+2023-12-04 07:43:00.7780 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market SELL signals, if any are present. 
+2023-12-04 07:43:00.7780 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36372,80$ (-6,40$) 
+2023-12-04 07:43:00.7780 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36372,80 (TP = 36422,80, SL = 36322,80, fee = 22,5)$ 
+2023-12-04 07:43:00.9216 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market BUY signals, if any are present. 
+2023-12-04 07:43:00.9216 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36353,20$ (-42,10$) 
+2023-12-04 07:43:00.9216 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36353,20 (TP = 36303,20, SL = 36403,20, fee = 22,5)$ 
+2023-12-04 07:43:00.9645 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market SELL signals, if any are present. 
+2023-12-04 07:43:00.9645 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36377,20$ (-46,50$) 
+2023-12-04 07:43:00.9645 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36377,20 (TP = 36427,20, SL = 36327,20, fee = 22,5)$ 
+2023-12-04 07:43:01.0273 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market BUY signals, if any are present. 
+2023-12-04 07:43:01.0273 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36379,70$ (-20,00$) 
+2023-12-04 07:43:01.0273 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36379,70 (TP = 36329,70, SL = 36429,70, fee = 22,5)$ 
+2023-12-04 07:43:01.2039 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market SELL signals, if any are present. 
+2023-12-04 07:43:01.2039 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36345,00$ (12,20$) 
+2023-12-04 07:43:01.2039 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36345,00 (TP = 36395,00, SL = 36295,00, fee = 22,5)$ 
+2023-12-04 07:43:01.4083 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market BUY signals, if any are present. 
+2023-12-04 07:43:01.4083 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36320,70$ (-46,80$) 
+2023-12-04 07:43:01.4083 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36320,70 (TP = 36270,70, SL = 36370,70, fee = 22,5)$ 
+2023-12-04 07:43:01.4931 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market SELL signals, if any are present. 
+2023-12-04 07:43:01.4931 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36310,40$ (-12,20$) 
+2023-12-04 07:43:01.4931 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36310,40 (TP = 36360,40, SL = 36260,40, fee = 22,5)$ 
+2023-12-04 07:43:02.4049 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market BUY signals, if any are present. 
+2023-12-04 07:43:02.4049 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36281,30$ (-51,60$) 
+2023-12-04 07:43:02.4049 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36281,30 (TP = 36231,30, SL = 36331,30, fee = 22,5)$ 
+2023-12-04 07:43:03.1011 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36230,70$ (28,10$) 
+2023-12-04 07:43:03.4972 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market BUY signals, if any are present. 
+2023-12-04 07:43:03.4972 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36253,90 (TP = 36203,90, SL = 36303,90, fee = 22,5)$ 
+2023-12-04 07:43:03.7278 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market SELL signals, if any are present. 
+2023-12-04 07:43:03.7278 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36243,10$ (-11,70$) 
+2023-12-04 07:43:03.7278 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36243,10 (TP = 36293,10, SL = 36193,10, fee = 22,5)$ 
+2023-12-04 07:43:03.7662 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market BUY signals, if any are present. 
+2023-12-04 07:43:03.7662 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36253,50$ (-12,10$) 
+2023-12-04 07:43:03.7662 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36253,50 (TP = 36203,50, SL = 36303,50, fee = 22,5)$ 
+2023-12-04 07:43:04.0029 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36308,50$ (-77,50$) 
+2023-12-04 07:43:04.0616 [DEBUG] (1) [BacktestManager] Closing counter BTCUSDT market BUY signals, if any are present. 
+2023-12-04 07:43:04.0616 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36306,10 (TP = 36256,10, SL = 36356,10, fee = 22,5)$ 

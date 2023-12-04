@@ -11,6 +11,12 @@ namespace MarketProxy.Models
         public string Symbol { get; set; }
         public List<Bid> Bids { get; set; }
         public List<Ask> Asks { get; set; }
+
+        public Orderbook()
+        {
+            this.Bids = new List<Bid>();
+            this.Asks = new List<Ask>();
+        }
     }
 
     public class Bid

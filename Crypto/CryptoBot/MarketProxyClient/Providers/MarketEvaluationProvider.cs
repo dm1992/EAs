@@ -21,9 +21,11 @@ namespace MarketProxyClient.Providers
         private readonly Config _config;
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _tradeReceiveSemaphore;
+        private readonly SemaphoreSlim _orderbookReceiveSemaphore;
 
         private bool _isInitialized;
         private Dictionary<string, List<MarketProxy.Models.Trade>> _tradeBuffer;
+        private Dictionary<string, Orderbook> _orderbookBuffer;
 
         public event EventHandler<MarketEvaluationEventArgs> MarketEvaluationEventHandler;
 
@@ -35,8 +37,10 @@ namespace MarketProxyClient.Providers
 
             _isInitialized = false;
             _tradeReceiveSemaphore = new SemaphoreSlim(1, 1);
+            _orderbookReceiveSemaphore = new SemaphoreSlim(1, 1);
 
             _tradeBuffer = new Dictionary<string, List<MarketProxy.Models.Trade>>();
+            _orderbookBuffer = new Dictionary<string, Orderbook>();
         }
 
         public bool Initialize()
@@ -48,7 +52,7 @@ namespace MarketProxyClient.Providers
 
             SubscribeToTrades();
 
-            //SubscribeToOrderbook();
+            SubscribeToOrderbook();
 
             _logger.Info("Initialized.");
             return _isInitialized = true;
@@ -65,16 +69,30 @@ namespace MarketProxyClient.Providers
             }
         }
 
-        //private void SubscribeToOrderbook()
-        //{
-        //    if (_tradeSocket != null)
-        //    {
-        //        _tradeSocket.OrderbookEventHandler += OrderbookEventHandler;
-        //        _tradeSocket.UnsolicitedEventHandler += UnsolicitedEventHandler;
+        private void SubscribeToOrderbook()
+        {
+            if (_tradeSocket != null)
+            {
+                _tradeSocket.OrderbookEventHandler += OrderbookEventHandler; ;
+                _tradeSocket.UnsolicitedEventHandler += UnsolicitedEventHandler;
 
-        //        _tradeSocket.SubscribeToOrderbookAsync(_config.Symbols, depth: 50);
-        //    }
-        //}
+                _tradeSocket.SubscribeToOrderbookAsync(_config.Symbols, depth: 50);
+            }
+        }
+
+        private void OrderbookEventHandler(object sender, OrderbookEventArgs e)
+        {
+            try
+            {
+                _orderbookReceiveSemaphore.Wait();
+
+                HandleOrderbookReceiveEvent(e);
+            }
+            finally
+            {
+                _orderbookReceiveSemaphore.Release();
+            }
+        }
 
         private void TradeReceiveEventHandler(object sender, TradeEventArgs e)
         {
@@ -113,7 +131,7 @@ namespace MarketProxyClient.Providers
             }
         }
 
-        private void SaveReceivedTradesToFile(string symbol, List<MarketProxy.Models.Trade> trades)
+        private void SaveTradesToFile(string symbol, List<MarketProxy.Models.Trade> trades, bool appendOrderbook = true)
         {
             if (trades.IsNullOrEmpty())
             {
@@ -126,6 +144,21 @@ namespace MarketProxyClient.Providers
             try
             {
                 string data = String.Join(Environment.NewLine, trades.OrderBy(x => x.Id).Select(x => x.Dump(minimize: true))) + Environment.NewLine;
+
+                if (appendOrderbook)
+                {
+                    if (GetOrderbookFromBuffer(symbol, out Orderbook orderbook))
+                    {
+                        string asks = String.Join(";", orderbook.Asks.Take(3).Select(x => x.Dump()));
+                        string bids = String.Join(";", orderbook.Bids.Take(3).Select(x => x.Dump()));
+
+                        data = String.Join(Environment.NewLine, trades.OrderBy(x => x.Id).Select(x => x.DumpV2() + ";" + asks + ";" + bids)) + Environment.NewLine;
+                    }
+                    else
+                    {
+                        _logger.Warn($"Failed to get {symbol} orderbook from buffer. Saving trades data without orderbook to file.");
+                    }
+                }
 
                 Helpers.WriteToFile(data, filePath);
             }
@@ -143,6 +176,11 @@ namespace MarketProxyClient.Providers
             }
 
             return false;
+        }
+
+        private bool GetOrderbookFromBuffer(string symbol, out MarketProxy.Models.Orderbook orderbook)
+        {
+            return _orderbookBuffer.TryGetValue(symbol, out orderbook);
         }
 
         private void DeleteTradesFromBuffer(string symbol, int? tradesToDelete = null)
@@ -180,6 +218,24 @@ namespace MarketProxyClient.Providers
             else
             {
                 _tradeBuffer[symbol].AddRange(trades);
+            }
+        }
+
+        private void SaveOrderbookToBuffer(string symbol, MarketProxy.Models.Orderbook orderbook)
+        {
+            if (orderbook == null)
+            {
+                _logger.Warn($"Failed to save orderbook to buffer. No {symbol} orderbook present.");
+                return;
+            }
+
+            if (!_orderbookBuffer.TryGetValue(symbol, out _))
+            {
+                _orderbookBuffer.Add(symbol, orderbook);
+            }
+            else
+            {
+                _orderbookBuffer[symbol] = orderbook;
             }
         }
 
@@ -258,11 +314,18 @@ namespace MarketProxyClient.Providers
         {
             if (e == null) return;
 
-            SaveReceivedTradesToFile(e.Symbol, e.Trades);
+            SaveTradesToFile(e.Symbol, e.Trades);
 
             SaveTradesToBuffer(e.Symbol, e.Trades);
 
             PerformMarketEvaluation(e.Symbol);
+        }
+
+        private void HandleOrderbookReceiveEvent(OrderbookEventArgs e)
+        {
+            if (e == null) return;
+
+            SaveOrderbookToBuffer(e.Symbol, e.Orderbook);
         }
     }
 }

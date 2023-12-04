@@ -27,7 +27,6 @@ namespace MarketProxyClient.Managers
         private readonly SemaphoreSlim _walletBalanceSemaphore;
 
         private Dictionary<string, List<ITrade>> _tradesBuffer;
-
         private bool _isInitialized;
 
         public TradingManagerSimulator(

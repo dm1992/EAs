@@ -1,0 +1,566 @@
+2023-12-04 08:20:41.1426 [ INFO] (1) [BacktestManager] Parsing BTCUSDT history trades from 'C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\test1\BTCUSDT_receivedTrades_18112023.txt'. 
+2023-12-04 08:20:47.2773 [ INFO] (1) [BacktestManager] Initialized. 
+2023-12-04 08:20:47.2773 [ INFO] (1) [BacktestManager] Executing BTCUSDT backtest with total 245916 history trades and 100 history trades batch size. 
+2023-12-04 08:20:47.3431 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36388,90 (TP = 36438,90, SL = 36338,90, fee = 22,5)$ 
+2023-12-04 08:20:47.3970 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36372,80 (TP = 36322,80, SL = 36422,80, fee = 22,5)$ 
+2023-12-04 08:20:48.2108 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36338,20$ (-73,20$) 
+2023-12-04 08:20:48.2607 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36320,40$ (29,90$) 
+2023-12-04 08:20:48.2856 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36324,60 (TP = 36274,60, SL = 36374,60, fee = 22,5)$ 
+2023-12-04 08:20:48.4113 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36320,70 (TP = 36370,70, SL = 36270,70, fee = 22,5)$ 
+2023-12-04 08:20:49.4774 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36274,60$ (27,50$) 
+2023-12-04 08:20:50.0020 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36270,50$ (-72,70$) 
+2023-12-04 08:20:51.6646 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36253,90 (TP = 36303,90, SL = 36203,90, fee = 22,5)$ 
+2023-12-04 08:20:52.0874 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36243,10 (TP = 36193,10, SL = 36293,10, fee = 22,5)$ 
+2023-12-04 08:20:52.5013 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36293,20$ (-72,60$) 
+2023-12-04 08:20:52.5552 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36308,50$ (32,10$) 
+2023-12-04 08:20:52.6390 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36306,10 (TP = 36356,10, SL = 36256,10, fee = 22,5)$ 
+2023-12-04 08:20:54.5858 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36344,40 (TP = 36294,40, SL = 36394,40, fee = 22,5)$ 
+2023-12-04 08:20:55.4746 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36357,50$ (28,90$) 
+2023-12-04 08:20:57.8892 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36374,40 (TP = 36424,40, SL = 36324,40, fee = 22,5)$ 
+2023-12-04 08:20:58.3689 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36394,70$ (-72,80$) 
+2023-12-04 08:20:58.8666 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36425,60$ (28,70$) 
+2023-12-04 08:20:59.7125 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36430,60 (TP = 36480,60, SL = 36380,60, fee = 22,5)$ 
+2023-12-04 08:21:00.3179 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36439,90 (TP = 36389,90, SL = 36489,90, fee = 22,5)$ 
+2023-12-04 08:21:10.4725 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36480,60$ (27,50$) 
+2023-12-04 08:21:10.9063 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36490,00$ (-72,60$) 
+2023-12-04 08:21:12.3309 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36467,10 (TP = 36417,10, SL = 36517,10, fee = 22,5)$ 
+2023-12-04 08:21:12.8939 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36480,00 (TP = 36530,00, SL = 36430,00, fee = 22,5)$ 
+2023-12-04 08:21:19.7017 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36430,00$ (-72,50$) 
+2023-12-04 08:21:21.8760 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36417,00$ (27,60$) 
+2023-12-04 08:21:22.2041 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36414,90 (TP = 36364,90, SL = 36464,90, fee = 22,5)$ 
+2023-12-04 08:21:24.4017 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36420,00 (TP = 36470,00, SL = 36370,00, fee = 22,5)$ 
+2023-12-04 08:21:33.0596 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36465,00$ (-72,60$) 
+2023-12-04 08:21:33.1882 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36470,00$ (27,50$) 
+2023-12-04 08:21:39.4511 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36505,80 (TP = 36555,80, SL = 36455,80, fee = 22,5)$ 
+2023-12-04 08:21:43.5695 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36556,00$ (27,70$) 
+2023-12-04 08:21:46.9625 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36500,00 (TP = 36450,00, SL = 36550,00, fee = 22,5)$ 
+2023-12-04 08:21:48.9457 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36485,10 (TP = 36535,10, SL = 36435,10, fee = 22,5)$ 
+2023-12-04 08:21:53.9883 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36450,00$ (27,50$) 
+2023-12-04 08:21:54.6335 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36444,20 (TP = 36394,20, SL = 36494,20, fee = 22,5)$ 
+2023-12-04 08:21:54.9726 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36435,00$ (-72,60$) 
+2023-12-04 08:21:59.6127 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36444,40 (TP = 36494,40, SL = 36394,40, fee = 22,5)$ 
+2023-12-04 08:22:09.1356 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36494,20$ (-72,50$) 
+2023-12-04 08:22:09.1356 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36494,50$ (27,60$) 
+2023-12-04 08:22:17.0754 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36431,60 (TP = 36381,60, SL = 36481,60, fee = 22,5)$ 
+2023-12-04 08:22:22.2191 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36381,60$ (27,50$) 
+2023-12-04 08:22:23.1706 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36379,70 (TP = 36329,70, SL = 36429,70, fee = 22,5)$ 
+2023-12-04 08:22:25.3348 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36404,90 (TP = 36454,90, SL = 36354,90, fee = 22,5)$ 
+2023-12-04 08:22:25.9562 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36429,80$ (-72,60$) 
+2023-12-04 08:22:26.4554 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36455,70$ (28,30$) 
+2023-12-04 08:22:26.9810 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36458,70 (TP = 36508,70, SL = 36408,70, fee = 22,5)$ 
+2023-12-04 08:22:29.4781 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36485,20 (TP = 36435,20, SL = 36535,20, fee = 22,5)$ 
+2023-12-04 08:22:32.5799 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36434,80$ (27,90$) 
+2023-12-04 08:22:32.9214 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36420,20 (TP = 36370,20, SL = 36470,20, fee = 22,5)$ 
+2023-12-04 08:22:35.6831 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36471,10$ (-73,40$) 
+2023-12-04 08:22:40.7969 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36468,00 (TP = 36418,00, SL = 36518,00, fee = 22,5)$ 
+2023-12-04 08:22:47.6262 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36508,80$ (27,60$) 
+2023-12-04 08:22:50.3326 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36520,00$ (-74,50$) 
+2023-12-04 08:22:50.3495 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36521,60 (TP = 36571,60, SL = 36471,60, fee = 22,5)$ 
+2023-12-04 08:22:52.2764 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36530,00 (TP = 36480,00, SL = 36580,00, fee = 22,5)$ 
+2023-12-04 08:22:57.2809 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36480,00$ (27,50$) 
+2023-12-04 08:22:57.6754 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36471,50$ (-72,60$) 
+2023-12-04 08:22:59.0687 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36530,00 (TP = 36580,00, SL = 36480,00, fee = 22,5)$ 
+2023-12-04 08:23:04.1269 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36580,00$ (27,50$) 
+2023-12-04 08:23:08.3175 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36540,00 (TP = 36490,00, SL = 36590,00, fee = 22,5)$ 
+2023-12-04 08:23:16.0958 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36533,70 (TP = 36583,70, SL = 36483,70, fee = 22,5)$ 
+2023-12-04 08:23:25.7366 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36583,70$ (27,50$) 
+2023-12-04 08:23:27.4617 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36590,00$ (-72,50$) 
+2023-12-04 08:23:33.3396 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36595,40 (TP = 36545,40, SL = 36645,40, fee = 22,5)$ 
+2023-12-04 08:23:38.7273 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36592,40 (TP = 36642,40, SL = 36542,40, fee = 22,5)$ 
+2023-12-04 08:23:49.8695 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36644,40$ (29,50$) 
+2023-12-04 08:23:50.1239 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36646,00$ (-73,10$) 
+2023-12-04 08:23:51.6700 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36629,50 (TP = 36579,50, SL = 36679,50, fee = 22,5)$ 
+2023-12-04 08:23:59.1707 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36579,40$ (27,60$) 
+2023-12-04 08:24:01.0765 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36569,50 (TP = 36519,50, SL = 36619,50, fee = 22,5)$ 
+2023-12-04 08:24:03.3070 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36579,80 (TP = 36629,80, SL = 36529,80, fee = 22,5)$ 
+2023-12-04 08:24:05.3831 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36619,80$ (-72,80$) 
+2023-12-04 08:24:05.8269 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36630,00$ (27,70$) 
+2023-12-04 08:24:11.7653 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36642,20 (TP = 36592,20, SL = 36692,20, fee = 22,5)$ 
+2023-12-04 08:24:13.4648 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36622,90 (TP = 36672,90, SL = 36572,90, fee = 22,5)$ 
+2023-12-04 08:24:24.3752 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36673,60$ (28,20$) 
+2023-12-04 08:24:31.8395 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36686,90 (TP = 36736,90, SL = 36636,90, fee = 22,5)$ 
+2023-12-04 08:24:32.5107 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36692,30$ (-72,60$) 
+2023-12-04 08:24:38.6451 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36655,60 (TP = 36605,60, SL = 36705,60, fee = 22,5)$ 
+2023-12-04 08:24:42.2233 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36707,00$ (-73,90$) 
+2023-12-04 08:24:52.2233 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36737,10$ (27,70$) 
+2023-12-04 08:24:53.3703 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36724,10 (TP = 36774,10, SL = 36674,10, fee = 22,5)$ 
+2023-12-04 08:25:06.6207 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36774,70$ (28,10$) 
+2023-12-04 08:25:20.3422 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36846,40 (TP = 36796,40, SL = 36896,40, fee = 22,5)$ 
+2023-12-04 08:25:24.4274 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36896,40$ (-72,50$) 
+2023-12-04 08:25:32.6051 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36817,30 (TP = 36767,30, SL = 36867,30, fee = 22,5)$ 
+2023-12-04 08:25:35.5114 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36850,00 (TP = 36900,00, SL = 36800,00, fee = 22,5)$ 
+2023-12-04 08:25:36.1208 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36870,90$ (-76,10$) 
+2023-12-04 08:25:37.3445 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36846,60 (TP = 36796,60, SL = 36896,60, fee = 22,5)$ 
+2023-12-04 08:25:45.5834 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36800,00$ (-72,50$) 
+2023-12-04 08:25:45.9414 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36796,20$ (27,90$) 
+2023-12-04 08:25:49.0651 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36792,50 (TP = 36842,50, SL = 36742,50, fee = 22,5)$ 
+2023-12-04 08:25:52.3583 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36762,80 (TP = 36712,80, SL = 36812,80, fee = 22,5)$ 
+2023-12-04 08:25:55.9030 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36742,00$ (-73,00$) 
+2023-12-04 08:25:57.2145 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36747,50 (TP = 36797,50, SL = 36697,50, fee = 22,5)$ 
+2023-12-04 08:25:59.7457 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36797,70$ (27,70$) 
+2023-12-04 08:26:09.3466 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36756,50 (TP = 36806,50, SL = 36706,50, fee = 22,5)$ 
+2023-12-04 08:26:34.5504 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36712,30$ (28,00$) 
+2023-12-04 08:26:35.4919 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36706,50$ (-72,50$) 
+2023-12-04 08:26:39.6608 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36679,70 (TP = 36629,70, SL = 36729,70, fee = 22,5)$ 
+2023-12-04 08:26:52.7929 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36690,80 (TP = 36740,80, SL = 36640,80, fee = 22,5)$ 
+2023-12-04 08:26:57.9207 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36730,10$ (-72,90$) 
+2023-12-04 08:26:59.4103 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36740,90$ (27,60$) 
+2023-12-04 08:27:00.1719 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36730,00 (TP = 36680,00, SL = 36780,00, fee = 22,5)$ 
+2023-12-04 08:27:05.7224 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36710,00 (TP = 36760,00, SL = 36660,00, fee = 22,5)$ 
+2023-12-04 08:27:11.5189 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36679,50$ (28,00$) 
+2023-12-04 08:27:18.1489 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36660,00$ (-72,50$) 
+2023-12-04 08:27:19.8452 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36641,30 (TP = 36591,30, SL = 36691,30, fee = 22,5)$ 
+2023-12-04 08:27:27.7225 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36632,90 (TP = 36682,90, SL = 36582,90, fee = 22,5)$ 
+2023-12-04 08:27:41.7231 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36684,00$ (28,60$) 
+2023-12-04 08:27:42.1889 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36691,40$ (-72,60$) 
+2023-12-04 08:27:50.9251 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36673,00 (TP = 36723,00, SL = 36623,00, fee = 22,5)$ 
+2023-12-04 08:27:53.8214 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36642,00 (TP = 36592,00, SL = 36692,00, fee = 22,5)$ 
+2023-12-04 08:28:20.6656 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36622,40$ (-73,10$) 
+2023-12-04 08:28:24.8819 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36651,80 (TP = 36701,80, SL = 36601,80, fee = 22,5)$ 
+2023-12-04 08:28:47.1752 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36692,00$ (-72,50$) 
+2023-12-04 08:28:50.7969 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36702,00$ (27,70$) 
+2023-12-04 08:29:04.5273 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36745,00 (TP = 36695,00, SL = 36795,00, fee = 22,5)$ 
+2023-12-04 08:29:05.9692 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36759,90 (TP = 36809,90, SL = 36709,90, fee = 22,5)$ 
+2023-12-04 08:29:24.3329 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36795,00$ (-72,50$) 
+2023-12-04 08:29:25.8708 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36775,10$ (-7,30$) 
+2023-12-04 08:29:25.8708 [DEBUG] (1) [BacktestManager] Saving market signals to: C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\results\BTCUSDT_marketSignal_04122023.txt. 
+2023-12-04 08:29:25.8828 [DEBUG] (1) [BacktestManager] Saving market signal statistics to: C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\results\BTCUSDT_marketSignalStatistic_04122023.txt. 
+2023-12-04 08:29:25.8828 [DEBUG] (1) [BacktestManager] Ended BTCUSDT backtest. Total elapsed time: 00:08:38.6042640. 
+2023-12-04 08:33:12.0242 [ INFO] (1) [BacktestManager] Parsing BTCUSDT history trades from 'C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\test1\BTCUSDT_receivedTrades_18112023.txt'. 
+2023-12-04 08:33:18.1944 [ INFO] (1) [BacktestManager] Initialized. 
+2023-12-04 08:33:18.1944 [ INFO] (1) [BacktestManager] Executing BTCUSDT backtest with total 245916 history trades and 100 history trades batch size. 
+2023-12-04 08:33:18.2712 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36388,90 (TP = 36438,90, SL = 36338,90, fee = 22,5)$ 
+2023-12-04 08:33:19.0661 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36338,20$ (-73,20$) 
+2023-12-04 08:33:19.1434 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36324,60 (TP = 36274,60, SL = 36374,60, fee = 22,5)$ 
+2023-12-04 08:33:20.4070 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36274,60$ (27,50$) 
+2023-12-04 08:33:20.6354 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36281,30 (TP = 36331,30, SL = 36231,30, fee = 22,5)$ 
+2023-12-04 08:33:21.8342 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36230,70$ (-73,10$) 
+2023-12-04 08:33:22.5642 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36253,90 (TP = 36303,90, SL = 36203,90, fee = 22,5)$ 
+2023-12-04 08:33:23.4259 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36308,50$ (32,10$) 
+2023-12-04 08:33:23.5396 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36306,10 (TP = 36356,10, SL = 36256,10, fee = 22,5)$ 
+2023-12-04 08:33:26.4618 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36357,50$ (28,90$) 
+2023-12-04 08:33:27.8835 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36362,30 (TP = 36312,30, SL = 36412,30, fee = 22,5)$ 
+2023-12-04 08:33:29.5989 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36413,70$ (-73,90$) 
+2023-12-04 08:33:30.7056 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36430,60 (TP = 36480,60, SL = 36380,60, fee = 22,5)$ 
+2023-12-04 08:33:42.0278 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36480,60$ (27,50$) 
+2023-12-04 08:33:43.7138 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36467,10 (TP = 36417,10, SL = 36517,10, fee = 22,5)$ 
+2023-12-04 08:33:54.3341 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36417,00$ (27,60$) 
+2023-12-04 08:33:54.6502 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36414,90 (TP = 36364,90, SL = 36464,90, fee = 22,5)$ 
+2023-12-04 08:34:06.1607 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36465,00$ (-72,60$) 
+2023-12-04 08:34:12.9653 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36505,80 (TP = 36555,80, SL = 36455,80, fee = 22,5)$ 
+2023-12-04 08:34:17.1518 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36556,00$ (27,70$) 
+2023-12-04 08:34:20.6022 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36500,00 (TP = 36450,00, SL = 36550,00, fee = 22,5)$ 
+2023-12-04 08:34:27.8305 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36450,00$ (27,50$) 
+2023-12-04 08:34:28.5874 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36444,20 (TP = 36394,20, SL = 36494,20, fee = 22,5)$ 
+2023-12-04 08:34:43.5494 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36494,20$ (-72,50$) 
+2023-12-04 08:34:53.5255 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36431,60 (TP = 36381,60, SL = 36481,60, fee = 22,5)$ 
+2023-12-04 08:34:58.2659 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36381,60$ (27,50$) 
+2023-12-04 08:34:59.1795 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36379,70 (TP = 36329,70, SL = 36429,70, fee = 22,5)$ 
+2023-12-04 08:35:01.9643 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36429,80$ (-72,60$) 
+2023-12-04 08:35:02.9584 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36458,70 (TP = 36508,70, SL = 36408,70, fee = 22,5)$ 
+2023-12-04 08:35:23.6062 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36508,80$ (27,60$) 
+2023-12-04 08:35:26.3120 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36521,60 (TP = 36571,60, SL = 36471,60, fee = 22,5)$ 
+2023-12-04 08:35:33.7964 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36471,50$ (-72,60$) 
+2023-12-04 08:35:35.3832 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36530,00 (TP = 36580,00, SL = 36480,00, fee = 22,5)$ 
+2023-12-04 08:35:40.0538 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36580,00$ (27,50$) 
+2023-12-04 08:35:44.2354 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36540,00 (TP = 36490,00, SL = 36590,00, fee = 22,5)$ 
+2023-12-04 08:36:02.9611 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36590,00$ (-72,50$) 
+2023-12-04 08:36:09.0588 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36595,40 (TP = 36545,40, SL = 36645,40, fee = 22,5)$ 
+2023-12-04 08:36:26.6784 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36646,00$ (-73,10$) 
+2023-12-04 08:36:28.0068 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36629,50 (TP = 36579,50, SL = 36679,50, fee = 22,5)$ 
+2023-12-04 08:36:36.0432 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36579,40$ (27,60$) 
+2023-12-04 08:36:38.0818 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36569,50 (TP = 36519,50, SL = 36619,50, fee = 22,5)$ 
+2023-12-04 08:36:42.4169 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36619,80$ (-72,80$) 
+2023-12-04 08:36:48.7984 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36642,20 (TP = 36592,20, SL = 36692,20, fee = 22,5)$ 
+2023-12-04 08:37:05.9139 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36692,30$ (-72,60$) 
+2023-12-04 08:37:11.9568 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36655,60 (TP = 36605,60, SL = 36705,60, fee = 22,5)$ 
+2023-12-04 08:37:15.5727 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36707,00$ (-73,90$) 
+2023-12-04 08:37:24.4223 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36724,10 (TP = 36774,10, SL = 36674,10, fee = 22,5)$ 
+2023-12-04 08:37:40.0102 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36774,70$ (28,10$) 
+2023-12-04 08:37:54.1893 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36846,40 (TP = 36796,40, SL = 36896,40, fee = 22,5)$ 
+2023-12-04 08:37:58.6397 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36896,40$ (-72,50$) 
+2023-12-04 08:38:06.2766 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36817,30 (TP = 36767,30, SL = 36867,30, fee = 22,5)$ 
+2023-12-04 08:38:09.4547 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36870,90$ (-76,10$) 
+2023-12-04 08:38:10.7992 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36846,60 (TP = 36796,60, SL = 36896,60, fee = 22,5)$ 
+2023-12-04 08:38:19.1897 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36796,20$ (27,90$) 
+2023-12-04 08:38:21.8681 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36792,50 (TP = 36842,50, SL = 36742,50, fee = 22,5)$ 
+2023-12-04 08:38:27.5059 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36742,00$ (-73,00$) 
+2023-12-04 08:38:28.4983 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36747,50 (TP = 36797,50, SL = 36697,50, fee = 22,5)$ 
+2023-12-04 08:38:30.1573 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36797,70$ (27,70$) 
+2023-12-04 08:38:33.7329 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36795,70 (TP = 36745,70, SL = 36845,70, fee = 22,5)$ 
+2023-12-04 08:38:39.1380 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36744,80$ (28,40$) 
+2023-12-04 08:38:41.8239 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36756,30 (TP = 36706,30, SL = 36806,30, fee = 22,5)$ 
+2023-12-04 08:39:00.4845 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36706,10$ (27,70$) 
+2023-12-04 08:39:05.1241 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36679,70 (TP = 36629,70, SL = 36729,70, fee = 22,5)$ 
+2023-12-04 08:39:26.1966 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36730,10$ (-72,90$) 
+2023-12-04 08:39:26.7181 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36728,10 (TP = 36778,10, SL = 36678,10, fee = 22,5)$ 
+2023-12-04 08:39:43.9285 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36674,10$ (-76,50$) 
+2023-12-04 08:39:45.6151 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36694,40 (TP = 36744,40, SL = 36644,40, fee = 22,5)$ 
+2023-12-04 08:39:51.3922 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36643,70$ (-73,20$) 
+2023-12-04 08:39:51.7472 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36641,30 (TP = 36591,30, SL = 36691,30, fee = 22,5)$ 
+2023-12-04 08:40:14.5276 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36691,40$ (-72,60$) 
+2023-12-04 08:40:22.5886 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36673,00 (TP = 36723,00, SL = 36623,00, fee = 22,5)$ 
+2023-12-04 08:40:53.2933 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36622,40$ (-73,10$) 
+2023-12-04 08:40:55.5548 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36646,10 (TP = 36596,10, SL = 36696,10, fee = 22,5)$ 
+2023-12-04 08:41:22.6912 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36696,70$ (-73,10$) 
+2023-12-04 08:41:37.4944 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36745,00 (TP = 36695,00, SL = 36795,00, fee = 22,5)$ 
+2023-12-04 08:41:56.0088 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36795,00$ (-72,50$) 
+2023-12-04 08:41:57.9616 [DEBUG] (1) [BacktestManager] Saving market signals to: C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\results\BTCUSDT_marketSignal_04122023.txt. 
+2023-12-04 08:41:57.9616 [DEBUG] (1) [BacktestManager] Saving market signal statistics to: C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\results\BTCUSDT_marketSignalStatistic_04122023.txt. 
+2023-12-04 08:41:57.9736 [DEBUG] (1) [BacktestManager] Ended BTCUSDT backtest. Total elapsed time: 00:08:39.7752859. 
+2023-12-04 08:43:02.0366 [ INFO] (1) [BacktestManager] Parsing BTCUSDT history trades from 'C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\test1\BTCUSDT_receivedTrades_18112023.txt'. 
+2023-12-04 08:43:08.7293 [ INFO] (1) [BacktestManager] Initialized. 
+2023-12-04 08:43:08.7293 [ INFO] (1) [BacktestManager] Executing BTCUSDT backtest with total 245916 history trades and 100 history trades batch size. 
+2023-12-04 08:43:08.8221 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36388,90 (TP = 36418,90, SL = 36338,90, fee = 22,5)$ 
+2023-12-04 08:43:09.6510 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36338,20$ (-73,20$) 
+2023-12-04 08:43:09.7251 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36324,60 (TP = 36294,60, SL = 36374,60, fee = 22,5)$ 
+2023-12-04 08:43:10.0809 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36294,60$ (7,50$) 
+2023-12-04 08:43:10.5440 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36299,50 (TP = 36269,50, SL = 36349,50, fee = 22,5)$ 
+2023-12-04 08:43:11.7010 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36269,20$ (7,80$) 
+2023-12-04 08:43:13.4131 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36253,90 (TP = 36283,90, SL = 36203,90, fee = 22,5)$ 
+2023-12-04 08:43:14.2451 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36284,00$ (7,60$) 
+2023-12-04 08:43:14.3179 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36292,50 (TP = 36322,50, SL = 36242,50, fee = 22,5)$ 
+2023-12-04 08:43:15.0693 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36322,50$ (7,50$) 
+2023-12-04 08:43:15.6821 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36317,00 (TP = 36347,00, SL = 36267,00, fee = 22,5)$ 
+2023-12-04 08:43:16.4383 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36347,50$ (8,00$) 
+2023-12-04 08:43:16.4383 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36347,50 (TP = 36377,50, SL = 36297,50, fee = 22,5)$ 
+2023-12-04 08:43:19.8141 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36378,30$ (8,30$) 
+2023-12-04 08:43:20.0355 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36366,50 (TP = 36336,50, SL = 36416,50, fee = 22,5)$ 
+2023-12-04 08:43:21.0912 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36416,50$ (-72,50$) 
+2023-12-04 08:43:22.2500 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36430,60 (TP = 36460,60, SL = 36380,60, fee = 22,5)$ 
+2023-12-04 08:43:25.9854 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36461,00$ (7,90$) 
+2023-12-04 08:43:26.8616 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36476,00 (TP = 36506,00, SL = 36426,00, fee = 22,5)$ 
+2023-12-04 08:43:28.1297 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36426,00$ (-72,50$) 
+2023-12-04 08:43:28.6058 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36429,10 (TP = 36459,10, SL = 36379,10, fee = 22,5)$ 
+2023-12-04 08:43:33.0668 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36461,40$ (9,80$) 
+2023-12-04 08:43:36.8111 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36467,10 (TP = 36437,10, SL = 36517,10, fee = 22,5)$ 
+2023-12-04 08:43:41.9757 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36436,10$ (8,50$) 
+2023-12-04 08:43:48.1456 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36414,90 (TP = 36384,90, SL = 36464,90, fee = 22,5)$ 
+2023-12-04 08:44:01.5118 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36465,00$ (-72,60$) 
+2023-12-04 08:44:08.4293 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36505,80 (TP = 36535,80, SL = 36455,80, fee = 22,5)$ 
+2023-12-04 08:44:09.8197 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36536,00$ (7,70$) 
+2023-12-04 08:44:30.7192 [ INFO] (1) [BacktestManager] Parsing BTCUSDT history trades from 'C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\test1\BTCUSDT_receivedTrades_18112023.txt'. 
+2023-12-04 08:44:37.1215 [ INFO] (1) [BacktestManager] Initialized. 
+2023-12-04 08:44:37.1215 [ INFO] (1) [BacktestManager] Executing BTCUSDT backtest with total 245916 history trades and 100 history trades batch size. 
+2023-12-04 08:44:37.2023 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36388,90 (TP = 36418,90, SL = 36363,90, fee = 22,5)$ 
+2023-12-04 08:44:37.2632 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36363,90$ (-47,50$) 
+2023-12-04 08:44:37.3120 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36353,60 (TP = 36323,60, SL = 36378,60, fee = 22,5)$ 
+2023-12-04 08:44:37.5364 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36378,80$ (-47,70$) 
+2023-12-04 08:44:37.5364 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36382,00 (TP = 36412,00, SL = 36357,00, fee = 22,5)$ 
+2023-12-04 08:44:37.7525 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36356,60$ (-47,90$) 
+2023-12-04 08:44:37.9224 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36345,00 (TP = 36315,00, SL = 36370,00, fee = 22,5)$ 
+2023-12-04 08:44:38.1401 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36315,00$ (7,50$) 
+2023-12-04 08:44:38.2279 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36320,70 (TP = 36350,70, SL = 36295,70, fee = 22,5)$ 
+2023-12-04 08:44:38.5084 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36294,60$ (-48,60$) 
+2023-12-04 08:44:39.0096 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36299,50 (TP = 36269,50, SL = 36324,50, fee = 22,5)$ 
+2023-12-04 08:44:40.1351 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36269,20$ (7,80$) 
+2023-12-04 08:44:41.9235 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36253,90 (TP = 36283,90, SL = 36228,90, fee = 22,5)$ 
+2023-12-04 08:44:42.7319 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36284,00$ (7,60$) 
+2023-12-04 08:44:42.8117 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36292,50 (TP = 36322,50, SL = 36267,50, fee = 22,5)$ 
+2023-12-04 08:44:43.5967 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36322,50$ (7,50$) 
+2023-12-04 08:44:44.2300 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36317,00 (TP = 36347,00, SL = 36292,00, fee = 22,5)$ 
+2023-12-04 08:44:44.9786 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36347,50$ (8,00$) 
+2023-12-04 08:44:44.9786 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36347,50 (TP = 36377,50, SL = 36322,50, fee = 22,5)$ 
+2023-12-04 08:44:45.5347 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36322,50$ (-47,50$) 
+2023-12-04 08:44:45.6853 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36332,00 (TP = 36362,00, SL = 36307,00, fee = 22,5)$ 
+2023-12-04 08:44:46.3899 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36362,00$ (7,50$) 
+2023-12-04 08:44:47.6415 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36362,30 (TP = 36332,30, SL = 36387,30, fee = 22,5)$ 
+2023-12-04 08:44:49.0358 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36387,30$ (-47,50$) 
+2023-12-04 08:44:50.6156 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36430,60 (TP = 36460,60, SL = 36405,60, fee = 22,5)$ 
+2023-12-04 08:44:54.2177 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36461,00$ (7,90$) 
+2023-12-04 08:44:54.9893 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36476,00 (TP = 36506,00, SL = 36451,00, fee = 22,5)$ 
+2023-12-04 08:44:55.5230 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36450,60$ (-47,90$) 
+2023-12-04 08:44:56.5757 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36429,10 (TP = 36459,10, SL = 36404,10, fee = 22,5)$ 
+2023-12-04 08:44:57.9014 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36404,10$ (-47,50$) 
+2023-12-04 08:45:19.9677 [ INFO] (1) [BacktestManager] Parsing BTCUSDT history trades from 'C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\test1\BTCUSDT_receivedTrades_18112023.txt'. 
+2023-12-04 08:45:26.5711 [ INFO] (1) [BacktestManager] Initialized. 
+2023-12-04 08:45:26.5711 [ INFO] (1) [BacktestManager] Executing BTCUSDT backtest with total 245916 history trades and 100 history trades batch size. 
+2023-12-04 08:45:26.6698 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36388,90 (TP = 36418,90, SL = 36353,90, fee = 22,5)$ 
+2023-12-04 08:45:26.7636 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36353,70$ (-57,70$) 
+2023-12-04 08:45:26.8054 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36353,60 (TP = 36323,60, SL = 36388,60, fee = 22,5)$ 
+2023-12-04 08:45:27.5825 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36320,40$ (10,70$) 
+2023-12-04 08:45:27.6054 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36324,60 (TP = 36294,60, SL = 36359,60, fee = 22,5)$ 
+2023-12-04 08:45:27.9365 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36294,60$ (7,50$) 
+2023-12-04 08:45:28.3763 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36299,50 (TP = 36269,50, SL = 36334,50, fee = 22,5)$ 
+2023-12-04 08:45:29.3868 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36269,20$ (7,80$) 
+2023-12-04 08:45:31.0114 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36253,90 (TP = 36283,90, SL = 36218,90, fee = 22,5)$ 
+2023-12-04 08:45:31.8013 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36284,00$ (7,60$) 
+2023-12-04 08:45:31.8786 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36292,50 (TP = 36322,50, SL = 36257,50, fee = 22,5)$ 
+2023-12-04 08:45:32.6145 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36322,50$ (7,50$) 
+2023-12-04 08:45:33.2025 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36317,00 (TP = 36347,00, SL = 36282,00, fee = 22,5)$ 
+2023-12-04 08:45:33.9416 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36347,50$ (8,00$) 
+2023-12-04 08:45:33.9416 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36347,50 (TP = 36377,50, SL = 36312,50, fee = 22,5)$ 
+2023-12-04 08:45:37.4438 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36378,30$ (8,30$) 
+2023-12-04 08:45:37.6203 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36366,50 (TP = 36336,50, SL = 36401,50, fee = 22,5)$ 
+2023-12-04 08:45:38.3164 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36404,10$ (-60,10$) 
+2023-12-04 08:45:39.5665 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36430,60 (TP = 36460,60, SL = 36395,60, fee = 22,5)$ 
+2023-12-04 08:45:43.2448 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36461,00$ (7,90$) 
+2023-12-04 08:45:44.2157 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36476,00 (TP = 36506,00, SL = 36441,00, fee = 22,5)$ 
+2023-12-04 08:45:45.2474 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36439,90$ (-58,60$) 
+2023-12-04 08:45:46.4712 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36429,10 (TP = 36459,10, SL = 36394,10, fee = 22,5)$ 
+2023-12-04 08:45:50.8353 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36461,40$ (9,80$) 
+2023-12-04 08:45:54.7006 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36467,10 (TP = 36437,10, SL = 36502,10, fee = 22,5)$ 
+2023-12-04 08:45:59.2430 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36436,10$ (8,50$) 
+2023-12-04 08:46:04.8199 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36414,90 (TP = 36384,90, SL = 36449,90, fee = 22,5)$ 
+2023-12-04 08:46:08.4252 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36450,00$ (-57,60$) 
+2023-12-04 08:46:08.4252 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36450,00 (TP = 36480,00, SL = 36415,00, fee = 22,5)$ 
+2023-12-04 08:46:16.8395 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36480,00$ (7,50$) 
+2023-12-04 08:46:21.4597 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36505,80 (TP = 36535,80, SL = 36470,80, fee = 22,5)$ 
+2023-12-04 08:46:22.1026 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36536,00$ (7,70$) 
+2023-12-04 08:46:25.7588 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36500,00 (TP = 36470,00, SL = 36535,00, fee = 22,5)$ 
+2023-12-04 08:46:29.5619 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36470,00$ (7,50$) 
+2023-12-04 08:46:29.7952 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36468,80 (TP = 36438,80, SL = 36503,80, fee = 22,5)$ 
+2023-12-04 08:46:31.4348 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36437,20$ (9,10$) 
+2023-12-04 08:46:31.4348 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36437,20 (TP = 36407,20, SL = 36472,20, fee = 22,5)$ 
+2023-12-04 08:46:38.4386 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36472,30$ (-57,60$) 
+2023-12-04 08:46:38.4386 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36472,30 (TP = 36502,30, SL = 36437,30, fee = 22,5)$ 
+2023-12-04 08:46:42.1161 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36502,50$ (7,70$) 
+2023-12-04 08:46:47.5649 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36431,60 (TP = 36401,60, SL = 36466,60, fee = 22,5)$ 
+2023-12-04 08:46:48.3147 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36401,50$ (7,60$) 
+2023-12-04 08:46:52.2225 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36379,70 (TP = 36349,70, SL = 36414,70, fee = 22,5)$ 
+2023-12-04 08:46:54.0021 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36414,90$ (-57,70$) 
+2023-12-04 08:46:55.2596 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36458,70 (TP = 36488,70, SL = 36423,70, fee = 22,5)$ 
+2023-12-04 08:46:56.7181 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36488,80$ (7,60$) 
+2023-12-04 08:46:57.3002 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36485,20 (TP = 36455,20, SL = 36520,20, fee = 22,5)$ 
+2023-12-04 08:46:59.1297 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36455,00$ (7,70$) 
+2023-12-04 08:46:59.6174 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36447,30 (TP = 36417,30, SL = 36482,30, fee = 22,5)$ 
+2023-12-04 08:47:12.3485 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36482,40$ (-57,60$) 
+2023-12-04 08:47:17.0476 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36521,60 (TP = 36551,60, SL = 36486,60, fee = 22,5)$ 
+2023-12-04 08:47:22.2384 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36486,40$ (-57,70$) 
+2023-12-04 08:47:26.0418 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36530,00 (TP = 36560,00, SL = 36495,00, fee = 22,5)$ 
+2023-12-04 08:47:28.6699 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36560,00$ (7,50$) 
+2023-12-04 08:47:35.1500 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36540,00 (TP = 36510,00, SL = 36575,00, fee = 22,5)$ 
+2023-12-04 08:47:36.1437 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36510,00$ (7,50$) 
+2023-12-04 08:47:42.4968 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36533,70 (TP = 36563,70, SL = 36498,70, fee = 22,5)$ 
+2023-12-04 08:47:48.6451 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36563,70$ (7,50$) 
+2023-12-04 08:47:48.9416 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36558,80 (TP = 36528,80, SL = 36593,80, fee = 22,5)$ 
+2023-12-04 08:47:54.2716 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36600,00$ (-63,70$) 
+2023-12-04 08:47:59.5132 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36595,40 (TP = 36565,40, SL = 36630,40, fee = 22,5)$ 
+2023-12-04 08:48:02.6661 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36565,00$ (7,90$) 
+2023-12-04 08:48:05.0343 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36592,40 (TP = 36622,40, SL = 36557,40, fee = 22,5)$ 
+2023-12-04 08:48:07.6857 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36622,50$ (7,60$) 
+2023-12-04 08:48:11.8923 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36606,10 (TP = 36576,10, SL = 36641,10, fee = 22,5)$ 
+2023-12-04 08:48:16.2467 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36641,60$ (-58,00$) 
+2023-12-04 08:48:17.9448 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36629,50 (TP = 36599,50, SL = 36664,50, fee = 22,5)$ 
+2023-12-04 08:48:24.5477 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36598,20$ (8,80$) 
+2023-12-04 08:48:27.4008 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36569,50 (TP = 36539,50, SL = 36604,50, fee = 22,5)$ 
+2023-12-04 08:48:29.9112 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36605,00$ (-58,00$) 
+2023-12-04 08:48:37.7497 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36642,20 (TP = 36612,20, SL = 36677,20, fee = 22,5)$ 
+2023-12-04 08:48:39.6740 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36612,00$ (7,70$) 
+2023-12-04 08:48:41.1205 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36630,00 (TP = 36660,00, SL = 36595,00, fee = 22,5)$ 
+2023-12-04 08:48:42.3789 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36660,00$ (7,50$) 
+2023-12-04 08:48:47.5063 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36666,80 (TP = 36696,80, SL = 36631,80, fee = 22,5)$ 
+2023-12-04 08:48:54.9431 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36697,00$ (7,70$) 
+2023-12-04 08:49:00.3462 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36655,60 (TP = 36625,60, SL = 36690,60, fee = 22,5)$ 
+2023-12-04 08:49:01.6979 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36691,20$ (-58,10$) 
+2023-12-04 08:49:02.9674 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36699,00 (TP = 36729,00, SL = 36664,00, fee = 22,5)$ 
+2023-12-04 08:49:12.6315 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36733,30$ (11,80$) 
+2023-12-04 08:49:14.8950 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36724,10 (TP = 36754,10, SL = 36689,10, fee = 22,5)$ 
+2023-12-04 08:49:24.1350 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36755,00$ (8,40$) 
+2023-12-04 08:49:26.9200 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36766,00 (TP = 36796,00, SL = 36731,00, fee = 22,5)$ 
+2023-12-04 08:49:29.4684 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36797,20$ (8,70$) 
+2023-12-04 08:49:41.1608 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36846,40 (TP = 36816,40, SL = 36881,40, fee = 22,5)$ 
+2023-12-04 08:49:44.4692 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36881,40$ (-57,50$) 
+2023-12-04 08:49:52.3748 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36817,30 (TP = 36787,30, SL = 36852,30, fee = 22,5)$ 
+2023-12-04 08:49:54.8997 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36853,60$ (-58,80$) 
+2023-12-04 08:49:55.0011 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36858,40 (TP = 36888,40, SL = 36823,40, fee = 22,5)$ 
+2023-12-04 08:49:58.0330 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36823,40$ (-57,50$) 
+2023-12-04 08:50:07.5248 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36792,50 (TP = 36822,50, SL = 36757,50, fee = 22,5)$ 
+2023-12-04 08:50:10.8116 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36757,50$ (-57,50$) 
+2023-12-04 08:50:14.6032 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36747,50 (TP = 36777,50, SL = 36712,50, fee = 22,5)$ 
+2023-12-04 08:50:15.3191 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36778,00$ (8,00$) 
+2023-12-04 08:50:21.3468 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36795,70 (TP = 36765,70, SL = 36830,70, fee = 22,5)$ 
+2023-12-04 08:50:21.9021 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36765,60$ (7,60$) 
+2023-12-04 08:50:24.6602 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36754,10 (TP = 36724,10, SL = 36789,10, fee = 22,5)$ 
+2023-12-04 08:50:38.6128 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36789,40$ (-57,80$) 
+2023-12-04 08:50:51.2329 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36725,00 (TP = 36695,00, SL = 36760,00, fee = 22,5)$ 
+2023-12-04 08:50:54.9881 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36693,10$ (9,40$) 
+2023-12-04 08:50:57.9292 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36679,70 (TP = 36649,70, SL = 36714,70, fee = 22,5)$ 
+2023-12-04 08:51:17.6109 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36714,70$ (-57,50$) 
+2023-12-04 08:51:20.3482 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36728,10 (TP = 36758,10, SL = 36693,10, fee = 22,5)$ 
+2023-12-04 08:51:33.2447 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36692,50$ (-58,10$) 
+2023-12-04 08:51:34.3766 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36687,90 (TP = 36657,90, SL = 36722,90, fee = 22,5)$ 
+2023-12-04 08:51:41.9132 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36657,90$ (7,50$) 
+2023-12-04 08:51:43.4000 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36641,30 (TP = 36611,30, SL = 36676,30, fee = 22,5)$ 
+2023-12-04 08:51:53.6434 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36611,10$ (7,70$) 
+2023-12-04 08:52:01.9919 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36620,00 (TP = 36590,00, SL = 36655,00, fee = 22,5)$ 
+2023-12-04 08:52:05.0084 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36655,20$ (-57,70$) 
+2023-12-04 08:52:05.4594 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36659,90 (TP = 36689,90, SL = 36624,90, fee = 22,5)$ 
+2023-12-04 08:52:08.2731 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36690,00$ (7,60$) 
+2023-12-04 08:52:17.2951 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36673,00 (TP = 36703,00, SL = 36638,00, fee = 22,5)$ 
+2023-12-04 08:52:20.0022 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36637,80$ (-57,70$) 
+2023-12-04 08:52:20.1561 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36634,10 (TP = 36604,10, SL = 36669,10, fee = 22,5)$ 
+2023-12-04 08:52:25.7372 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36672,00$ (-60,40$) 
+2023-12-04 08:52:26.4357 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36673,70 (TP = 36703,70, SL = 36638,70, fee = 22,5)$ 
+2023-12-04 08:52:30.5950 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36636,80$ (-59,40$) 
+2023-12-04 08:52:31.0144 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36642,50 (TP = 36612,50, SL = 36677,50, fee = 22,5)$ 
+2023-12-04 08:52:33.4802 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36679,60$ (-59,60$) 
+2023-12-04 08:52:36.9461 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36667,60 (TP = 36637,60, SL = 36702,60, fee = 22,5)$ 
+2023-12-04 08:52:38.3187 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36637,60$ (7,50$) 
+2023-12-04 08:52:50.9394 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36646,10 (TP = 36616,10, SL = 36681,10, fee = 22,5)$ 
+2023-12-04 08:53:16.7069 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36684,20$ (-60,60$) 
+2023-12-04 08:53:20.3423 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36690,10 (TP = 36720,10, SL = 36655,10, fee = 22,5)$ 
+2023-12-04 08:53:28.5405 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36725,40$ (12,80$) 
+2023-12-04 08:53:36.8658 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36745,00 (TP = 36715,00, SL = 36780,00, fee = 22,5)$ 
+2023-12-04 08:53:53.8627 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36780,00$ (-57,50$) 
+2023-12-04 08:53:59.7145 [DEBUG] (1) [BacktestManager] Saving market signals to: C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\results\BTCUSDT_marketSignal_04122023.txt. 
+2023-12-04 08:53:59.7145 [DEBUG] (1) [BacktestManager] Saving market signal statistics to: C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\results\BTCUSDT_marketSignalStatistic_04122023.txt. 
+2023-12-04 08:53:59.7235 [DEBUG] (1) [BacktestManager] Ended BTCUSDT backtest. Total elapsed time: 00:08:33.1488959. 
+2023-12-04 08:57:56.3448 [ INFO] (1) [BacktestManager] Parsing BTCUSDT history trades from 'C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\test1\BTCUSDT_receivedTrades_18112023.txt'. 
+2023-12-04 08:58:03.9751 [ INFO] (1) [BacktestManager] Initialized. 
+2023-12-04 08:58:03.9751 [ INFO] (1) [BacktestManager] Executing BTCUSDT backtest with total 245916 history trades and 100 history trades batch size. 
+2023-12-04 08:58:04.0419 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36388,90 (TP = 36418,90, SL = 36253,90, fee = 22,5)$ 
+2023-12-04 08:58:07.2090 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36253,30$ (-158,10$) 
+2023-12-04 08:58:08.9308 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36253,90 (TP = 36283,90, SL = 36118,90, fee = 22,5)$ 
+2023-12-04 08:58:09.7588 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36284,00$ (7,60$) 
+2023-12-04 08:58:09.8346 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36292,50 (TP = 36322,50, SL = 36157,50, fee = 22,5)$ 
+2023-12-04 08:58:10.6561 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36322,50$ (7,50$) 
+2023-12-04 08:58:11.3207 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36317,00 (TP = 36347,00, SL = 36182,00, fee = 22,5)$ 
+2023-12-04 08:58:12.1280 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36347,50$ (8,00$) 
+2023-12-04 08:58:12.1280 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36347,50 (TP = 36377,50, SL = 36212,50, fee = 22,5)$ 
+2023-12-04 08:58:15.2491 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36378,30$ (8,30$) 
+2023-12-04 08:58:15.4415 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36366,50 (TP = 36336,50, SL = 36501,50, fee = 22,5)$ 
+2023-12-04 08:58:53.6901 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36504,80$ (-160,80$) 
+2023-12-04 08:58:57.6701 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36505,80 (TP = 36535,80, SL = 36370,80, fee = 22,5)$ 
+2023-12-04 08:58:59.0123 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36536,00$ (7,70$) 
+2023-12-04 08:59:06.4407 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36500,00 (TP = 36470,00, SL = 36635,00, fee = 22,5)$ 
+2023-12-04 08:59:12.6000 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36470,00$ (7,50$) 
+2023-12-04 08:59:12.9460 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36468,80 (TP = 36438,80, SL = 36603,80, fee = 22,5)$ 
+2023-12-04 08:59:15.3245 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36437,20$ (9,10$) 
+2023-12-04 08:59:15.3245 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36437,20 (TP = 36407,20, SL = 36572,20, fee = 22,5)$ 
+2023-12-04 08:59:41.0680 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36407,00$ (7,70$) 
+2023-12-04 08:59:46.7262 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36379,70 (TP = 36349,70, SL = 36514,70, fee = 22,5)$ 
+2023-12-04 09:00:13.7917 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36515,20$ (-158,00$) 
+2023-12-04 09:00:15.5505 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36521,60 (TP = 36551,60, SL = 36386,60, fee = 22,5)$ 
+2023-12-04 09:00:26.5618 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36551,60$ (7,50$) 
+2023-12-04 09:00:33.4389 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36540,00 (TP = 36510,00, SL = 36675,00, fee = 22,5)$ 
+2023-12-04 09:00:34.5192 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36510,00$ (7,50$) 
+2023-12-04 09:00:41.1630 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36533,70 (TP = 36563,70, SL = 36398,70, fee = 22,5)$ 
+2023-12-04 09:00:48.5069 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36563,70$ (7,50$) 
+2023-12-04 09:00:48.8854 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36558,80 (TP = 36528,80, SL = 36693,80, fee = 22,5)$ 
+2023-12-04 09:01:50.5668 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36695,30$ (-159,00$) 
+2023-12-04 09:01:54.7461 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36655,60 (TP = 36625,60, SL = 36790,60, fee = 22,5)$ 
+2023-12-04 09:02:18.4958 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36792,40$ (-159,30$) 
+2023-12-04 09:02:29.7055 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36846,40 (TP = 36816,40, SL = 36981,40, fee = 22,5)$ 
+2023-12-04 09:02:37.9637 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36816,20$ (7,70$) 
+2023-12-04 09:02:42.6041 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36817,30 (TP = 36787,30, SL = 36952,30, fee = 22,5)$ 
+2023-12-04 09:02:57.7021 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36783,90$ (10,90$) 
+2023-12-04 09:02:59.8298 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36792,50 (TP = 36822,50, SL = 36657,50, fee = 22,5)$ 
+2023-12-04 09:03:52.0629 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36653,50$ (-161,50$) 
+2023-12-04 09:03:54.5912 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36684,50 (TP = 36654,50, SL = 36819,50, fee = 22,5)$ 
+2023-12-04 09:04:24.7230 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36654,50$ (7,50$) 
+2023-12-04 09:04:25.8813 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36641,30 (TP = 36611,30, SL = 36776,30, fee = 22,5)$ 
+2023-12-04 09:04:35.0678 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36611,10$ (7,70$) 
+2023-12-04 09:04:42.8769 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36620,00 (TP = 36590,00, SL = 36755,00, fee = 22,5)$ 
+2023-12-04 09:06:17.3144 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36755,40$ (-157,90$) 
+2023-12-04 09:06:20.0368 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36745,00 (TP = 36715,00, SL = 36880,00, fee = 22,5)$ 
+2023-12-04 09:06:42.6066 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36775,10$ (-52,60$) 
+2023-12-04 09:06:42.6066 [DEBUG] (1) [BacktestManager] Saving market signals to: C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\results\BTCUSDT_marketSignal_04122023.txt. 
+2023-12-04 09:06:42.6225 [DEBUG] (1) [BacktestManager] Saving market signal statistics to: C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\results\BTCUSDT_marketSignalStatistic_04122023.txt. 
+2023-12-04 09:06:42.6225 [DEBUG] (1) [BacktestManager] Ended BTCUSDT backtest. Total elapsed time: 00:08:38.6452771. 
+2023-12-04 09:08:21.1088 [ INFO] (1) [BacktestManager] Parsing BTCUSDT history trades from 'C:\Users\Davor\Delo\Projekti\Lokalno\EAs\Crypto\CryptoBot\DATA\test1\BTCUSDT_receivedTrades_18112023.txt'. 
+2023-12-04 09:08:27.0398 [ INFO] (1) [BacktestManager] Initialized. 
+2023-12-04 09:08:27.0398 [ INFO] (1) [BacktestManager] Executing BTCUSDT backtest with total 245916 history trades and 100 history trades batch size. 
+2023-12-04 09:08:27.1245 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36388,90 (TP = 36418,90, SL = 36368,90, fee = 22,5)$ 
+2023-12-04 09:08:27.1734 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36368,70$ (-42,70$) 
+2023-12-04 09:08:27.2353 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36353,60 (TP = 36323,60, SL = 36373,60, fee = 22,5)$ 
+2023-12-04 09:08:27.4556 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36375,00$ (-43,90$) 
+2023-12-04 09:08:27.4636 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36382,00 (TP = 36412,00, SL = 36362,00, fee = 22,5)$ 
+2023-12-04 09:08:27.6596 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36361,90$ (-42,60$) 
+2023-12-04 09:08:27.8079 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36345,00 (TP = 36315,00, SL = 36365,00, fee = 22,5)$ 
+2023-12-04 09:08:27.9862 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36315,00$ (7,50$) 
+2023-12-04 09:08:28.0650 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36320,70 (TP = 36350,70, SL = 36300,70, fee = 22,5)$ 
+2023-12-04 09:08:28.2097 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36300,00$ (-43,20$) 
+2023-12-04 09:08:28.7200 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36299,50 (TP = 36269,50, SL = 36319,50, fee = 22,5)$ 
+2023-12-04 09:08:29.7118 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36269,20$ (7,80$) 
+2023-12-04 09:08:31.3553 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36253,90 (TP = 36283,90, SL = 36233,90, fee = 22,5)$ 
+2023-12-04 09:08:31.6286 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36233,40$ (-43,00$) 
+2023-12-04 09:08:31.7640 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36243,10 (TP = 36213,10, SL = 36263,10, fee = 22,5)$ 
+2023-12-04 09:08:31.8647 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36264,30$ (-43,70$) 
+2023-12-04 09:08:32.1857 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36292,50 (TP = 36322,50, SL = 36272,50, fee = 22,5)$ 
+2023-12-04 09:08:32.9027 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36322,50$ (7,50$) 
+2023-12-04 09:08:33.5068 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36317,00 (TP = 36347,00, SL = 36297,00, fee = 22,5)$ 
+2023-12-04 09:08:34.2255 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36347,50$ (8,00$) 
+2023-12-04 09:08:34.2255 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36347,50 (TP = 36377,50, SL = 36327,50, fee = 22,5)$ 
+2023-12-04 09:08:34.7528 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36327,30$ (-42,70$) 
+2023-12-04 09:08:34.7528 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36327,30 (TP = 36297,30, SL = 36347,30, fee = 22,5)$ 
+2023-12-04 09:08:34.9996 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36347,80$ (-43,00$) 
+2023-12-04 09:08:35.0787 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36342,50 (TP = 36312,50, SL = 36362,50, fee = 22,5)$ 
+2023-12-04 09:08:35.6349 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36363,60$ (-43,60$) 
+2023-12-04 09:08:36.7029 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36362,30 (TP = 36332,30, SL = 36382,30, fee = 22,5)$ 
+2023-12-04 09:08:37.9141 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36382,90$ (-43,10$) 
+2023-12-04 09:08:39.4486 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36430,60 (TP = 36460,60, SL = 36410,60, fee = 22,5)$ 
+2023-12-04 09:08:41.0522 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36410,40$ (-42,70$) 
+2023-12-04 09:08:41.1819 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36412,70 (TP = 36442,70, SL = 36392,70, fee = 22,5)$ 
+2023-12-04 09:08:41.4651 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36443,30$ (8,10$) 
+2023-12-04 09:08:41.6606 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36438,00 (TP = 36408,00, SL = 36458,00, fee = 22,5)$ 
+2023-12-04 09:08:43.0327 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36458,30$ (-42,80$) 
+2023-12-04 09:08:43.9092 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36476,00 (TP = 36506,00, SL = 36456,00, fee = 22,5)$ 
+2023-12-04 09:08:44.2006 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36456,00$ (-42,50$) 
+2023-12-04 09:08:45.5898 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36429,10 (TP = 36459,10, SL = 36409,10, fee = 22,5)$ 
+2023-12-04 09:08:45.7618 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36408,50$ (-43,10$) 
+2023-12-04 09:08:46.0727 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36424,70 (TP = 36454,70, SL = 36404,70, fee = 22,5)$ 
+2023-12-04 09:08:46.8002 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36404,40$ (-42,80$) 
+2023-12-04 09:08:47.0256 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36408,90 (TP = 36438,90, SL = 36388,90, fee = 22,5)$ 
+2023-12-04 09:08:48.7110 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36439,30$ (7,90$) 
+2023-12-04 09:08:48.7339 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36443,90 (TP = 36473,90, SL = 36423,90, fee = 22,5)$ 
+2023-12-04 09:08:50.7920 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36477,00$ (10,60$) 
+2023-12-04 09:08:52.8006 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36467,10 (TP = 36437,10, SL = 36487,10, fee = 22,5)$ 
+2023-12-04 09:08:57.2613 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36436,10$ (8,50$) 
+2023-12-04 09:09:02.9985 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36414,90 (TP = 36384,90, SL = 36434,90, fee = 22,5)$ 
+2023-12-04 09:09:05.5994 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36434,90$ (-42,50$) 
+2023-12-04 09:09:05.8238 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36443,00 (TP = 36473,00, SL = 36423,00, fee = 22,5)$ 
+2023-12-04 09:09:10.3039 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36422,50$ (-43,00$) 
+2023-12-04 09:09:10.9619 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36450,10 (TP = 36480,10, SL = 36430,10, fee = 22,5)$ 
+2023-12-04 09:09:14.7036 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36480,10$ (7,50$) 
+2023-12-04 09:09:21.1210 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36505,80 (TP = 36535,80, SL = 36485,80, fee = 22,5)$ 
+2023-12-04 09:09:22.3404 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36536,00$ (7,70$) 
+2023-12-04 09:09:28.7928 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36500,00 (TP = 36470,00, SL = 36520,00, fee = 22,5)$ 
+2023-12-04 09:09:31.7744 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36520,00$ (-42,50$) 
+2023-12-04 09:09:33.6526 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36480,00 (TP = 36450,00, SL = 36500,00, fee = 22,5)$ 
+2023-12-04 09:09:36.3341 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36450,00$ (7,50$) 
+2023-12-04 09:09:37.1841 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36444,20 (TP = 36414,20, SL = 36464,20, fee = 22,5)$ 
+2023-12-04 09:09:40.1217 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36414,00$ (7,70$) 
+2023-12-04 09:09:40.4857 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36421,00 (TP = 36391,00, SL = 36441,00, fee = 22,5)$ 
+2023-12-04 09:09:42.0554 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36442,00$ (-43,50$) 
+2023-12-04 09:09:42.2208 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36444,40 (TP = 36474,40, SL = 36424,40, fee = 22,5)$ 
+2023-12-04 09:09:44.4495 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36422,90$ (-44,00$) 
+2023-12-04 09:09:46.8059 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36467,50 (TP = 36497,50, SL = 36447,50, fee = 22,5)$ 
+2023-12-04 09:09:51.8004 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36498,20$ (8,20$) 
+2023-12-04 09:09:59.6009 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36431,60 (TP = 36401,60, SL = 36451,60, fee = 22,5)$ 
+2023-12-04 09:10:00.5992 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36401,50$ (7,60$) 
+2023-12-04 09:10:05.2127 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36379,70 (TP = 36349,70, SL = 36399,70, fee = 22,5)$ 
+2023-12-04 09:10:06.2019 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36399,80$ (-42,60$) 
+2023-12-04 09:10:07.4975 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36404,90 (TP = 36434,90, SL = 36384,90, fee = 22,5)$ 
+2023-12-04 09:10:08.1421 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36434,90$ (7,50$) 
+2023-12-04 09:10:09.0527 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36458,70 (TP = 36488,70, SL = 36438,70, fee = 22,5)$ 
+2023-12-04 09:10:11.1832 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36488,80$ (7,60$) 
+2023-12-04 09:10:11.8593 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36485,20 (TP = 36455,20, SL = 36505,20, fee = 22,5)$ 
+2023-12-04 09:10:13.9637 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36455,00$ (7,70$) 
+2023-12-04 09:10:14.5777 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36447,30 (TP = 36417,30, SL = 36467,30, fee = 22,5)$ 
+2023-12-04 09:10:17.8274 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36467,30$ (-42,50$) 
+2023-12-04 09:10:23.2282 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36468,00 (TP = 36438,00, SL = 36488,00, fee = 22,5)$ 
+2023-12-04 09:10:28.2058 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36488,00$ (-42,50$) 
+2023-12-04 09:10:32.6993 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36521,60 (TP = 36551,60, SL = 36501,60, fee = 22,5)$ 
+2023-12-04 09:10:36.0041 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36499,90$ (-44,20$) 
+2023-12-04 09:10:36.0161 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36502,70 (TP = 36472,70, SL = 36522,70, fee = 22,5)$ 
+2023-12-04 09:10:37.5641 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36523,40$ (-43,20$) 
+2023-12-04 09:10:42.2812 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36530,00 (TP = 36560,00, SL = 36510,00, fee = 22,5)$ 
+2023-12-04 09:10:45.4073 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36560,00$ (7,50$) 
+2023-12-04 09:10:51.8538 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36540,00 (TP = 36510,00, SL = 36560,00, fee = 22,5)$ 
+2023-12-04 09:10:52.8361 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36510,00$ (7,50$) 
+2023-12-04 09:10:59.0348 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36533,70 (TP = 36563,70, SL = 36513,70, fee = 22,5)$ 
+2023-12-04 09:11:00.2419 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36513,30$ (-42,90$) 
+2023-12-04 09:11:04.4521 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36550,00 (TP = 36520,00, SL = 36570,00, fee = 22,5)$ 
+2023-12-04 09:11:07.9724 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36570,00$ (-42,50$) 
+2023-12-04 09:11:19.9171 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36595,40 (TP = 36565,40, SL = 36615,40, fee = 22,5)$ 
+2023-12-04 09:11:24.4768 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36565,00$ (7,90$) 
+2023-12-04 09:11:27.4448 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36592,40 (TP = 36622,40, SL = 36572,40, fee = 22,5)$ 
+2023-12-04 09:11:31.5949 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36622,50$ (7,60$) 
+2023-12-04 09:11:36.3435 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36606,10 (TP = 36576,10, SL = 36626,10, fee = 22,5)$ 
+2023-12-04 09:11:39.3263 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36626,60$ (-43,00$) 
+2023-12-04 09:11:39.9252 [ INFO] (1) [BacktestManager] Created: BTCUSDT Buy @ 36619,80 (TP = 36649,80, SL = 36599,80, fee = 22,5)$ 
+2023-12-04 09:11:51.5077 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Buy @ 36598,20$ (-44,10$) 
+2023-12-04 09:11:54.3471 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36569,50 (TP = 36539,50, SL = 36589,50, fee = 22,5)$ 
+2023-12-04 09:11:57.1408 [ INFO] (1) [BacktestManager] Closed: BTCUSDT Sell @ 36589,60$ (-42,60$) 
+2023-12-04 09:12:07.7281 [ INFO] (1) [BacktestManager] Created: BTCUSDT Sell @ 36642,20 (TP = 36612,20, SL = 36662,20, fee = 22,5)$ 

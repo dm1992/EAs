@@ -116,7 +116,7 @@ namespace MarketProxy.Socket.BybitSocket
                 if (!ExtractOrderbookReceivedData(orderbookEntry.Topic, orderbookEntry.Data, out Orderbook orderbook))
                     return;
 
-                InvokeOrderbookEvent(orderbookEntry.Topic, orderbook);
+                InvokeOrderbookEvent(orderbook.Symbol, orderbook);
             }
             catch (Exception e)
             {
@@ -137,7 +137,7 @@ namespace MarketProxy.Socket.BybitSocket
                 if (!ExtractOrderbookReceivedData(orderbookEntry.Topic, orderbookEntry.Data, out Orderbook orderbook))
                     return;
 
-                InvokeOrderbookEvent(orderbookEntry.Topic, orderbook);
+                InvokeOrderbookEvent(orderbook.Symbol, orderbook);
             }
             catch (Exception e)
             {
@@ -153,71 +153,67 @@ namespace MarketProxy.Socket.BybitSocket
         {
             orderbook = null;
 
-            if (orderbookEntry == null) 
-                return false;
+            if (orderbookEntry == null) return false;
 
-            lock (_orderbooks)
+            if (!_orderbooks.TryGetValue(symbol, out BybitDerivativesOrderBookEntry o))
             {
-                if (!_orderbooks.TryGetValue(symbol, out BybitDerivativesOrderBookEntry o))
-                {
-                    _orderbooks.Add(symbol, orderbookEntry);
-                    return false;
-                }
-
-                if (!orderbookEntry.Bids.IsNullOrEmpty())
-                {          
-                    List<BybitUnifiedMarginOrderBookItem> bids = o.Bids.ToList();
-
-                    for (int i = 0; i < orderbookEntry.Bids.Count(); i++)
-                    {
-                        if (i >= bids.Count())
-                        {
-                            // overhead detected
-                            break;
-                        }
-
-                        bids[i] = orderbookEntry.Bids.ElementAt(i);
-                    }
-
-                    o.Bids = bids;
-                }
-
-                if (!orderbookEntry.Asks.IsNullOrEmpty())
-                {
-                    List<BybitUnifiedMarginOrderBookItem> asks = o.Asks.ToList();
-
-                    for (int i = 0; i < orderbookEntry.Asks.Count(); i++)
-                    {
-                        if (i >= asks.Count())
-                        {
-                            // overhead detected
-                            break;
-                        }
-
-                        asks[i] = orderbookEntry.Asks.ElementAt(i);
-                    }
-
-                    o.Asks = asks;
-                }
-
-                orderbook = new Orderbook();
-                orderbook.Symbol = symbol;
-                orderbook.Bids = new List<Bid>();
-                
-                foreach (var b in o.Bids)
-                {
-                    orderbook.Bids.Add(new Bid(b.Price, b.Quantity));
-                }
-
-                orderbook.Asks = new List<Ask>();
-
-                foreach (var a in o.Asks)
-                {
-                    orderbook.Asks.Add(new Ask(a.Price, a.Quantity));
-                }
-
-                return true;
+                _orderbooks.Add(symbol, orderbookEntry);
+                return false;
             }
+
+            if (!orderbookEntry.Bids.IsNullOrEmpty())
+            {
+                List<BybitUnifiedMarginOrderBookItem> bids = o.Bids.ToList();
+
+                for (int i = 0; i < orderbookEntry.Bids.Count(); i++)
+                {
+                    if (i >= bids.Count())
+                    {
+                        // overhead detected
+                        break;
+                    }
+
+                    bids[i] = orderbookEntry.Bids.ElementAt(i);
+                }
+
+                o.Bids = bids;
+            }
+
+            if (!orderbookEntry.Asks.IsNullOrEmpty())
+            {
+                List<BybitUnifiedMarginOrderBookItem> asks = o.Asks.ToList();
+
+                for (int i = 0; i < orderbookEntry.Asks.Count(); i++)
+                {
+                    if (i >= asks.Count())
+                    {
+                        // overhead detected
+                        break;
+                    }
+
+                    asks[i] = orderbookEntry.Asks.ElementAt(i);
+                }
+
+                o.Asks = asks;
+            }
+
+            orderbook = new Orderbook();
+            orderbook.Symbol = symbol;
+            orderbook.Bids = new List<Bid>();
+
+            foreach (var b in o.Bids)
+            {
+                orderbook.Bids.Add(new Bid(b.Price, b.Quantity));
+            }
+
+            orderbook.Asks = new List<Ask>();
+
+            foreach (var a in o.Asks)
+            {
+                orderbook.Asks.Add(new Ask(a.Price, a.Quantity));
+            }
+
+            return true;
         }
 
         private bool ExtractTradesReceivedData(string symbol, IEnumerable<BybitDerivativesTradeUpdate> tradesReceived, out List<Trade> trades)
